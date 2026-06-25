@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Informe Ejecutivo · Ecosistema Digital ANE</title>
+<style>
+@page{size:letter;margin:18mm 16mm 18mm 16mm}
+:root{--teal:#0d7373;--teal2:#14b8a6;--ink:#16302d;--muted:#526d69;--line:#cfe4e1;--soft:#f4fbf9;--gold:#b78f3d}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#eef6f4;color:var(--ink)}
+.wrapper{max-width:960px;margin:24px auto;padding:0 16px}.page{background:#fff;box-shadow:0 18px 60px rgba(13,38,35,.12);border:1px solid #dbecea}
+.header{padding:20px 28px 14px;border-bottom:3px solid var(--teal);background:linear-gradient(90deg,#f9fdfc,#f1fbf8)}
+.brand{display:flex;align-items:center;gap:16px}.brandmark{width:70px;height:70px;border-radius:18px;background:linear-gradient(135deg,var(--teal),var(--teal2));display:grid;place-items:center;color:#fff;font-weight:800;font-size:21px;letter-spacing:.05em}.titles h1{margin:0;font-size:28px;letter-spacing:-.02em}.titles p{margin:6px 0 0;color:var(--muted);font-size:13px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}.meta .box{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff}.meta b{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}.meta span{display:block;margin-top:3px;font-size:13px;font-weight:700}
+.content{padding:24px 28px 18px}.hero{border:1px solid var(--line);border-radius:18px;background:linear-gradient(135deg,#f7fcfb,#eef8f6);padding:18px 20px}.hero h2{margin:0 0 10px;font-size:23px}.hero p{margin:0;color:var(--muted);line-height:1.65}
+.section{margin-top:22px}.section h3{margin:0 0 10px;font-size:18px;padding-bottom:7px;border-bottom:1px solid var(--line)}.section p{margin:0 0 10px;line-height:1.7}.section ul{margin:8px 0 0 18px;padding:0}.section li{margin:0 0 8px;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.card{border:1px solid var(--line);border-radius:16px;padding:16px;background:#fff}.card h4{margin:0 0 8px;font-size:16px}.card p{margin:0;color:var(--muted);font-size:13px;line-height:1.6}.mini{margin-top:10px;border:1px solid var(--line);border-radius:14px;padding:12px;background:var(--soft)}.mini b{display:block;font-size:12px;margin-bottom:5px}.mini span{display:block;color:var(--muted);font-size:12px;line-height:1.55}
+.table{width:100%;border-collapse:collapse;margin-top:10px}.table th,.table td{border:1px solid var(--line);padding:10px 10px;text-align:left;vertical-align:top;font-size:12px;line-height:1.55}.table th{background:#f2faf8;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.highlight{border-left:5px solid var(--teal2);padding:10px 14px;background:#f5fcfa;border-radius:10px;color:var(--muted)}
+.footer{display:flex;justify-content:space-between;align-items:center;border-top:2px solid var(--teal);padding:10px 28px 16px;color:var(--muted);font-size:11px}.seal{font-weight:700;color:var(--teal)}
+.small{font-size:12px;color:var(--muted)}
+@media print{body{background:#fff}.wrapper{max-width:none;margin:0;padding:0}.page{box-shadow:none;border:none}}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <article class="page">
+    <header class="header">
+      <div class="brand">
+        <div class="brandmark">ANE</div>
+        <div class="titles">
+          <h1>Agencia Nacional de Empleo · Costa Rica</h1>
+          <p>Informe ejecutivo del ecosistema digital de reclutamiento, intermediación, evaluación y orientación laboral.</p>
+        </div>
+      </div>
+      <div class="meta">
+        <div class="box"><b>Documento</b><span>Informe Ejecutivo</span></div>
+        <div class="box"><b>Proyecto</b><span>Ecosistema ANE</span></div>
+        <div class="box"><b>Formato</b><span>Carta membretada</span></div>
+      </div>
+    </header>
+    <main class="content">
+      <section class="hero">
+        <h2>Resumen institucional</h2>
+        <p>El Ecosistema ANE integra cuatro módulos digitales complementarios: ATS ANE, Simulador de Entrevistas, Dashboard de Intermediación y Laboratorio IA con enfoque ESCO-CR. Su objetivo es fortalecer la trazabilidad del proceso de empleabilidad, mejorar la calidad de la orientación y apoyar la toma de decisiones mediante herramientas visuales, operativas y explicables.</p>
+      </section>
+
+      <section class="section">
+        <h3>1. Objetivo general</h3>
+        <p>Diseñar una plataforma portable, visualmente coherente y funcionalmente integrada para la Agencia Nacional de Empleo, capaz de conectar procesos de análisis curricular, simulación de entrevistas, seguimiento operativo e inteligencia de empleabilidad bajo una sola experiencia de usuario.</p>
+      </section>
+
+      <section class="section">
+        <h3>2. Módulos que componen el ecosistema</h3>
+        <div class="grid">
+          <div class="card"><h4>ATS ANE</h4><p>Analiza currículos y genera ranking de compatibilidad frente a una vacante. Ayuda a estandarizar criterios de preselección.</p><div class="mini"><b>Ejemplo relevante</b><span>Una vacante de asistente administrativo puede priorizar experiencia en Excel, archivo, atención al cliente y redacción de reportes.</span></div></div>
+          <div class="card"><h4>Simulador de Entrevistas</h4><p>Apoya entrevistas por competencias utilizando la metodología STAR y facilita informes más estructurados.</p><div class="mini"><b>Ejemplo relevante</b><span>Para un perfil comercial, se evalúa cómo resuelve objeciones, gestiona clientes difíciles y comunica resultados.</span></div></div>
+          <div class="card"><h4>Dashboard de Intermediación</h4><p>Permite monitorear indicadores, citas, seguimiento de candidatos y control operativo de la intermediación laboral.</p><div class="mini"><b>Ejemplo relevante</b><span>Puede visualizar candidatos contactados, entrevistas agendadas, colocaciones y pendientes por sector o región.</span></div></div>
+          <div class="card"><h4>Laboratorio IA ESCO-CR</h4><p>Convierte información del candidato en diagnóstico de empleabilidad, brechas, compatibilidad ocupacional y ruta 30/60/90.</p><div class="mini"><b>Ejemplo relevante</b><span>Un perfil con experiencia en ventas y servicio al cliente puede recibir ruta para fortalecer CRM, entrevista y logros cuantificables.</span></div></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h3>3. Lógica funcional del laboratorio</h3>
+        <table class="table">
+          <thead><tr><th>Etapa</th><th>Qué hace</th><th>Valor agregado</th></tr></thead>
+          <tbody>
+            <tr><td>Entrada del perfil</td><td>Recibe experiencia, formación, habilidades, puesto objetivo, disponibilidad y texto del CV.</td><td>Centraliza información del candidato en un punto de análisis.</td></tr>
+            <tr><td>Detección de competencias</td><td>Identifica competencias alineadas con la matriz ESCO-CR 500.</td><td>Permite un lenguaje común entre perfil, ocupación y brechas.</td></tr>
+            <tr><td>Diagnóstico y score</td><td>Genera un puntaje de empleabilidad y una lectura ejecutiva del perfil.</td><td>Orienta la toma de decisiones del asesor con criterios explicables.</td></tr>
+            <tr><td>Brechas y recomendaciones</td><td>Señala vacíos de preparación, técnicos o conductuales.</td><td>Facilita acciones concretas de mejora.</td></tr>
+            <tr><td>Ruta 30/60/90</td><td>Propone un plan de intervención progresivo.</td><td>Convierte el diagnóstico en un acompañamiento accionable.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="section">
+        <h3>4. Manuales de uso integrados</h3>
+        <p>Cada módulo dispone de un manual individual con línea gráfica ANE, preguntas frecuentes, pasos de uso y ejemplos visuales breves. Estos manuales fueron ajustados para consulta directa, sin barra de búsqueda, con navegación clara por secciones y opción de impresión institucional.</p>
+        <div class="highlight"><b>Importancia operativa:</b> los manuales reducen curva de aprendizaje, estandarizan prácticas y facilitan la adopción del ecosistema por parte de usuarios internos o externos.</div>
+      </section>
+
+      <section class="section">
+        <h3>5. Beneficios institucionales esperados</h3>
+        <ul>
+          <li>Mejora de la experiencia de usuario mediante una interfaz coherente, portable y visualmente alineada con la identidad ANE.</li>
+          <li>Mayor trazabilidad en procesos de preselección, entrevista y seguimiento de candidatos.</li>
+          <li>Facilidad para documentar decisiones y justificar recomendaciones de orientación laboral.</li>
+          <li>Mejor preparación de candidatos a través de rutas de fortalecimiento y simulación guiada.</li>
+          <li>Capacidad de escalar hacia una solución con autenticación, base de datos, analítica y conectividad con vacantes reales.</li>
+        </ul>
+      </section>
+
+      <section class="section">
+        <h3>6. Recomendaciones para fase siguiente</h3>
+        <ul>
+          <li>Conectar el ecosistema con una base de datos institucional y control de accesos por roles.</li>
+          <li>Validar la matriz ESCO-CR 500 con datos reales del mercado laboral costarricense y vacantes ANE/Brete.</li>
+          <li>Implementar bitácora de actividad, trazabilidad de decisiones y consentimiento informado cuando se traten datos personales.</li>
+          <li>Incorporar tablero de métricas para medir adopción, uso por módulo y resultados de intermediación.</li>
+          <li>Definir un protocolo institucional de uso ético de recomendaciones asistidas por IA.</li>
+        </ul>
+      </section>
+
+      <section class="section">
+        <h3>7. Conclusión</h3>
+        <p>El Ecosistema ANE constituye una base sólida para modernizar la gestión de empleabilidad, la atención a personas usuarias y la intermediación laboral. La combinación de módulos especializados, manuales integrados e identidad visual consistente ofrece una solución institucional lista para evolucionar hacia una plataforma de mayor robustez operativa y analítica.</p>
+      </section>
+      <p class="small">Este documento está preparado para impresión o exportación a PDF en tamaño carta.</p>
+    </main>
+    <footer class="footer">
+      <div>Agencia Nacional de Empleo · Costa Rica<br>Informe membretado del ecosistema digital ANE</div>
+      <div class="seal">Documento institucional · Uso informativo</div>
+      <div>Página 1</div>
+    </footer>
+  </article>
+</div>
+</body>
+</html>

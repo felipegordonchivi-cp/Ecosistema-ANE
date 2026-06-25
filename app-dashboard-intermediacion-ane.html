@@ -1,0 +1,2290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANE · Intermediación — Centro de Control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script>
+  /* Carga de librerías con CDN de respaldo: si cdnjs está bloqueado por la
+     red institucional (frecuente en redes gubernamentales con filtro de
+     contenido), se reintenta automáticamente con jsDelivr y luego unpkg.
+     window.__LIBS_FAILED__ acumula qué librería no pudo cargarse de
+     ninguna fuente, para mostrar un mensaje claro y accionable en pantalla
+     en vez de un error críptico al momento de procesar archivos. */
+  window.__LIBS_FAILED__ = [];
+  window.__cdnFallback = function(varName, urls, idx){
+    idx = idx || 0;
+    if(typeof window[varName] !== 'undefined') return;
+    if(idx >= urls.length){ window.__LIBS_FAILED__.push(varName); return; }
+    document.write('<script src="'+urls[idx]+'" onerror="window.__cdnFallback(\''+varName+'\', '+JSON.stringify(urls)+', '+(idx+1)+')"><\/script>');
+  };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js" onerror="window.__cdnFallback('XLSX',['https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js','https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js'])"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" onerror="window.__cdnFallback('Chart',['https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js','https://unpkg.com/chart.js@3.9.1/dist/chart.min.js'])"></script>
+<style>
+/* ============================================================
+   ANE INTERMEDIACIÓN — CENTRO DE CONTROL
+   Design system: teal/emerald institucional + slate ink
+   ============================================================ */
+:root{
+  --bg: #f3f6f5;
+  --surface: #ffffff;
+  --surface-2: #fafcfb;
+  --surface-sunken: #eef2f1;
+  --border: #e1e8e6;
+  --border-soft: #ecf1ef;
+
+  --ink-900: #0b1f1c;
+  --ink-700: #344341;
+  --ink-500: #5f7270;
+  --ink-400: #8a9c99;
+  --ink-300: #b7c5c2;
+
+  --brand-950: #07211d;
+  --brand-900: #0c3430;
+  --brand-800: #114a43;
+  --brand-700: #166258;
+  --brand-600: #0f8273;
+  --brand-500: #14b8a6;
+  --brand-400: #5fd1c3;
+  --brand-100: #e3f7f3;
+
+  --amber-600: #b45309;
+  --amber-500: #d97706;
+  --amber-100: #fef3e2;
+
+  --rose-600: #be123c;
+  --rose-500: #e11d48;
+  --rose-100: #fde6ec;
+
+  --blue-600: #1d4ed8;
+  --blue-500: #2563eb;
+  --blue-100: #e6edfc;
+
+  --violet-500: #7c3aed;
+  --violet-100: #f1e9fd;
+
+  --shadow-sm: 0 1px 2px rgba(11,31,28,0.06);
+  --shadow-md: 0 4px 16px -4px rgba(11,31,28,0.10), 0 2px 6px -2px rgba(11,31,28,0.06);
+  --shadow-lg: 0 16px 40px -12px rgba(11,31,28,0.18), 0 4px 12px -4px rgba(11,31,28,0.08);
+  --shadow-glow: 0 0 0 1px rgba(20,184,166,0.18), 0 8px 24px -8px rgba(20,184,166,0.35);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+
+  --sidebar-w: 252px;
+  --sidebar-w-collapsed: 76px;
+  --topbar-h: 72px;
+}
+
+*{ margin:0; padding:0; box-sizing:border-box; }
+html{ -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
+body{
+  font-family:'IBM Plex Sans', sans-serif;
+  background: var(--bg);
+  background-image:
+    radial-gradient(900px 480px at 110% -10%, rgba(20,184,166,0.10), transparent 60%),
+    radial-gradient(700px 400px at -10% 0%, rgba(20,184,166,0.06), transparent 55%);
+  color: var(--ink-900);
+  min-height:100vh;
+  font-size:14px;
+  line-height:1.5;
+}
+h1,h2,h3,h4{ font-family:'Manrope', sans-serif; letter-spacing:-0.01em; }
+.num, .tabular{ font-family:'IBM Plex Mono', monospace; font-feature-settings:"tnum"; }
+button{ font-family:inherit; }
+::selection{ background: var(--brand-100); }
+
+/* Scrollbar */
+::-webkit-scrollbar{ width:9px; height:9px; }
+::-webkit-scrollbar-track{ background:transparent; }
+::-webkit-scrollbar-thumb{ background:var(--ink-300); border-radius:99px; }
+::-webkit-scrollbar-thumb:hover{ background:var(--ink-400); }
+
+/* ============== UPLOAD / ONBOARDING SCREEN ============== */
+#uploadScreen{
+  min-height:100vh;
+  display:flex; align-items:center; justify-content:center;
+  padding:40px 24px;
+}
+.upload-card{
+  width:100%; max-width:920px;
+  background:var(--surface);
+  border-radius:var(--radius-xl);
+  box-shadow:var(--shadow-lg);
+  border:1px solid var(--border-soft);
+  overflow:hidden;
+  animation: riseIn .5s cubic-bezier(.2,.7,.2,1);
+}
+@keyframes riseIn{ from{ opacity:0; transform:translateY(14px); } to{ opacity:1; transform:none; } }
+.upload-head{
+  background: linear-gradient(135deg, var(--brand-950), var(--brand-800) 60%, var(--brand-700));
+  padding:40px 44px 34px;
+  color:#fff;
+  position:relative;
+  overflow:hidden;
+}
+.upload-head::after{
+  content:""; position:absolute; right:-60px; top:-60px; width:260px; height:260px;
+  background: radial-gradient(circle, rgba(95,209,195,0.35), transparent 70%);
+}
+.brand-mark{ display:flex; align-items:center; gap:11px; margin-bottom:22px; position:relative; z-index:1;}
+.brand-mark .dot{ width:11px; height:11px; border-radius:99px; background:var(--brand-400); box-shadow:0 0 0 4px rgba(95,209,195,0.25); }
+.brand-mark span{ font-family:'Manrope'; font-weight:700; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--brand-400); }
+.upload-head h1{ font-size:30px; font-weight:800; margin-bottom:10px; position:relative; z-index:1; }
+.upload-head p{ color:rgba(255,255,255,0.72); max-width:520px; font-size:14.5px; position:relative; z-index:1;}
+.upload-body{ padding:36px 44px 40px; }
+.dropzones{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:28px; }
+.dropzone{
+  border:1.5px dashed var(--border);
+  border-radius:var(--radius-md);
+  padding:20px 16px;
+  text-align:center;
+  background:var(--surface-2);
+  transition:.18s;
+  cursor:pointer;
+  position:relative;
+}
+.dropzone:hover{ border-color:var(--brand-500); background:var(--brand-100); }
+.dropzone.filled{ border-style:solid; border-color:var(--brand-500); background:var(--brand-100); }
+.dropzone .dz-icon{
+  width:42px; height:42px; margin:0 auto 12px; border-radius:11px;
+  background:var(--surface); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--brand-600);
+}
+.dropzone.filled .dz-icon{ background:var(--brand-500); color:#fff; border-color:var(--brand-500); }
+.dropzone .dz-title{ font-weight:700; font-size:13px; margin-bottom:4px; }
+.dropzone .dz-sub{ font-size:11.5px; color:var(--ink-500); line-height:1.4; }
+.dropzone .dz-file{ font-size:11px; color:var(--brand-700); font-weight:600; margin-top:8px; word-break:break-all; }
+.dropzone input{ position:absolute; inset:0; opacity:0; cursor:pointer; }
+.upload-footer{ display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+.lib-status{ display:flex; align-items:center; gap:7px; font-size:11.5px; font-weight:600; color:var(--ink-400); margin-bottom:14px; }
+.lib-status .lib-dot{ width:7px; height:7px; border-radius:99px; background:var(--ink-300); flex-shrink:0; }
+.lib-status.checking .lib-dot{ background:var(--amber-500); animation:pulseDot 1s infinite; }
+.lib-status.ready .lib-dot{ background:var(--brand-500); animation:none; }
+.lib-status.ready{ color:var(--brand-700); }
+.lib-status.failed .lib-dot{ background:var(--rose-500); animation:none; }
+.lib-status.failed{ color:var(--rose-600); }
+@keyframes pulseDot{ 0%,100%{ opacity:1; } 50%{ opacity:.35; } }
+.btn-primary{
+  background:linear-gradient(135deg, var(--brand-600), var(--brand-500));
+  color:#fff; border:none; padding:13px 26px; border-radius:11px;
+  font-weight:700; font-size:13.5px; cursor:pointer; letter-spacing:.01em;
+  box-shadow:0 8px 20px -6px rgba(20,184,166,0.55);
+  transition:.15s; display:inline-flex; align-items:center; gap:9px;
+}
+.btn-primary:hover:not(:disabled){ transform:translateY(-1px); box-shadow:0 10px 24px -6px rgba(20,184,166,0.65); }
+.btn-primary:disabled{ background:var(--ink-300); box-shadow:none; cursor:not-allowed; }
+.privacy-note{ display:flex; align-items:center; gap:8px; font-size:12px; color:var(--ink-500); max-width:380px; }
+.privacy-note svg{ flex-shrink:0; color:var(--brand-600); }
+.upload-status{
+  margin-top:18px; padding:13px 16px; border-radius:10px; font-size:13px;
+  display:none; align-items:center; gap:10px; font-weight:500;
+}
+.upload-status.show{ display:flex; }
+.upload-status.info{ background:var(--blue-100); color:var(--blue-600); }
+.upload-status.error{ background:var(--rose-100); color:var(--rose-600); }
+.upload-status.success{ background:var(--brand-100); color:var(--brand-700); }
+.spinner{ width:15px; height:15px; border-radius:99px; border:2px solid currentColor; border-right-color:transparent; animation:spin .7s linear infinite; flex-shrink:0; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+/* ============== APP SHELL ============== */
+#app{ display:none; }
+#app.active{ display:flex; min-height:100vh; }
+
+/* Sidebar */
+#sidebar{
+  width:var(--sidebar-w); flex-shrink:0;
+  background:linear-gradient(180deg, var(--brand-950), var(--brand-900) 55%, var(--brand-950));
+  color:#fff; display:flex; flex-direction:column;
+  position:sticky; top:0; height:100vh;
+  transition:width .2s;
+  z-index:40;
+}
+#sidebar.collapsed{ width:var(--sidebar-w-collapsed); }
+.side-head{ padding:24px 22px 18px; display:flex; align-items:center; gap:11px; }
+.side-head .logo-box{
+  width:36px; height:36px; border-radius:10px; flex-shrink:0;
+  background:linear-gradient(135deg, var(--brand-400), var(--brand-600));
+  display:flex; align-items:center; justify-content:center; font-weight:800; font-family:'Manrope';
+  box-shadow:0 4px 14px -2px rgba(95,209,195,0.4);
+}
+.side-head .title-block{ overflow:hidden; white-space:nowrap; }
+.side-head .title-block b{ font-family:'Manrope'; font-weight:800; font-size:14.5px; display:block; }
+.side-head .title-block span{ font-size:10.5px; color:var(--brand-400); letter-spacing:.08em; text-transform:uppercase; font-weight:600; }
+#sidebar.collapsed .title-block{ display:none; }
+
+.side-nav{ flex:1; padding:8px 14px; overflow-y:auto; }
+.nav-section-label{ font-size:10px; text-transform:uppercase; letter-spacing:.12em; color:rgba(255,255,255,0.32); font-weight:700; padding:16px 12px 7px; }
+#sidebar.collapsed .nav-section-label{ display:none; }
+.nav-item{
+  display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:10px;
+  color:rgba(255,255,255,0.68); cursor:pointer; font-size:13px; font-weight:600;
+  margin-bottom:2px; transition:.14s; white-space:nowrap; overflow:hidden; position:relative;
+}
+.nav-item svg{ flex-shrink:0; width:18px; height:18px; }
+.nav-item:hover{ background:rgba(255,255,255,0.07); color:#fff; }
+.nav-item.active{ background:rgba(95,209,195,0.16); color:#fff; }
+.nav-item.active::before{ content:""; position:absolute; left:-14px; top:8px; bottom:8px; width:3px; background:var(--brand-400); border-radius:0 4px 4px 0; }
+.nav-item .nav-badge{
+  margin-left:auto; background:var(--rose-500); color:#fff; font-size:10px; font-weight:700;
+  padding:1px 6px; border-radius:99px; min-width:18px; text-align:center;
+}
+#sidebar.collapsed .nav-item span.label, #sidebar.collapsed .nav-badge{ display:none; }
+#sidebar.collapsed .nav-item{ justify-content:center; }
+
+.side-foot{ padding:16px 18px 20px; border-top:1px solid rgba(255,255,255,0.08); }
+.advisor-pill{ display:flex; align-items:center; gap:10px; }
+.advisor-pill .av{
+  width:32px; height:32px; border-radius:99px; background:var(--brand-500); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; font-family:'Manrope';
+}
+.advisor-pill .meta{ overflow:hidden; }
+.advisor-pill .meta b{ display:block; font-size:12px; font-weight:700; white-space:nowrap; }
+.advisor-pill .meta span{ font-size:10.5px; color:rgba(255,255,255,0.5); }
+#sidebar.collapsed .advisor-pill .meta{ display:none; }
+.collapse-btn{
+  width:100%; margin-top:14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
+  color:rgba(255,255,255,0.7); border-radius:8px; padding:8px; cursor:pointer; font-size:11px; display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.collapse-btn:hover{ background:rgba(255,255,255,0.12); color:#fff; }
+
+/* Main column */
+#main-col{ flex:1; min-width:0; display:flex; flex-direction:column; }
+
+/* Topbar */
+#topbar{
+  height:var(--topbar-h); background:rgba(255,255,255,0.85); backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border); display:flex; align-items:center; gap:18px;
+  padding:0 28px; position:sticky; top:0; z-index:30;
+}
+.page-title-block{ margin-right:auto; }
+.page-title-block h2{ font-size:18px; font-weight:800; color:var(--ink-900); }
+.page-title-block p{ font-size:12px; color:var(--ink-500); margin-top:1px; }
+.topbar-filters{ display:flex; align-items:center; gap:10px; }
+.filter-select{
+  appearance:none; background:var(--surface-2); border:1px solid var(--border); border-radius:9px;
+  padding:8px 32px 8px 13px; font-size:12.5px; font-weight:600; color:var(--ink-700); cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%235f7270' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 12px center;
+  transition:.15s;
+}
+.filter-select:hover{ border-color:var(--brand-500); }
+.search-box{ position:relative; }
+.search-box input{
+  background:var(--surface-2); border:1px solid var(--border); border-radius:9px;
+  padding:8px 13px 8px 34px; font-size:12.5px; width:220px; color:var(--ink-900);
+}
+.search-box input:focus{ outline:none; border-color:var(--brand-500); box-shadow:0 0 0 3px var(--brand-100); }
+.search-box svg{ position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--ink-400); }
+.icon-btn{
+  width:36px; height:36px; border-radius:9px; border:1px solid var(--border); background:var(--surface-2);
+  display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--ink-600); transition:.15s; flex-shrink:0;
+}
+.icon-btn:hover{ border-color:var(--brand-500); color:var(--brand-700); background:var(--brand-100); }
+
+/* Content area */
+#content{ flex:1; padding:26px 28px 48px; }
+.view{ display:none; animation: fadeUp .35s cubic-bezier(.2,.7,.2,1); }
+.view.active{ display:block; }
+@keyframes fadeUp{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:none; } }
+
+.view-intro{ margin-bottom:22px; }
+.view-intro h1{ font-size:22px; font-weight:800; margin-bottom:4px; }
+.view-intro p{ color:var(--ink-500); font-size:13px; max-width:680px; }
+
+/* ============== KPI CARDS ============== */
+.kpi-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(190px,1fr)); gap:14px; margin-bottom:22px; }
+.kpi-card{
+  background:var(--surface); border:1px solid var(--border-soft); border-radius:var(--radius-lg);
+  padding:18px 18px 16px; box-shadow:var(--shadow-sm); position:relative; overflow:hidden;
+  transition:.18s;
+}
+.kpi-card:hover{ box-shadow:var(--shadow-md); transform:translateY(-1px); }
+.kpi-card .kpi-top{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:14px; }
+.kpi-icon{
+  width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+}
+.kpi-icon.teal{ background:var(--brand-100); color:var(--brand-700); }
+.kpi-icon.amber{ background:var(--amber-100); color:var(--amber-600); }
+.kpi-icon.rose{ background:var(--rose-100); color:var(--rose-600); }
+.kpi-icon.blue{ background:var(--blue-100); color:var(--blue-600); }
+.kpi-icon.violet{ background:var(--violet-100); color:var(--violet-500); }
+.kpi-trend{ font-size:11px; font-weight:700; padding:3px 7px; border-radius:99px; display:flex; align-items:center; gap:3px; }
+.kpi-trend.up{ background:var(--brand-100); color:var(--brand-700); }
+.kpi-trend.down{ background:var(--rose-100); color:var(--rose-600); }
+.kpi-trend.flat{ background:var(--surface-sunken); color:var(--ink-500); }
+.kpi-value{ font-family:'Manrope'; font-size:28px; font-weight:800; line-height:1; margin-bottom:5px; }
+.kpi-label{ font-size:12px; color:var(--ink-500); font-weight:600; }
+.kpi-sub{ font-size:11px; color:var(--ink-400); margin-top:6px; }
+
+/* ============== PANELS / CARDS ============== */
+.panel{
+  background:var(--surface); border:1px solid var(--border-soft); border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-sm); padding:20px 22px; margin-bottom:18px;
+}
+.panel-head{ display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:16px; gap:12px; }
+.panel-head h3{ font-size:14.5px; font-weight:700; color:var(--ink-900); }
+.panel-head .panel-sub{ font-size:11.5px; color:var(--ink-500); margin-top:2px; }
+.panel-head-right{ display:flex; gap:8px; align-items:center; flex-shrink:0; }
+.chip{ font-size:10.5px; font-weight:700; padding:4px 10px; border-radius:99px; }
+.chip.teal{ background:var(--brand-100); color:var(--brand-700); }
+.chip.amber{ background:var(--amber-100); color:var(--amber-600); }
+.chip.rose{ background:var(--rose-100); color:var(--rose-600); }
+.chip.ghost{ background:var(--surface-sunken); color:var(--ink-500); }
+
+.grid-2{ display:grid; grid-template-columns:1.3fr 1fr; gap:18px; }
+.grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+@media (max-width: 1100px){ .grid-2, .grid-3{ grid-template-columns:1fr; } }
+
+.btn-ghost{
+  background:var(--surface-2); border:1px solid var(--border); color:var(--ink-700); font-weight:600;
+  font-size:12px; padding:7px 13px; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;
+  transition:.15s;
+}
+.btn-ghost:hover{ border-color:var(--brand-500); color:var(--brand-700); background:var(--brand-100); }
+.btn-ghost.small{ padding:5px 10px; font-size:11px; }
+
+/* ============== FUNNEL ============== */
+.funnel-wrap{ display:flex; flex-direction:column; gap:0; padding:6px 0; }
+.funnel-stage{ display:flex; align-items:center; gap:16px; }
+.funnel-bar-track{ flex:1; height:46px; position:relative; }
+.funnel-bar{
+  height:100%; border-radius:10px; display:flex; align-items:center; justify-content:space-between;
+  padding:0 18px; color:#fff; font-weight:700; font-size:13px; margin:0 auto;
+  transition:width 1s cubic-bezier(.2,.8,.2,1); position:relative; overflow:hidden;
+  box-shadow:inset 0 -10px 16px -10px rgba(0,0,0,0.18);
+}
+.funnel-bar .fb-label{ display:flex; flex-direction:column; gap:1px; }
+.funnel-bar .fb-label small{ font-weight:600; font-size:10px; opacity:.85; text-transform:uppercase; letter-spacing:.04em; }
+.funnel-bar .fb-count{ font-family:'IBM Plex Mono'; font-size:16px; }
+.funnel-drop{ display:flex; align-items:center; justify-content:center; gap:6px; padding:6px 0; font-size:11px; color:var(--ink-400); font-weight:600; }
+.funnel-drop svg{ color:var(--rose-500); }
+.funnel-drop b{ color:var(--rose-600); }
+.funnel-side-label{ width:128px; flex-shrink:0; font-size:11.5px; font-weight:700; color:var(--ink-700); text-align:right; }
+
+/* ============== HEATMAP ============== */
+.heatmap-wrap{ overflow-x:auto; }
+.heatmap-grid{ display:grid; grid-template-columns:54px repeat(15, 1fr); gap:4px; min-width:680px; }
+.heatmap-grid .hm-corner{ }
+.heatmap-grid .hm-hour{ font-size:9.5px; color:var(--ink-400); text-align:center; font-weight:600; padding-bottom:2px; }
+.heatmap-grid .hm-day{ font-size:11px; color:var(--ink-600); font-weight:700; display:flex; align-items:center; }
+.hm-cell{ aspect-ratio:1; border-radius:5px; position:relative; cursor:default; transition:.12s; }
+.hm-cell:hover{ transform:scale(1.18); z-index:5; box-shadow:0 2px 8px rgba(0,0,0,0.25); }
+.hm-cell[data-tip]:hover::after{
+  content:attr(data-tip); position:absolute; bottom:120%; left:50%; transform:translateX(-50%);
+  background:var(--ink-900); color:#fff; font-size:10px; font-weight:600; padding:4px 8px; border-radius:6px;
+  white-space:nowrap; z-index:10; box-shadow:var(--shadow-md);
+}
+
+/* ============== TABLES ============== */
+.table-scroll{ overflow-x:auto; border-radius:var(--radius-md); border:1px solid var(--border-soft); }
+table{ width:100%; border-collapse:collapse; font-size:12.5px; }
+thead th{
+  background:var(--surface-2); text-align:left; padding:11px 14px; font-weight:700; color:var(--ink-600);
+  font-size:11px; text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid var(--border);
+  white-space:nowrap; position:sticky; top:0; cursor:pointer; user-select:none;
+}
+thead th:hover{ color:var(--brand-700); }
+thead th .sort-arrow{ font-size:9px; margin-left:4px; opacity:.5; }
+tbody td{ padding:10px 14px; border-bottom:1px solid var(--border-soft); color:var(--ink-700); }
+tbody tr:hover{ background:var(--surface-2); }
+tbody tr:last-child td{ border-bottom:none; }
+.cell-strong{ font-weight:700; color:var(--ink-900); }
+.badge{ display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:99px; }
+.badge.ok{ background:var(--brand-100); color:var(--brand-700); }
+.badge.no{ background:var(--surface-sunken); color:var(--ink-400); }
+.badge.warn{ background:var(--amber-100); color:var(--amber-600); }
+.badge.alert{ background:var(--rose-100); color:var(--rose-600); }
+.row-vent{ box-shadow:inset 3px 0 0 var(--amber-500); }
+.row-orient{ box-shadow:inset 3px 0 0 var(--rose-500); }
+.obs-input{
+  width:100%; min-width:160px; border:1px solid transparent; background:transparent; padding:5px 7px;
+  border-radius:6px; font-size:12px; font-family:inherit; color:var(--ink-700);
+}
+.obs-input:hover{ border-color:var(--border); background:var(--surface-2); }
+.obs-input:focus{ outline:none; border-color:var(--brand-500); background:var(--surface); box-shadow:0 0 0 3px var(--brand-100); }
+.empty-state{ padding:48px 20px; text-align:center; color:var(--ink-400); }
+.empty-state svg{ margin-bottom:10px; opacity:.6; }
+.empty-state b{ display:block; color:var(--ink-600); font-size:13px; margin-bottom:3px; }
+
+/* table pagination */
+.table-foot{ display:flex; align-items:center; justify-content:space-between; padding:11px 4px 0; font-size:11.5px; color:var(--ink-500); }
+.pager{ display:flex; gap:6px; }
+.pager button{ width:28px; height:28px; border-radius:7px; border:1px solid var(--border); background:var(--surface); cursor:pointer; font-size:11px; font-weight:600; color:var(--ink-600); }
+.pager button:hover:not(:disabled){ border-color:var(--brand-500); color:var(--brand-700); }
+.pager button:disabled{ opacity:.4; cursor:default; }
+
+/* Team leaderboard */
+.leader-row{ display:grid; grid-template-columns:28px 1fr 90px 90px 90px 110px; align-items:center; gap:14px; padding:11px 6px; border-bottom:1px solid var(--border-soft); }
+.leader-row:last-child{ border-bottom:none; }
+.leader-rank{ font-family:'Manrope'; font-weight:800; color:var(--ink-300); font-size:14px; }
+.leader-rank.top1{ color:#caa53d; } .leader-rank.top2{ color:#9aa6b2; } .leader-rank.top3{ color:#c98a52; }
+.leader-name{ display:flex; align-items:center; gap:10px; }
+.leader-av{ width:30px; height:30px; border-radius:99px; background:var(--brand-100); color:var(--brand-700); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11.5px; flex-shrink:0; }
+.leader-name b{ font-size:12.5px; font-weight:700; }
+.mini-bar-track{ height:6px; background:var(--surface-sunken); border-radius:99px; overflow:hidden; }
+.mini-bar-fill{ height:100%; border-radius:99px; background:linear-gradient(90deg, var(--brand-500), var(--brand-600)); transition:width .8s; }
+.leader-metric{ text-align:right; font-weight:700; font-size:12.5px; font-family:'IBM Plex Mono'; }
+.leader-metric small{ display:block; font-weight:500; color:var(--ink-400); font-size:9.5px; font-family:'IBM Plex Sans'; text-transform:uppercase; }
+
+/* Data quality alert cards */
+.dq-card{ display:flex; gap:14px; align-items:flex-start; padding:16px; border-radius:12px; margin-bottom:12px; border:1px solid; }
+.dq-card.warn{ background:var(--amber-100); border-color:#f3d199; }
+.dq-card.alert{ background:var(--rose-100); border-color:#f5b8c4; }
+.dq-card.info{ background:var(--blue-100); border-color:#bfd3f8; }
+.dq-card .dq-icon{ width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:rgba(255,255,255,0.6); }
+.dq-card.warn .dq-icon{ color:var(--amber-600); } .dq-card.alert .dq-icon{ color:var(--rose-600); } .dq-card.info .dq-icon{ color:var(--blue-600); }
+.dq-card h4{ font-size:13px; font-weight:700; margin-bottom:3px; }
+.dq-card p{ font-size:12px; color:var(--ink-600); line-height:1.5; }
+
+.toggle-group{ display:inline-flex; background:var(--surface-sunken); border-radius:9px; padding:3px; gap:2px; }
+.toggle-group button{
+  border:none; background:transparent; padding:7px 13px; border-radius:7px; font-size:12px; font-weight:600;
+  color:var(--ink-500); cursor:pointer; transition:.15s;
+}
+.toggle-group button.active{ background:var(--surface); color:var(--brand-700); box-shadow:var(--shadow-sm); }
+
+.legend-row{ display:flex; gap:16px; flex-wrap:wrap; margin-top:12px; }
+.legend-item{ display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--ink-600); font-weight:600; }
+.legend-dot{ width:9px; height:9px; border-radius:3px; flex-shrink:0; }
+
+/* Modal */
+.modal-overlay{ position:fixed; inset:0; background:rgba(11,31,28,0.55); backdrop-filter:blur(3px); z-index:100; display:none; align-items:center; justify-content:center; padding:20px; }
+.modal-overlay.show{ display:flex; }
+.modal-box{ background:var(--surface); border-radius:var(--radius-lg); max-width:480px; width:100%; padding:28px; box-shadow:var(--shadow-lg); animation:riseIn .25s; }
+.modal-box h3{ font-size:16px; margin-bottom:8px; }
+.modal-box p{ font-size:13px; color:var(--ink-600); margin-bottom:20px; line-height:1.5; }
+.modal-actions{ display:flex; gap:10px; justify-content:flex-end; }
+
+@media print{
+  #sidebar, #topbar, .no-print{ display:none !important; }
+  #content{ padding:0; }
+  .panel{ box-shadow:none; border:1px solid #ccc; }
+}
+
+/* ============== DUPLICADOS ============== */
+tr.row-duplicado{
+  background: #fff8f0 !important;
+  border-left: 3px solid #ea580c;
+}
+tr.row-duplicado td{ color: #9a3412; }
+tr.row-duplicado:hover{ background: #feede0 !important; }
+.badge.dup{
+  background: #ffedd5;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+  font-weight: 700;
+}
+.dup-tag{
+  display: inline-block;
+  font-size: 11px;
+  color: #ea580c;
+  font-style: italic;
+  font-weight: 500;
+  white-space: nowrap;
+}
+button.tab-dup{
+  position: relative;
+}
+button.tab-dup #tabDupCount{
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #ea580c; color: #fff;
+  font-size: 10px; font-weight: 700;
+  min-width: 16px; height: 16px; border-radius: 99px;
+  padding: 0 4px; margin-left: 5px;
+  vertical-align: middle;
+}
+button.tab-dup:not(.active) #tabDupCount{ background: #c2410c; }
+button.tab-dup.active{ background: #fff3ed !important; color: #c2410c !important; border-color: #fed7aa !important; }
+</style>
+
+
+<style id="ane-help-style">
+.ane-help-btn{position:fixed;right:18px;bottom:18px;z-index:999999;background:linear-gradient(135deg,#0d7373,#14b8a6);color:#fff!important;text-decoration:none;border-radius:999px;padding:12px 16px;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-weight:900;font-size:13px;box-shadow:0 16px 42px rgba(13,115,115,.38);border:1px solid rgba(255,255,255,.22);display:inline-flex;align-items:center;gap:8px}
+.ane-help-btn:hover{transform:translateY(-2px)}@media print{.ane-help-btn{display:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ============== UPLOAD SCREEN ============== -->
+<div id="uploadScreen">
+  <div class="upload-card">
+    <div class="upload-head">
+      <div class="brand-mark"><span class="dot"></span><span>Agencia Nacional de Empleo</span></div>
+      <h1>Centro de Control · Intermediación</h1>
+      <p>Motor de análisis para gestión de citas, sesiones y talleres de empleabilidad. Carga los 3 archivos fuente para construir el panel ejecutivo de tu equipo.</p>
+    </div>
+    <div class="upload-body">
+      <div class="dropzones">
+        <label class="dropzone" id="dzControl">
+          <input type="file" id="fileControl" accept=".xlsx">
+          <div class="dz-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          </div>
+          <div class="dz-title">Control de Citas</div>
+          <div class="dz-sub">Hoja maestra de seguimiento por asesor</div>
+          <div class="dz-file" id="dzControlFile"></div>
+        </label>
+        <label class="dropzone" id="dzVentanilla">
+          <input type="file" id="fileVentanilla" accept=".xlsx">
+          <div class="dz-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92V19a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 1h2.09a2 2 0 0 1 2 1.72c.12.81.3 1.6.54 2.36a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.72-1.2a2 2 0 0 1 2.11-.45c.76.24 1.55.42 2.36.54A2 2 0 0 1 22 16.92z"/></svg>
+          </div>
+          <div class="dz-title">Ventanilla</div>
+          <div class="dz-sub">Llamadas y referidos de ventanilla única</div>
+          <div class="dz-file" id="dzVentanillaFile"></div>
+        </label>
+        <label class="dropzone" id="dzOrientacion">
+          <input type="file" id="fileOrientacion" accept=".xlsx">
+          <div class="dz-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16.24 7.76l-2.12 6.36-6.36 2.12 2.12-6.36z"/></svg>
+          </div>
+          <div class="dz-title">Orientación</div>
+          <div class="dz-sub">Referidos con PSP de orientadores</div>
+          <div class="dz-file" id="dzOrientacionFile"></div>
+        </label>
+      </div>
+      <div class="lib-status checking" id="libStatus">
+        <span class="lib-dot"></span><span id="libStatusText">Cargando componentes necesarios…</span>
+      </div>
+      <div class="upload-footer">
+        <div class="privacy-note">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Todo el procesamiento ocurre en tu navegador. Ningún dato sale de tu equipo ni se envía a servidores externos.</span>
+        </div>
+        <button class="btn-primary" id="btnProcesar" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+          Construir Dashboard
+        </button>
+      </div>
+      <div class="upload-status" id="uploadStatus"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============== APP SHELL ============== -->
+<div id="app">
+  <aside id="sidebar">
+    <div class="side-head">
+      <div class="logo-box">ANE</div>
+      <div class="title-block"><b>Intermediación</b><span>Centro de Control</span></div>
+    </div>
+    <nav class="side-nav">
+      <div class="nav-section-label">Análisis</div>
+      <div class="nav-item active" data-view="overview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+        <span class="label">Resumen Ejecutivo</span>
+      </div>
+      <div class="nav-item" data-view="funnel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h18l-7 9v6l-4 2v-8z"/></svg>
+        <span class="label">Embudo &amp; Resultados</span>
+      </div>
+      <div class="nav-item" data-view="team">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="label">Equipo</span>
+      </div>
+      <div class="nav-section-label">Operación</div>
+      <div class="nav-item" data-view="quality">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+        <span class="label">Validación de Datos</span>
+        <span class="nav-badge" id="navBadgeQuality">0</span>
+      </div>
+      <div class="nav-item" data-view="cases">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>
+        <span class="label">Casos</span>
+      </div>
+      <div class="nav-item" data-view="workload">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <span class="label">Carga de Trabajo</span>
+      </div>
+    </nav>
+    <div class="side-foot">
+      <div class="advisor-pill">
+        <div class="av" id="advisorAvatar">EQ</div>
+        <div class="meta"><b id="advisorName">Equipo completo</b><span id="advisorSub">13 asesores</span></div>
+      </div>
+      <button class="collapse-btn" id="btnCollapse">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"/></svg>
+        <span class="label">Contraer</span>
+      </button>
+    </div>
+  </aside>
+
+  <div id="main-col">
+    <header id="topbar">
+      <div class="page-title-block">
+        <h2 id="pageTitle">Resumen Ejecutivo</h2>
+        <p id="pageSubtitle">Vista consolidada del proceso de intermediación laboral</p>
+      </div>
+      <div class="search-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="globalSearch" placeholder="Buscar por nombre o cédula...">
+      </div>
+      <div class="topbar-filters">
+        <select class="filter-select" id="selAsesor"><option value="">Todo el equipo</option></select>
+        <select class="filter-select" id="selPeriodo">
+          <option value="anio_actual">Año actual</option>
+          <option value="t1">Trimestre 1</option>
+          <option value="t2">Trimestre 2</option>
+          <option value="t3">Trimestre 3</option>
+          <option value="t4">Trimestre 4</option>
+          <option value="todo">Todo el historial</option>
+        </select>
+      </div>
+      <button class="icon-btn" id="btnRefresh" title="Cargar nuevos archivos">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 22v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L21 8M2.99 15a9 9 0 0 0 14.85 3.36L21 16"/></svg>
+      </button>
+      <button class="icon-btn" id="btnPrint" title="Exportar / Imprimir reporte">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>
+      </button>
+    </header>
+
+    <main id="content">
+      <!-- views injected below -->
+      <!-- ============== VIEW: OVERVIEW ============== -->
+      <section class="view active" id="view-overview">
+        <div class="kpi-grid" id="kpiGridOverview"></div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-head">
+              <div><h3>Embudo de Conversión</h3><p class="panel-sub">Del primer contacto al resultado final</p></div>
+              <span class="chip teal" id="chipPeriodoFunnel">Año actual</span>
+            </div>
+            <div id="miniFunnel"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <div><h3>Origen de los Casos</h3><p class="panel-sub">Ventanilla vs. Orientación, equipo seleccionado</p></div>
+            </div>
+            <div style="height:200px;"><canvas id="chartOrigen"></canvas></div>
+            <div class="legend-row" id="legendOrigen"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div><h3>Tendencia Mensual de Sesiones</h3><p class="panel-sub">Sesiones iniciales y de seguimiento efectivas por mes</p></div>
+          </div>
+          <div style="height:260px;"><canvas id="chartTendencia"></canvas></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-head">
+              <div><h3>Ranking del Equipo</h3><p class="panel-sub">Top asesores por sesiones iniciales efectivas</p></div>
+              <button class="btn-ghost small" data-goto="team">Ver equipo completo →</button>
+            </div>
+            <div id="miniLeaderboard"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <div><h3>Estado Final de Casos</h3><p class="panel-sub">Distribución de resultados del proceso</p></div>
+            </div>
+            <div style="height:220px;"><canvas id="chartStatusFinal"></canvas></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== VIEW: FUNNEL & RESULTADOS ============== -->
+      <section class="view" id="view-funnel">
+        <div class="panel">
+          <div class="panel-head">
+            <div><h3>Embudo de Conversión Completo</h3><p class="panel-sub">Recorrido del usuario desde el referido hasta el resultado final</p></div>
+            <span class="chip teal" id="chipPeriodoFunnelFull">Año actual</span>
+          </div>
+          <div class="funnel-wrap" id="fullFunnel"></div>
+        </div>
+
+        <div class="grid-3">
+          <div class="panel">
+            <div class="panel-head"><div><h3>Estado Final</h3><p class="panel-sub">STATUS FINAL reportado</p></div></div>
+            <div style="height:210px;"><canvas id="chartStatusFinal2"></canvas></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div><h3>Colocación Laboral</h3><p class="panel-sub">¿Cómo consiguió empleo?</p></div></div>
+            <div style="height:210px;"><canvas id="chartColocacion"></canvas></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div><h3>Talleres por Tipo</h3><p class="panel-sub">PBE · Revisión de CV · Entrevista</p></div></div>
+            <div style="height:210px;"><canvas id="chartTalleres"></canvas></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div><h3>Principales Motivos de Abandono</h3><p class="panel-sub">Razones reportadas por los asesores en casos cerrados como abandono</p></div>
+          </div>
+          <div style="height:280px;"><canvas id="chartAbandono"></canvas></div>
+        </div>
+      </section>
+
+      <!-- ============== VIEW: EQUIPO ============== -->
+      <section class="view" id="view-team">
+        <div class="kpi-grid" id="kpiGridTeam"></div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div><h3>Rendimiento por Asesor</h3><p class="panel-sub">Haz click en un encabezado para ordenar · click en una fila para filtrar todo el dashboard por ese asesor</p></div>
+            <button class="btn-ghost small" id="btnExportTeam">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+              Exportar CSV
+            </button>
+          </div>
+          <div class="table-scroll">
+            <table id="tableTeam">
+              <thead>
+                <tr>
+                  <th data-sort="nombre">Asesor <span class="sort-arrow">▾</span></th>
+                  <th data-sort="usuarios">Usuarios</th>
+                  <th data-sort="s1ag">S1 Agendadas</th>
+                  <th data-sort="s1ef">S1 Efectivas</th>
+                  <th data-sort="tasaS1">Tasa S1</th>
+                  <th data-sort="s2ef">S2 Efectivas</th>
+                  <th data-sort="tasaAvance">Avance S1→S2</th>
+                  <th data-sort="talleres">Talleres</th>
+                  <th data-sort="colocados">Colocados</th>
+                  <th data-sort="abandono">Abandono</th>
+                </tr>
+              </thead>
+              <tbody id="bodyTeam"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div><h3>Distribución de Carga por Asesor</h3><p class="panel-sub">Usuarios únicos atendidos, equipo completo</p></div>
+          </div>
+          <div style="height:280px;"><canvas id="chartCargaEquipo"></canvas></div>
+        </div>
+      </section>
+
+      <!-- ============== VIEW: VALIDACIÓN DE DATOS ============== -->
+      <section class="view" id="view-quality">
+
+        <div class="dq-card info">
+          <div class="dq-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+          <div>
+            <h4>¿Por qué filtrar por período?</h4>
+            <p>Ventanilla contiene historial desde 2022 y Control 2026 solo cubre el ciclo actual. Comparar todos los años marcaría miles de casos antiguos —ya cerrados en controles de años previos que no están disponibles aquí— como "pendientes" falsos. Por eso esta vista filtra por <b>año actual</b> de forma predeterminada: así los pendientes mostrados son realmente accionables ahora.</p>
+          </div>
+        </div>
+
+        <div class="kpi-grid" id="kpiGridQuality"></div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div><h3>Ventanilla sin registrar en Control</h3><p class="panel-sub">Casos de nuestro equipo con llamada efectiva o cita concretada, sin caso correspondiente en Control</p></div>
+            <div class="panel-head-right">
+              <span class="chip amber" id="countVentGap">0</span>
+              <button class="btn-ghost small" id="btnExportVentGap">CSV</button>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table id="tableVentGap">
+              <thead><tr><th>Fecha</th><th>Usuario</th><th>Cédula</th><th>Asesor</th><th>Estatus 1ra</th><th>Estatus 2da</th></tr></thead>
+              <tbody id="bodyVentGap"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div><h3>Orientación sin registrar en Control</h3><p class="panel-sub">Referidos de orientadores (con PSP) con llamada efectiva o cita concretada, sin caso correspondiente en Control</p></div>
+            <div class="panel-head-right">
+              <span class="chip rose" id="countOrientGap">0</span>
+              <button class="btn-ghost small" id="btnExportOrientGap">CSV</button>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table id="tableOrientGap">
+              <thead><tr><th>Fecha</th><th>Usuario</th><th>Cédula</th><th>Asesor</th><th>Orientador</th><th>Estatus 1ra</th><th>Estatus 2da</th></tr></thead>
+              <tbody id="bodyOrientGap"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== VIEW: CASOS ============== -->
+      <section class="view" id="view-cases">
+        <div class="panel">
+          <div class="panel-head">
+            <div><h3>Tracking Detallado de Casos</h3><p class="panel-sub">Seguimiento individual con observaciones editables (guardado local en este navegador)</p></div>
+            <div class="panel-head-right">
+              <div class="toggle-group" id="filterEstado">
+                <button class="active" data-f="todos">Todos</button>
+                <button data-f="proceso">En proceso</button>
+                <button data-f="finalizado">Proceso finalizado</button>
+                <button data-f="contratado">Contratado</button>
+                <button data-f="abandono">Abandono</button>
+                <button data-f="duplicados" class="tab-dup">Duplicados <span id="tabDupCount"></span></button>
+              </div>
+              <button class="btn-ghost small" id="btnExportCases">CSV</button>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table id="tableCases">
+              <thead>
+                <tr>
+                  <th data-sort="nombre">Usuario</th>
+                  <th data-sort="cedula">Cédula</th>
+                  <th data-sort="agente">Asesor</th>
+                  <th data-sort="origen">Origen</th>
+                  <th data-sort="s1">S1</th>
+                  <th data-sort="s2">S2</th>
+                  <th data-sort="taller">Talleres</th>
+                  <th data-sort="status">Estado</th>
+                  <th>Observaciones</th>
+                </tr>
+              </thead>
+              <tbody id="bodyCases"></tbody>
+            </table>
+          </div>
+          <div class="table-foot">
+            <span id="casesCount">0 casos</span>
+            <div class="pager">
+              <button id="pagPrev">‹</button>
+              <span id="pagInfo" style="padding:0 8px; display:flex; align-items:center;">1 / 1</span>
+              <button id="pagNext">›</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== VIEW: CARGA DE TRABAJO ============== -->
+      <section class="view" id="view-workload">
+        <div class="panel">
+          <div class="panel-head">
+            <div><h3>Mapa de Calor — Horario de Sesiones</h3><p class="panel-sub">Concentración de sesiones agendadas por día y hora (todas las sesiones I, II y III)</p></div>
+          </div>
+          <div class="heatmap-wrap">
+            <div class="heatmap-grid" id="heatmapGrid"></div>
+          </div>
+          <div class="legend-row">
+            <div class="legend-item"><span class="legend-dot" style="background:var(--surface-sunken);"></span>Sin sesiones</div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--brand-400);"></span>Volumen bajo</div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--brand-600);"></span>Volumen medio</div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--brand-900);"></span>Volumen alto</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-head"><div><h3>Sesiones por Mes</h3><p class="panel-sub">Volumen total agendado, todas las etapas</p></div></div>
+            <div style="height:240px;"><canvas id="chartSesionesMes"></canvas></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div><h3>Envío de Encuesta de Satisfacción</h3><p class="panel-sub">Casos con encuesta enviada al finalizar</p></div></div>
+            <div style="height:240px;"><canvas id="chartEncuesta"></canvas></div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ============== MODAL ============== -->
+<div class="modal-overlay" id="modalConfirm">
+  <div class="modal-box">
+    <h3 id="modalTitle">¿Cargar nuevos archivos?</h3>
+    <p id="modalText">Esto reemplazará los datos actuales del dashboard. Las observaciones guardadas se mantienen.</p>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="modalCancel">Cancelar</button>
+      <button class="btn-primary" id="modalConfirmBtn" style="padding:10px 18px;">Continuar</button>
+    </div>
+  </div>
+</div>
+
+
+
+<a class="ane-help-btn" href="manual-dashboard-intermediacion-ane.html" target="_blank" rel="noopener">❔ Manual y FAQ</a>
+</body>
+</html>
+<script>
+(function(){
+"use strict";
+
+/* ====================================================================
+   ANE INTERMEDIACIÓN — MOTOR DE DATOS
+   Roster canónico validado contra las 3 fuentes reales (Control,
+   Ventanilla/AGENTES, Orientación/AGENTES). Cada asesor tiene su set
+   de tokens de apellidos+nombre para matching difuso entre formatos
+   de nombre inconsistentes entre archivos.
+   ==================================================================== */
+
+const ROSTER = [
+  { id:'felipe',    corto:'Felipe G.',    completo:'Felipe Gordon Chivi',        tokens:['GORDON','CHIVI','FELIPE'] },
+  { id:'karina',    corto:'Karina R.',    completo:'Karina Rodríguez Fonseca',   tokens:['RODRIGUEZ','FONSECA','KARINA'] },
+  { id:'catalina',  corto:'Catalina',     completo:'Catalina del Valle Jimenez', tokens:['VALLE','JIMENEZ','CATALINA'] },
+  { id:'elena',     corto:'Elena A.',     completo:'Elena Alpizar Picado',       tokens:['ALPIZAR','PICADO','ELENA'] },
+  { id:'melanie',   corto:'Melanie B.',   completo:'Melany Barquero Alfaro',     tokens:['BARQUERO','ALFARO','MELANY'] },
+  { id:'ericka',    corto:'Ericka Ch.',   completo:'Ericka Chaves Durán',        tokens:['CHAVES','DURAN','ERICKA'] },
+  { id:'karla',     corto:'Karla M.',     completo:'Karla Miranda Duarte',       tokens:['MIRANDA','DUARTE','KARLA'] },
+  { id:'carol',     corto:'Carol Ch.',    completo:'Carol Charpentier Ortiz',    tokens:['CHARPENTIER','ORTIZ','CAROL'] },
+  { id:'jessy',     corto:'Jessy S.',     completo:'Jessy Segura Chacón',        tokens:['SEGURA','CHACON','JESSY'] },
+  { id:'cristal',   corto:'Cristal R.',   completo:'Cristal Ruiz Rojas',         tokens:['RUIZ','ROJAS','CRISTAL'] },
+  { id:'stephanie', corto:'Stephanie V.', completo:'Stephanie Vargas Salas',     tokens:['VARGAS','SALAS','STEPHANIE'] },
+  { id:'jeimy',     corto:'Jeimy L.',     completo:'Jeimy Lizano Villareal',     tokens:['LIZANO','VILLAREAL','JEIMY'] },
+  { id:'lucia',     corto:'Lucia S.',     completo:'Jeannette Lucía Sanchez',    tokens:['SANCHEZ','PANIAGUA','JEANNETTE','LUCIA'] },
+];
+const ROSTER_BY_CORTO = {}; ROSTER.forEach(a => ROSTER_BY_CORTO[a.corto] = a);
+
+function normalizeStr(s){
+  if(s===null||s===undefined) return '';
+  s = String(s).toUpperCase();
+  s = s.normalize('NFKD').replace(/[\u0300-\u036f]/g,''); // strip accents
+  s = s.replace(/^\s*\d+[\.\-]\s*/,''); // strip leading "1." or "1-" prefix
+  s = s.replace(/[^A-Z\s]/g,' ');
+  return s.trim();
+}
+
+// Devuelve el nombre corto canónico (ej "Felipe G.") a partir de CUALQUIER
+// variante de nombre encontrada en Control / Ventanilla / Orientación.
+const matchCache = new Map();
+function matchAgent(rawName){
+  if(!rawName) return null;
+  if(matchCache.has(rawName)) return matchCache.get(rawName);
+  // Si ya es un nombre corto exacto del roster (vienen así en Control)
+  const directHit = ROSTER.find(a => a.corto.toLowerCase() === String(rawName).trim().toLowerCase());
+  if(directHit){ matchCache.set(rawName, directHit.corto); return directHit.corto; }
+
+  const tokens = new Set(normalizeStr(rawName).split(/\s+/).filter(Boolean));
+  let best = null, bestScore = 0;
+  for(const a of ROSTER){
+    let score = 0;
+    for(const t of a.tokens) if(tokens.has(t)) score++;
+    if(score > bestScore){ bestScore = score; best = a; }
+  }
+  const result = bestScore >= 1 ? best.corto : null;
+  matchCache.set(rawName, result);
+  return result;
+}
+
+// Sí/No con tolerancia a variantes de capitalización y tildes
+const RE_SI = /^\s*s[ií]\s*$/i;
+function esSi(v){ return typeof v === 'string' && RE_SI.test(v); }
+
+// Conversión robusta a Date. Con cellDates:true, xlsx ya entrega objetos
+// Date para celdas de fecha real. Si la celda tiene texto (error de
+// digitación, confirmado en datos reales) devolvemos null y lo dejamos
+// para el reporte de calidad de datos en vez de fallar.
+function toDate(v){
+  if(v instanceof Date && !isNaN(v.getTime())) return v;
+  return null;
+}
+function toTimeStr(v){
+  if(v instanceof Date) return v.getHours()+':'+String(v.getMinutes()).padStart(2,'0');
+  if(typeof v === 'string'){
+    const m = v.match(/^(\d{1,2}):(\d{2})/);
+    if(m) return m[1]+':'+m[2];
+  }
+  return null;
+}
+function hourOf(v){
+  if(v instanceof Date) return v.getHours();
+  if(typeof v === 'string'){ const m = v.match(/^(\d{1,2}):/); if(m) return parseInt(m[1],10); }
+  return null;
+}
+function cedKey(v){
+  if(v===null||v===undefined||v==='') return null;
+  return String(v).trim();
+}
+function MESNAME(d){
+  return ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Set','Oct','Nov','Dic'][d.getMonth()];
+}
+function quarterOf(d){ return Math.floor(d.getMonth()/3)+1; }
+
+window.__ANE_CORE__ = { ROSTER, ROSTER_BY_CORTO, normalizeStr, matchAgent, esSi, toDate, toTimeStr, hourOf, cedKey, MESNAME, quarterOf };
+})();
+</script>
+<script>
+(function(){
+"use strict";
+const C = window.__ANE_CORE__;
+
+/* ====================================================================
+   LECTURA DE ARCHIVOS
+   ==================================================================== */
+function leerArchivo(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      try{
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, { type:'array', cellDates:true });
+        resolve(wb);
+      }catch(err){ reject(new Error('No se pudo leer "'+file.name+'": '+err.message)); }
+    };
+    reader.onerror = () => reject(new Error('Error de lectura en "'+file.name+'"'));
+    reader.readAsArrayBuffer(file);
+  });
+}
+function sheetRows(wb, sheetName, headerRow){
+  const ws = wb.Sheets[sheetName];
+  if(!ws) return [];
+  return XLSX.utils.sheet_to_json(ws, { header:1, defval:null, range:headerRow });
+}
+
+/* ====================================================================
+   PARSER: CONTROL DE CITAS  (hoja "Control de Citas 2026", header fila 1)
+   Índices confirmados sobre archivo real, 0-based desde la fila de header:
+   1 AGENTE, 2 NOMBRE, 3 CEDULA, 4 TEL, 5 CORREO, 6 ORIGEN,
+   9 FechaS1, 10 HoraS1, 11 S1Efec, 12 ComS1,
+   14 FechaS2, 15 HoraS2, 16 S2Efec, 17 ComS2,
+   19 FechaS3, 20 HoraS3, 21 S3Efec, 22 ComS3,
+   23 FechaAdic, 24 AdicEfec,
+   25 TallerPBE, 26 TallerCV, 27 TallerEntrevista,
+   30 STATUS_FINAL, 31 MOTIVO_ABANDONO, 32 CONSIGUIO_TRABAJO,
+   33 OBSERVACIONES, 34 ENVIO_ENCUESTA
+   NOTA: la columna "Usuario con discapacidad" (idx7) se EXCLUYE a propósito:
+   1926/1930 filas la marcan "X", lo cual contradice la hoja independiente
+   "Personas con DCP" (90 registros reales). No es un dato confiable.
+   ==================================================================== */
+function parseControl(wb){
+  const rows = sheetRows(wb, 'Control de Citas 2026', 0);
+  const out = [];
+  const badDates = [];
+  for(let i=1;i<rows.length;i++){
+    const r = rows[i];
+    if(!r || (!r[1] && !r[2])) continue;
+    const agenteRaw = r[1];
+    const agente = C.matchAgent(agenteRaw) || (agenteRaw ? String(agenteRaw).trim() : null);
+    const nombre = r[2] ? String(r[2]).trim() : '';
+    const cedula = C.cedKey(r[3]);
+
+    function dateField(idx, label){
+      const raw = r[idx];
+      if(raw===null||raw===undefined||raw==='') return null;
+      const d = C.toDate(raw);
+      if(!d && raw){ badDates.push({ nombre, agente, campo:label, valor:String(raw) }); }
+      return d;
+    }
+
+    const fS1 = dateField(9,'Fecha I Sesión');
+    const fS2 = dateField(14,'Fecha II Sesión');
+    const fS3 = dateField(19,'Fecha III Sesión');
+    const fAdic = dateField(23,'Fecha sesión adicional');
+    const fTallerPBE = dateField(25,'Fecha taller PBE');
+    const fTallerCV = dateField(26,'Fecha taller CV');
+    const fTallerEntrevista = dateField(27,'Fecha taller Entrevista');
+
+    // Texto seguro: si por error de digitación la celda quedó como fecha
+    // (confirmado en datos reales, ej. STATUS FINAL con una fecha suelta),
+    // se descarta el valor en vez de mostrar un Date.toString() ilegible
+    // y se registra en badDates para trazabilidad.
+    function textField(idx, label){
+      const raw = r[idx];
+      if(raw===null||raw===undefined||raw==='') return '';
+      if(raw instanceof Date){ badDates.push({ nombre, agente, campo:label, valor:raw.toLocaleDateString('es-CR') }); return ''; }
+      return String(raw).trim();
+    }
+
+    out.push({
+      agente, nombre, cedula,
+      tel: r[4]||'', correo: r[5]||'',
+      origen: r[6] ? String(r[6]).trim() : '',
+      fS1, horaS1: r[10]||null, s1Efec: C.esSi(r[11]), s1Tiene: !!fS1,
+      fS2, horaS2: r[15]||null, s2Efec: C.esSi(r[16]), s2Tiene: !!fS2,
+      fS3, horaS3: r[20]||null, s3Efec: C.esSi(r[21]), s3Tiene: !!fS3,
+      fAdic, adicEfec: C.esSi(r[24]),
+      fTallerPBE, fTallerCV, fTallerEntrevista,
+      statusFinal: textField(30,'STATUS FINAL'),
+      motivoAbandono: textField(31,'MOTIVO DEL ABANDONO'),
+      consiguioTrabajo: textField(32,'CONSIGUIÓ TRABAJO'),
+      observaciones: textField(33,'OBSERVACIONES'),
+      envioEncuesta: textField(34,'ENVÍO DE ENCUESTA'),
+      _rowIdx: i
+    });
+  }
+  return { casos: out, badDates };
+}
+
+/* ====================================================================
+   PARSER: VENTANILLA  (hoja "CASOS", header fila 3 -> índice 2)
+   0 Fecha, 1 USUARIO, 2 CEDULA, 3 CORREO, 4 TELEFONO, 5 Observación,
+   6 AGENTE VENTANILLA, 7 AGENTE INTERMEDIACIÓN,
+   8 ESTATUS 1ra, 9 OBS 1ra, 10 REASIGNADO, 11 ESTATUS 2da, 12 OBS 2da
+   El archivo trae casos de TODOS los equipos de intermediación del país;
+   se filtra a nuestro roster de 13 mediante matchAgent().
+   ==================================================================== */
+const EFECTIVO_RE = /^(efectivo|se concreta cita)$/i;
+function parseVentanilla(wb){
+  const rows = sheetRows(wb, 'CASOS', 2);
+  const out = [];
+  for(let i=1;i<rows.length;i++){
+    const r = rows[i];
+    if(!r || !r[1]) continue;
+    const agente = C.matchAgent(r[7]);
+    if(!agente) continue; // de otro equipo, no nos corresponde
+    const fecha = C.toDate(r[0]);
+    const e1 = r[8] ? String(r[8]).trim() : '';
+    const e2 = r[11] ? String(r[11]).trim() : '';
+    out.push({
+      fecha, usuario: r[1]||'', cedula: C.cedKey(r[2]), correo: r[3]||'', tel: r[4]||'',
+      agente, estatus1: e1, estatus2: e2,
+      efectivo: EFECTIVO_RE.test(e1) || EFECTIVO_RE.test(e2)
+    });
+  }
+  return out;
+}
+
+/* ====================================================================
+   PARSER: ORIENTACIÓN  (hoja "CASOS", header fila 2 -> índice 1)
+   0 Fecha, 1 USUARIO, 2 CEDULA, 3 TELEFONO, 4 CORREO, 5 SERVICIO,
+   6 AGENTE ORIENTACION, 8 AGENTE INTERMEDIACION,
+   9 ESTATUS 1ra, 10 OBS 1ra, 11 REASIGNADO, 12 ESTATUS 2da, 13 OBS 2da
+   IMPORTANTE: aunque Excel reporta max_row en el orden de un millón
+   (metadato de formato heredado, no datos reales), el archivo real
+   contiene únicamente ~436 filas con datos. Se corta el escaneo tras
+   una racha larga de filas vacías para evitar procesar formato vacío.
+   ==================================================================== */
+function parseOrientacion(wb){
+  const ws = wb.Sheets['CASOS'];
+  if(!ws) return [];
+  const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:null, range:1 });
+  const out = [];
+  let emptyStreak = 0;
+  for(let i=1;i<rows.length;i++){
+    const r = rows[i];
+    if(!r || !r[1]){
+      emptyStreak++;
+      if(emptyStreak > 300) break; // fin de los datos reales
+      continue;
+    }
+    emptyStreak = 0;
+    const agente = C.matchAgent(r[8]);
+    if(!agente) continue;
+    const e1 = r[9] ? String(r[9]).trim() : '';
+    const e2 = r[12] ? String(r[12]).trim() : '';
+    out.push({
+      fecha: C.toDate(r[0]), usuario: r[1]||'', cedula: C.cedKey(r[2]), tel: r[3]||'', correo: r[4]||'',
+      servicio: r[5]||'', orientador: r[6]||'', agente,
+      estatus1: e1, estatus2: e2,
+      efectivo: EFECTIVO_RE.test(e1) || EFECTIVO_RE.test(e2)
+    });
+  }
+  return out;
+}
+
+window.__ANE_PARSERS__ = { leerArchivo, parseControl, parseVentanilla, parseOrientacion };
+})();
+</script>
+<script>
+(function(){
+"use strict";
+const C = window.__ANE_CORE__;
+
+/* ====================================================================
+   ESTADO GLOBAL
+   ==================================================================== */
+const STATE = {
+  control: [], ventanilla: [], orientacion: [], badDates: [],
+  filtroAsesor: '', filtroPeriodo: 'anio_actual',
+  vistaActual: 'overview',
+  cargado: false
+};
+window.__ANE_STATE__ = STATE;
+
+/* ====================================================================
+   CLASIFICACIÓN DE SESIONES POR CASO
+   Por instrucción explícita: S1 efectiva = únicamente el valor literal
+   de la celda "Sesión Efectiva" (I Sesión Efectividad). S2 efectiva =
+   únicamente el valor literal de "II Sesión Efectiva". Sin lógica de
+   reintento ni cruce con otras columnas.
+   ==================================================================== */
+function clasificar(caso){
+  const s1Real = caso.s1Efec === true;
+  const s2Real = caso.s2Efec === true;
+  const tallerCount = (caso.fTallerPBE?1:0)+(caso.fTallerCV?1:0)+(caso.fTallerEntrevista?1:0);
+  return { s1Real, s2Real, tieneTaller: tallerCount>0, tallerCount };
+}
+
+/* ====================================================================
+   STATUS FINAL — categorías oficiales (lista de validación de datos
+   de la hoja de Control): Abandono, Contratado, En proceso,
+   Proceso finalizado. Cualquier otro valor cae en "Otro" sin ocultarlo.
+   ==================================================================== */
+function normStatusFinal(raw){
+  const st = (raw||'').trim().toLowerCase();
+  if(!st) return '';
+  if(st.includes('abandon')) return 'Abandono';
+  if(st.includes('contrat')) return 'Contratado';
+  if(st.includes('final')) return 'Proceso finalizado';
+  if(st.includes('proceso')) return 'En proceso';
+  return 'Otro';
+}
+
+/* ====================================================================
+   FILTRO DE PERÍODO
+   ==================================================================== */
+function dentroDePeriodo(fecha, periodo){
+  if(!fecha) return periodo==='todo' ? true : false;
+  const hoy = new Date();
+  const anioActual = hoy.getFullYear();
+  if(periodo==='todo') return true;
+  if(fecha.getFullYear() !== anioActual) return false;
+  if(periodo==='anio_actual') return true;
+  const q = C.quarterOf(fecha);
+  if(periodo==='t1') return q===1;
+  if(periodo==='t2') return q===2;
+  if(periodo==='t3') return q===3;
+  if(periodo==='t4') return q===4;
+  return true;
+}
+function casoFechaRef(caso){
+  return caso.fS1 || caso.fS2 || caso.fS3 || caso.fTallerPBE || caso.fTallerCV || caso.fTallerEntrevista || null;
+}
+
+/* ====================================================================
+   MODELO DERIVADO — recalculado cada vez que cambian filtros
+   ==================================================================== */
+function construirModelo(){
+  const { filtroAsesor, filtroPeriodo } = STATE;
+
+  // --- Casos de Control filtrados ---
+  const casosFiltrados = STATE.control.filter(c => {
+    if(filtroAsesor && c.agente !== filtroAsesor) return false;
+    return dentroDePeriodo(casoFechaRef(c), filtroPeriodo);
+  });
+
+  // --- cédulas únicas en Control (todo el dataset, sin filtro de período, para validación) ---
+  const cedulasControlTodas = new Set(STATE.control.map(c=>c.cedula).filter(Boolean));
+
+  // --- Brecha de captura: Ventanilla / Orientación con llamada efectiva
+  //     (estatus 1ra o 2da indicando contacto/cita logrado) sin match en
+  //     Control, filtrado por período + asesor ---
+  const ventGap = STATE.ventanilla.filter(v => {
+    if(!v.efectivo) return false;
+    if(filtroAsesor && v.agente !== filtroAsesor) return false;
+    if(!dentroDePeriodo(v.fecha, filtroPeriodo)) return false;
+    return v.cedula && !cedulasControlTodas.has(v.cedula);
+  });
+  const orientGap = STATE.orientacion.filter(o => {
+    if(!o.efectivo) return false;
+    if(filtroAsesor && o.agente !== filtroAsesor) return false;
+    if(!dentroDePeriodo(o.fecha, filtroPeriodo)) return false;
+    return o.cedula && !cedulasControlTodas.has(o.cedula);
+  });
+
+  // --- Detección de duplicados por cédula dentro del año actual ---
+  // Regla: por cada cédula que aparece más de una vez en Control (mismo año),
+  // el registro con la fecha de referencia más antigua es el "primero" y
+  // mantiene su S1. Los registros posteriores se marcan esDuplicado=true,
+  // almacenan quién lo atendió primero, y NO cuentan en s1 ni s1Agendadas.
+  const anioActualDup = new Date().getFullYear();
+  // Construir mapa: cédula → [{caso, fechaRef}] para TODO el año (sin filtro de asesor ni período)
+  const dupMapAnio = new Map();
+  STATE.control.forEach(c => {
+    if(!c.cedula) return;
+    const fRef = c.fS1 || c.fS2 || c.fS3 || null;
+    if(fRef && fRef.getFullYear() !== anioActualDup) return;
+    if(!dupMapAnio.has(c.cedula)) dupMapAnio.set(c.cedula, []);
+    dupMapAnio.get(c.cedula).push({ caso: c, fRef: fRef ? fRef.getTime() : Infinity });
+  });
+  // Para cada cédula con múltiples registros, ordenar por fecha y marcar duplicados.
+  // REGLA: si el asesor posterior es el MISMO que atendió primero, NO es duplicado real
+  // (es el mismo profesional dando seguimiento al mismo usuario). Solo se marca como
+  // duplicado cuando un asesor DIFERENTE registra al mismo usuario ya atendido antes.
+  dupMapAnio.forEach((lista) => {
+    if(lista.length < 2) return;
+    lista.sort((a, b) => a.fRef - b.fRef);
+    const primero = lista[0].caso;
+    for(let i = 1; i < lista.length; i++){
+      const casoActual = lista[i].caso;
+      // Si el asesor es el mismo que el primero → no es duplicado, es seguimiento
+      if(casoActual.agente && primero.agente && casoActual.agente === primero.agente) continue;
+      casoActual._esDuplicado = true;
+      casoActual._primerAsesor = primero.agente || '—';
+    }
+  });
+
+  // --- KPIs principales ---
+  const usuariosUnicos = new Set(casosFiltrados.filter(c=>!c._esDuplicado).map(c=>c.cedula).filter(Boolean)).size;
+  let s1Agendadas=0, s1Efectivas=0, s2Efectivas=0, tallerTotal=0,
+      tallerPBE=0, tallerCV=0, tallerEntrevista=0, colocados=0, abandonos=0,
+      finalizados=0, contratados=0, enProceso=0, encuestaEnviada=0, encuestaTotal=0;
+  const statusFinalCount = {};
+  const motivoAbandonoCount = {};
+  const consiguioTrabajoCount = {};
+  const origenCount = {};
+
+  casosFiltrados.forEach(c => {
+    const cl = clasificar(c);
+    if(c._esDuplicado){
+      // Duplicado: no cuenta en S1 ni S1 agendadas. Sí puede contar talleres/colocados/estado.
+      if(c.fTallerPBE) tallerPBE++;
+      if(c.fTallerCV) tallerCV++;
+      if(c.fTallerEntrevista) tallerEntrevista++;
+      tallerTotal += cl.tallerCount;
+      const key = normStatusFinal(c.statusFinal);
+      if(key){
+        statusFinalCount[key] = (statusFinalCount[key]||0)+1;
+        if(key==='Proceso finalizado') finalizados++;
+        if(key==='Contratado') contratados++;
+        if(key==='Abandono') abandonos++;
+        if(key==='En proceso') enProceso++;
+      }
+      if(c.motivoAbandono){ const mv = c.motivoAbandono.trim(); motivoAbandonoCount[mv] = (motivoAbandonoCount[mv]||0)+1; }
+      if(c.consiguioTrabajo){ const ct = c.consiguioTrabajo.trim(); consiguioTrabajoCount[ct] = (consiguioTrabajoCount[ct]||0)+1; if(/^(por ane|ane)$/i.test(ct)) colocados++; }
+      if(c.origen) origenCount[c.origen] = (origenCount[c.origen]||0)+1;
+      if(c.envioEncuesta){ encuestaTotal++; if(C.esSi(c.envioEncuesta)) encuestaEnviada++; }
+      return; // saltar el conteo de S1
+    }
+    if(c.s1Tiene) s1Agendadas++;
+    if(cl.s1Real) s1Efectivas++;
+    if(cl.s2Real) s2Efectivas++;
+    if(c.fTallerPBE) tallerPBE++;
+    if(c.fTallerCV) tallerCV++;
+    if(c.fTallerEntrevista) tallerEntrevista++;
+    tallerTotal += cl.tallerCount;
+
+    const key = normStatusFinal(c.statusFinal);
+    if(key){
+      statusFinalCount[key] = (statusFinalCount[key]||0)+1;
+      if(key==='Proceso finalizado') finalizados++;
+      if(key==='Contratado') contratados++;
+      if(key==='Abandono') abandonos++;
+      if(key==='En proceso') enProceso++;
+    }
+    if(c.motivoAbandono){
+      const m = c.motivoAbandono.trim();
+      motivoAbandonoCount[m] = (motivoAbandonoCount[m]||0)+1;
+    }
+    if(c.consiguioTrabajo){
+      const ct = c.consiguioTrabajo.trim();
+      consiguioTrabajoCount[ct] = (consiguioTrabajoCount[ct]||0)+1;
+      if(/^(por ane|ane)$/i.test(ct)) colocados++;
+    }
+    if(c.origen) origenCount[c.origen] = (origenCount[c.origen]||0)+1;
+    if(c.envioEncuesta){ encuestaTotal++; if(C.esSi(c.envioEncuesta)) encuestaEnviada++; }
+  });
+
+  // --- Equipo: agregado por asesor (siempre sobre TODO el roster, respeta solo período) ---
+  const casosPorPeriodo = STATE.control.filter(c => dentroDePeriodo(casoFechaRef(c), filtroPeriodo));
+  const equipo = C.ROSTER.map(a => {
+    const propios = casosPorPeriodo.filter(c => c.agente === a.corto);
+    let s1ag=0, s1ef=0, s2ef=0, taller=0, coloc=0, aband=0;
+    const usuarios = new Set();
+    propios.forEach(c => {
+      if(c.cedula) usuarios.add(c.cedula);
+      const cl = clasificar(c);
+      if(!c._esDuplicado){
+        if(c.s1Tiene) s1ag++;
+        if(cl.s1Real) s1ef++;
+      }
+      if(cl.s2Real) s2ef++;
+      if(cl.tieneTaller) taller++;
+      if(/^(por ane|ane)$/i.test(c.consiguioTrabajo||'')) coloc++;
+      if(normStatusFinal(c.statusFinal)==='Abandono') aband++;
+    });
+    return {
+      agente: a.corto, usuarios: usuarios.size, s1ag, s1ef,
+      tasaS1: s1ag ? s1ef/s1ag : 0,
+      s2ef, tasaAvance: s1ef ? s2ef/s1ef : 0,
+      taller, colocados: coloc, abandono: aband
+    };
+  }).filter(e => e.usuarios>0 || e.s1ag>0);
+
+  // --- Tendencia mensual (sobre filtro de asesor, ignorando período para ver serie completa del año) ---
+  const mesesIdx = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Set','Oct','Nov','Dic'];
+  const tendencia = mesesIdx.map(m => ({ mes:m, s1:0, s2:0 }));
+  const anioActual = new Date().getFullYear();
+  STATE.control.forEach(c => {
+    if(filtroAsesor && c.agente !== filtroAsesor) return;
+    const cl = clasificar(c);
+    if(c.fS1 && c.fS1.getFullYear()===anioActual && cl.s1Real) tendencia[c.fS1.getMonth()].s1++;
+    const fS2ref = c.fS2 || c.fS3;
+    if(fS2ref && fS2ref.getFullYear()===anioActual && cl.s2Real) tendencia[fS2ref.getMonth()].s2++;
+  });
+
+  // --- Heatmap hora x día (todas las sesiones I/II/III, respeta asesor+período) ---
+  const heat = Array.from({length:7}, () => Array(15).fill(0)); // 0=Lun..6=Dom, horas 7-21
+  function addHeat(fecha, hora){
+    if(!fecha) return;
+    const dow = (fecha.getDay()+6)%7; // lunes=0
+    const h = hora!==null ? hora : null;
+    if(h===null || h<7 || h>21) return;
+    heat[dow][h-7]++;
+  }
+  casosFiltrados.forEach(c => {
+    addHeat(c.fS1, C.hourOf(c.horaS1));
+    addHeat(c.fS2, C.hourOf(c.horaS2));
+    addHeat(c.fS3, C.hourOf(c.horaS3));
+  });
+
+  // --- Sesiones por mes (volumen total, cualquier etapa) ---
+  const sesionesPorMes = mesesIdx.map(()=>0);
+  casosFiltrados.forEach(c => {
+    [c.fS1,c.fS2,c.fS3].forEach(f => { if(f && f.getFullYear()===anioActual) sesionesPorMes[f.getMonth()]++; });
+  });
+
+  // --- Referidos totales del período (para el embudo, deduplicado por cédula entre ambas fuentes) ---
+  const cedRefVent = new Set();
+  STATE.ventanilla.forEach(v=>{
+    if(filtroAsesor && v.agente!==filtroAsesor) return;
+    if(!v.efectivo) return;
+    if(!dentroDePeriodo(v.fecha, filtroPeriodo)) return;
+    if(v.cedula) cedRefVent.add(v.cedula);
+  });
+  const cedRefOrient = new Set();
+  STATE.orientacion.forEach(o=>{
+    if(filtroAsesor && o.agente!==filtroAsesor) return;
+    if(!dentroDePeriodo(o.fecha, filtroPeriodo)) return;
+    if(o.cedula) cedRefOrient.add(o.cedula);
+  });
+  const referidosUnicos = new Set([...cedRefVent, ...cedRefOrient]);
+  const referidosEnControl = [...referidosUnicos].filter(ced => cedulasControlTodas.has(ced)).length;
+
+  return {
+    casosFiltrados, usuariosUnicos, s1Agendadas, s1Efectivas, s2Efectivas,
+    tallerTotal, tallerPBE, tallerCV, tallerEntrevista, colocados, abandonos,
+    finalizados, contratados, enProceso, encuestaEnviada, encuestaTotal,
+    statusFinalCount, motivoAbandonoCount, consiguioTrabajoCount, origenCount,
+    equipo, tendencia, heat, sesionesPorMes,
+    ventGap, orientGap,
+    referidosTotal: referidosUnicos.size, referidosEnControl,
+    cedulasControlTodas,
+    duplicadosTotal: casosFiltrados.filter(c=>c._esDuplicado).length
+  };
+}
+
+window.__ANE_ANALYTICS__ = { clasificar, normStatusFinal, dentroDePeriodo, casoFechaRef, construirModelo };
+})();
+</script>
+<script>
+(function(){
+"use strict";
+const C = window.__ANE_CORE__;
+const A = window.__ANE_ANALYTICS__;
+const STATE = window.__ANE_STATE__;
+
+const PALETTE = {
+  teal:'#14b8a6', tealDark:'#0f8273', amber:'#d97706', rose:'#e11d48',
+  blue:'#2563eb', violet:'#7c3aed', ink:'#5f7270', inkSoft:'#b7c5c2'
+};
+const charts = {};
+function mkChart(canvasId, config){
+  const el = document.getElementById(canvasId);
+  if(!el) return null;
+  if(charts[canvasId]) charts[canvasId].destroy();
+  charts[canvasId] = new Chart(el.getContext('2d'), config);
+  return charts[canvasId];
+}
+function pct(n){ return (n*100).toFixed(1)+'%'; }
+function fmt(n){ return Number(n||0).toLocaleString('es-CR'); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function initials(name){
+  if(!name) return '--';
+  const parts = name.trim().split(/\s+/);
+  return ((parts[0]||'')[0]||'')+((parts[1]||'')[0]||'');
+}
+function fmtFecha(d){
+  if(!d) return '—';
+  return d.toLocaleDateString('es-CR',{day:'2-digit',month:'short',year:'numeric'});
+}
+function periodoLabel(){
+  const map = { anio_actual:'Año actual', t1:'Trimestre 1', t2:'Trimestre 2', t3:'Trimestre 3', t4:'Trimestre 4', todo:'Todo el historial' };
+  return map[STATE.filtroPeriodo] || 'Año actual';
+}
+
+function exportCSV(filename, headers, rows){
+  const esc2 = v => { v = String(v==null?'':v); if(/[",\n]/.test(v)) return '"'+v.replace(/"/g,'""')+'"'; return v; };
+  const lines = [headers.map(esc2).join(',')];
+  rows.forEach(r => lines.push(r.map(esc2).join(',')));
+  const blob = new Blob(['\uFEFF'+lines.join('\n')], { type:'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+const OBS_KEY = 'aneObsV4';
+function getObs(ced){ try{ const o = JSON.parse(localStorage.getItem(OBS_KEY)||'{}'); return o[ced]||''; }catch(e){ return ''; } }
+function setObs(ced, val){
+  try{
+    const o = JSON.parse(localStorage.getItem(OBS_KEY)||'{}');
+    if(val) o[ced]=val; else delete o[ced];
+    localStorage.setItem(OBS_KEY, JSON.stringify(o));
+  }catch(e){}
+}
+
+function kpiCard({icon, color, label, value, sub}){
+  return `<div class="kpi-card">
+    <div class="kpi-top"><div class="kpi-icon ${color}">${icon}</div></div>
+    <div class="kpi-value">${value}</div>
+    <div class="kpi-label">${label}</div>
+    ${sub?`<div class="kpi-sub">${sub}</div>`:''}
+  </div>`;
+}
+const ICONS = {
+  users:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  check:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>',
+  repeat:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/></svg>',
+  award:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/></svg>',
+  briefcase:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+  alert:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+  flag:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22V15"/></svg>',
+  clock:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',
+  inbox:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>',
+};
+
+window.__ANE_RENDER_UTILS__ = { PALETTE, mkChart, pct, fmt, esc, initials, fmtFecha, periodoLabel, exportCSV, getObs, setObs, kpiCard, ICONS };
+})();
+</script>
+<script>
+(function(){
+"use strict";
+const C = window.__ANE_CORE__;
+const A = window.__ANE_ANALYTICS__;
+const STATE = window.__ANE_STATE__;
+const U = window.__ANE_RENDER_UTILS__;
+
+function renderOverview(m){
+  document.getElementById('kpiGridOverview').innerHTML = [
+    U.kpiCard({icon:U.ICONS.users, color:'teal', label:'Usuarios Atendidos', value:U.fmt(m.usuariosUnicos), sub:periodSub()}),
+    U.kpiCard({icon:U.ICONS.check, color:'blue', label:'Sesiones Iniciales Efectivas', value:U.fmt(m.s1Efectivas), sub:m.s1Agendadas?`${U.pct(m.s1Efectivas/m.s1Agendadas)} de ${U.fmt(m.s1Agendadas)} agendadas`:'Sin agendas'}),
+    U.kpiCard({icon:U.ICONS.repeat, color:'violet', label:'Sesiones de Seguimiento', value:U.fmt(m.s2Efectivas), sub:m.s1Efectivas?`${U.pct(m.s2Efectivas/m.s1Efectivas)} avance desde S1`:'—'}),
+    U.kpiCard({icon:U.ICONS.briefcase, color:'amber', label:'Talleres Completados', value:U.fmt(m.tallerTotal), sub:'PBE · CV · Entrevista'}),
+    U.kpiCard({icon:U.ICONS.award, color:'teal', label:'Tasa de Colocación', value:(m.contratados+m.finalizados+m.abandonos)?U.pct(m.contratados/(m.contratados+m.finalizados+m.abandonos)):'—', sub:`${U.fmt(m.contratados)} contratados de los casos cerrados`}),
+  ].join('');
+
+  document.getElementById('chipPeriodoFunnel').textContent = U.periodoLabel();
+  renderMiniFunnel(m);
+  renderChartOrigen(m);
+  renderChartTendencia(m);
+  renderMiniLeaderboard(m);
+  renderChartStatusFinal(m, 'chartStatusFinal');
+}
+function periodSub(){
+  return STATE.filtroAsesor ? STATE.filtroAsesor : 'Equipo completo · '+U.periodoLabel();
+}
+
+function renderMiniFunnel(m){
+  const stages = [
+    { label:'Referidos', sub:'Vent. + Orient.', value:m.referidosTotal, color:U.PALETTE.ink },
+    { label:'S1 Efectiva', sub:'Sesión inicial', value:m.s1Efectivas, color:U.PALETTE.blue },
+    { label:'S2 Efectiva', sub:'Seguimiento', value:m.s2Efectivas, color:U.PALETTE.violet },
+    { label:'Colocados', sub:'Vía ANE', value:m.colocados, color:U.PALETTE.teal },
+  ];
+  document.getElementById('miniFunnel').innerHTML = buildFunnelHTML(stages, true);
+}
+
+function buildFunnelHTML(stages, compact){
+  const maxV = Math.max(1, stages[0].value);
+  let html = '<div class="funnel-wrap">';
+  stages.forEach((s, i) => {
+    const widthPct = Math.max(6, (s.value/maxV)*100);
+    html += `<div class="funnel-stage">
+      ${compact?'':'<div class="funnel-side-label">'+U.esc(s.label)+'</div>'}
+      <div class="funnel-bar-track">
+        <div class="funnel-bar" style="width:${widthPct}%; background:linear-gradient(135deg, ${s.color}, ${shade(s.color)});">
+          <div class="fb-label"><small>${U.esc(compact?s.label:s.sub)}</small><span>${compact?'':U.esc(s.sub)}</span></div>
+          <div class="fb-count">${U.fmt(s.value)}</div>
+        </div>
+      </div>
+    </div>`;
+    if(i < stages.length-1){
+      const drop = stages[i].value>0 ? (1 - stages[i+1].value/stages[i].value)*100 : 0;
+      html += `<div class="funnel-drop">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+        caída <b>${drop.toFixed(0)}%</b>
+      </div>`;
+    }
+  });
+  html += '</div>';
+  return html;
+}
+function shade(hex){
+  // oscurece levemente un color hex para el degradado de las barras del embudo
+  const n = parseInt(hex.slice(1),16);
+  let r=(n>>16)&255, g=(n>>8)&255, b=n&255;
+  r=Math.max(0,r-30); g=Math.max(0,g-30); b=Math.max(0,b-30);
+  return 'rgb('+r+','+g+','+b+')';
+}
+
+function renderChartOrigen(m){
+  const labels = Object.keys(m.origenCount);
+  const data = labels.map(l=>m.origenCount[l]);
+  const colors = [U.PALETTE.amber, U.PALETTE.rose, U.PALETTE.blue, U.PALETTE.violet, U.PALETTE.teal, U.PALETTE.ink];
+  U.mkChart('chartOrigen', {
+    type:'doughnut',
+    data:{ labels, datasets:[{ data, backgroundColor:labels.map((_,i)=>colors[i%colors.length]), borderWidth:0 }] },
+    options:{ responsive:true, maintainAspectRatio:false, cutout:'68%', plugins:{ legend:{ display:false } } }
+  });
+  const total = data.reduce((a,b)=>a+b,0)||1;
+  document.getElementById('legendOrigen').innerHTML = labels.map((l,i)=>
+    `<div class="legend-item"><span class="legend-dot" style="background:${colors[i%colors.length]}"></span>${U.esc(l)} · ${U.pct(m.origenCount[l]/total)}</div>`
+  ).join('');
+}
+
+function renderChartTendencia(m){
+  U.mkChart('chartTendencia', {
+    type:'line',
+    data:{ labels:m.tendencia.map(t=>t.mes), datasets:[
+      { label:'S1 Efectivas', data:m.tendencia.map(t=>t.s1), borderColor:U.PALETTE.blue, backgroundColor:'rgba(37,99,235,0.08)', tension:.4, fill:true, pointRadius:3, pointBackgroundColor:U.PALETTE.blue, borderWidth:2.5 },
+      { label:'S2 Efectivas', data:m.tendencia.map(t=>t.s2), borderColor:U.PALETTE.violet, backgroundColor:'rgba(124,58,237,0.06)', tension:.4, fill:true, pointRadius:3, pointBackgroundColor:U.PALETTE.violet, borderWidth:2.5 },
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'top', align:'end', labels:{ boxWidth:9, boxHeight:9, usePointStyle:true, font:{size:11} } } },
+      scales:{ y:{ beginAtZero:true, grid:{ color:'#eef2f1' }, ticks:{ font:{size:11} } }, x:{ grid:{ display:false }, ticks:{ font:{size:11} } } }
+    }
+  });
+}
+
+function renderMiniLeaderboard(m){
+  const top = [...m.equipo].sort((a,b)=>b.s1ef-a.s1ef).slice(0,5);
+  const maxV = Math.max(1, ...top.map(t=>t.s1ef));
+  document.getElementById('miniLeaderboard').innerHTML = top.map((t,i)=>`
+    <div class="leader-row" style="grid-template-columns:24px 1fr 70px;">
+      <div class="leader-rank ${i===0?'top1':i===1?'top2':i===2?'top3':''}">${i+1}</div>
+      <div class="leader-name"><div class="leader-av">${U.esc(U.initials(t.agente))}</div><b>${U.esc(t.agente)}</b></div>
+      <div class="leader-metric">${U.fmt(t.s1ef)}<small>S1 efec.</small></div>
+    </div>
+  `).join('') || '<div class="empty-state"><b>Sin datos</b></div>';
+}
+
+function renderChartStatusFinal(m, canvasId){
+  const labels = Object.keys(m.statusFinalCount);
+  const data = labels.map(l=>m.statusFinalCount[l]);
+  const colorMap = { 'Proceso finalizado':U.PALETTE.teal, 'Abandono':U.PALETTE.rose, 'En proceso':U.PALETTE.blue, 'Contratado':U.PALETTE.violet, 'Otro':U.PALETTE.inkSoft };
+  U.mkChart(canvasId, {
+    type:'bar',
+    data:{ labels, datasets:[{ data, backgroundColor:labels.map(l=>colorMap[l]||U.PALETTE.amber), borderRadius:6, maxBarThickness:46 }] },
+    options:{ responsive:true, maintainAspectRatio:false, indexAxis:'y',
+      plugins:{ legend:{ display:false } },
+      scales:{ x:{ beginAtZero:true, grid:{ color:'#eef2f1' } }, y:{ grid:{ display:false } } }
+    }
+  });
+}
+
+window.__ANE_VIEWS__ = window.__ANE_VIEWS__ || {};
+window.__ANE_VIEWS__.overview = renderOverview;
+window.__ANE_VIEWS__._buildFunnelHTML = buildFunnelHTML;
+window.__ANE_VIEWS__._renderChartStatusFinal = renderChartStatusFinal;
+})();
+</script>
+<script>
+(function(){
+"use strict";
+const C = window.__ANE_CORE__;
+const U = window.__ANE_RENDER_UTILS__;
+const STATE = window.__ANE_STATE__;
+const buildFunnelHTML = window.__ANE_VIEWS__._buildFunnelHTML;
+const renderChartStatusFinal = window.__ANE_VIEWS__._renderChartStatusFinal;
+
+function renderFunnelView(m){
+  document.getElementById('chipPeriodoFunnelFull').textContent = U.periodoLabel();
+
+  const stages = [
+    { label:'Referidos', sub:'Ventanilla + Orientación, efectivos', value:m.referidosTotal, color:U.PALETTE.ink },
+    { label:'En Control', sub:'Registrados para seguimiento', value:m.referidosEnControl, color:U.PALETTE.amber },
+    { label:'S1 Efectiva', sub:'Sesión inicial realizada', value:m.s1Efectivas, color:U.PALETTE.blue },
+    { label:'S2 Efectiva', sub:'Seguimiento estratégico', value:m.s2Efectivas, color:U.PALETTE.violet },
+    { label:'Algún Taller', sub:'PBE, CV o Entrevista', value:m.tallerTotal, color:U.PALETTE.tealDark },
+    { label:'Finalizado/Colocado', sub:'Resultado positivo', value:m.finalizados+m.contratados, color:U.PALETTE.teal },
+  ];
+  document.getElementById('fullFunnel').innerHTML = buildFunnelHTML(stages, false);
+
+  renderChartStatusFinal(m, 'chartStatusFinal2');
+
+  // Colocación: cómo consiguió trabajo
+  const labelsC = Object.keys(m.consiguioTrabajoCount).filter(l => l.toLowerCase()!=='no indica');
+  const dataC = labelsC.map(l=>m.consiguioTrabajoCount[l]);
+  const noIndica = m.consiguioTrabajoCount['No indica']||0;
+  U.mkChart('chartColocacion', {
+    type:'doughnut',
+    data:{ labels:[...labelsC, noIndica?'No indica':null].filter(Boolean), datasets:[{
+      data:[...dataC, noIndica].filter((_,i)=> i<labelsC.length || noIndica),
+      backgroundColor:[U.PALETTE.teal, U.PALETTE.blue, U.PALETTE.amber, U.PALETTE.violet, U.PALETTE.rose, U.PALETTE.inkSoft],
+      borderWidth:0
+    }]},
+    options:{ responsive:true, maintainAspectRatio:false, cutout:'62%',
+      plugins:{ legend:{ position:'bottom', labels:{ boxWidth:9, boxHeight:9, usePointStyle:true, font:{size:10.5} } } } }
+  });
+
+  // Talleres por tipo
+  U.mkChart('chartTalleres', {
+    type:'bar',
+    data:{ labels:['PBE','Revisión CV','Entrevista'], datasets:[{
+      data:[m.tallerPBE, m.tallerCV, m.tallerEntrevista],
+      backgroundColor:[U.PALETTE.blue, U.PALETTE.violet, U.PALETTE.teal], borderRadius:8, maxBarThickness:54
+    }]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } },
+      scales:{ y:{ beginAtZero:true, grid:{ color:'#eef2f1' } }, x:{ grid:{ display:false } } } }
+  });
+
+  // Motivos de abandono (top 8)
+  const motEntries = Object.entries(m.motivoAbandonoCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  U.mkChart('chartAbandono', {
+    type:'bar',
+    data:{ labels:motEntries.map(e=>e[0].length>42?e[0].slice(0,42)+'…':e[0]), datasets:[{
+      data:motEntries.map(e=>e[1]), backgroundColor:U.PALETTE.rose, borderRadius:6, maxBarThickness:22
+    }]},
+    options:{ responsive:true, maintainAspectRatio:false, indexAxis:'y',
+      plugins:{ legend:{ display:false } },
+      scales:{ x:{ beginAtZero:true, grid:{ color:'#eef2f1' } }, y:{ grid:{ display:false }, ticks:{ font:{size:11} } } } }
+  });
+}
+
+window.__ANE_VIEWS__.funnel = renderFunnelView;
+})();
+</script>
+<script>
+(function(){
+"use strict";
+const U = window.__ANE_RENDER_UTILS__;
+const STATE = window.__ANE_STATE__;
+
+let teamSort = { key:'s1ef', dir:-1 };
+
+function renderTeamView(m){
+  const totalUsuarios = m.equipo.reduce((a,e)=>a+e.usuarios,0);
+  const totalS1 = m.equipo.reduce((a,e)=>a+e.s1ef,0);
+  const totalTaller = m.equipo.reduce((a,e)=>a+e.taller,0);
+  const totalColoc = m.equipo.reduce((a,e)=>a+e.colocados,0);
+  document.getElementById('kpiGridTeam').innerHTML = [
+    U.kpiCard({icon:U.ICONS.users, color:'teal', label:'Asesores Activos', value:m.equipo.length, sub:'de 13 en el roster'}),
+    U.kpiCard({icon:U.ICONS.check, color:'blue', label:'S1 Efectivas (equipo)', value:U.fmt(totalS1), sub:U.periodoLabel()}),
+    U.kpiCard({icon:U.ICONS.briefcase, color:'amber', label:'Talleres (equipo)', value:U.fmt(totalTaller)}),
+    U.kpiCard({icon:U.ICONS.award, color:'violet', label:'Colocados (equipo)', value:U.fmt(totalColoc)}),
+  ].join('');
+
+  renderTeamTable(m);
+  renderChartCargaEquipo(m);
+}
+
+function renderTeamTable(m){
+  const rows = [...m.equipo].sort((a,b) => {
+    const k = teamSort.key;
+    const av = k==='nombre' ? a.agente : a[k==='nombre'?'agente':k];
+    const bv = k==='nombre' ? b.agente : b[k];
+    if(typeof av === 'string') return av.localeCompare(bv) * teamSort.dir;
+    return (av-bv) * teamSort.dir;
+  });
+  document.getElementById('bodyTeam').innerHTML = rows.map(r => `
+    <tr style="cursor:pointer;" data-asesor="${U.esc(r.agente)}">
+      <td class="cell-strong">${U.esc(r.agente)}</td>
+      <td>${U.fmt(r.usuarios)}</td>
+      <td>${U.fmt(r.s1ag)}</td>
+      <td>${U.fmt(r.s1ef)}</td>
+      <td>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div class="mini-bar-track" style="width:54px;"><div class="mini-bar-fill" style="width:${(r.tasaS1*100).toFixed(0)}%"></div></div>
+          <span>${U.pct(r.tasaS1)}</span>
+        </div>
+      </td>
+      <td>${U.fmt(r.s2ef)}</td>
+      <td>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div class="mini-bar-track" style="width:54px;"><div class="mini-bar-fill" style="width:${(r.tasaAvance*100).toFixed(0)}%; background:linear-gradient(90deg,#7c3aed,#5b21b6);"></div></div>
+          <span>${U.pct(r.tasaAvance)}</span>
+        </div>
+      </td>
+      <td>${U.fmt(r.taller)}</td>
+      <td><span class="badge ok">${U.fmt(r.colocados)}</span></td>
+      <td>${r.abandono ? '<span class="badge alert">'+U.fmt(r.abandono)+'</span>' : '<span class="badge no">0</span>'}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="10"><div class="empty-state"><b>Sin datos para este período</b></div></td></tr>';
+
+  document.querySelectorAll('#tableTeam tbody tr[data-asesor]').forEach(tr => {
+    tr.addEventListener('click', () => {
+      const asesor = tr.getAttribute('data-asesor');
+      document.getElementById('selAsesor').value = asesor;
+      window.__ANE_APP__.setFiltroAsesor(asesor);
+    });
+  });
+}
+
+function renderChartCargaEquipo(m){
+  const sorted = [...m.equipo].sort((a,b)=>b.usuarios-a.usuarios);
+  U.mkChart('chartCargaEquipo', {
+    type:'bar',
+    data:{ labels:sorted.map(e=>e.agente), datasets:[{ data:sorted.map(e=>e.usuarios), backgroundColor:U.PALETTE.teal, borderRadius:7, maxBarThickness:34 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } },
+      scales:{ y:{ beginAtZero:true, grid:{ color:'#eef2f1' } }, x:{ grid:{ display:false }, ticks:{ font:{size:10.5}, maxRotation:38, minRotation:38 } } } }
+  });
+}
+
+document.addEventListener('click', e => {
+  const th = e.target.closest('#tableTeam thead th[data-sort]');
+  if(!th) return;
+  const key = th.getAttribute('data-sort');
+  if(teamSort.key===key) teamSort.dir *= -1; else { teamSort.key=key; teamSort.dir=-1; }
+  window.__ANE_APP__.recomputeAndRender();
+});
+
+document.addEventListener('click', e => {
+  if(e.target.id==='btnExportTeam'){
+    const m = window.__ANE_APP__.getModel();
+    U.exportCSV('equipo_ane.csv',
+      ['Asesor','Usuarios','S1 Agendadas','S1 Efectivas','Tasa S1','S2 Efectivas','Avance S1-S2','Talleres','Colocados','Abandono'],
+      m.equipo.map(r=>[r.agente,r.usuarios,r.s1ag,r.s1ef,(r.tasaS1*100).toFixed(1)+'%',r.s2ef,(r.tasaAvance*100).toFixed(1)+'%',r.taller,r.colocados,r.abandono])
+    );
+  }
+});
+
+window.__ANE_VIEWS__.team = renderTeamView;
+})();
+</script>
+<script>
+(function(){
+"use strict";
+const U = window.__ANE_RENDER_UTILS__;
+const STATE = window.__ANE_STATE__;
+
+function renderQualityView(m){
+  document.getElementById('kpiGridQuality').innerHTML = [
+    U.kpiCard({icon:U.ICONS.inbox, color:'amber', label:'Ventanilla sin registrar', value:U.fmt(m.ventGap.length), sub:U.periodoLabel()}),
+    U.kpiCard({icon:U.ICONS.flag, color:'rose', label:'Orientación sin registrar', value:U.fmt(m.orientGap.length), sub:U.periodoLabel()}),
+    U.kpiCard({icon:U.ICONS.alert, color:'amber', label:'Cédulas duplicadas', value:U.fmt(m.duplicadosTotal), sub:'Registros posteriores al primero · no cuentan en S1'}),
+  ].join('');
+
+  document.getElementById('navBadgeQuality').textContent = m.ventGap.length + m.orientGap.length;
+
+  document.getElementById('countVentGap').textContent = m.ventGap.length;
+  document.getElementById('bodyVentGap').innerHTML = m.ventGap.slice(0,300).map(v => `
+    <tr class="row-vent">
+      <td>${U.fmtFecha(v.fecha)}</td><td class="cell-strong">${U.esc(v.usuario)}</td><td>${U.esc(v.cedula)}</td>
+      <td>${U.esc(v.agente)}</td><td><span class="badge ${/efectivo|concreta/i.test(v.estatus1)?'ok':'no'}">${U.esc(v.estatus1||'—')}</span></td>
+      <td>${U.esc(v.estatus2||'—')}</td>
+    </tr>`).join('') || emptyRow(6,'Sin pendientes de Ventanilla en este período 🎉');
+
+  document.getElementById('countOrientGap').textContent = m.orientGap.length;
+  document.getElementById('bodyOrientGap').innerHTML = m.orientGap.slice(0,300).map(o => `
+    <tr class="row-orient">
+      <td>${U.fmtFecha(o.fecha)}</td><td class="cell-strong">${U.esc(o.usuario)}</td><td>${U.esc(o.cedula)}</td>
+      <td>${U.esc(o.agente)}</td><td>${U.esc(o.orientador||'—')}</td>
+      <td><span class="badge ${/efectivo|concreta/i.test(o.estatus1)?'ok':'no'}">${U.esc(o.estatus1||'—')}</span></td>
+      <td>${U.esc(o.estatus2||'—')}</td>
+    </tr>`).join('') || emptyRow(7,'Sin pendientes de Orientación en este período 🎉');
+}
+function emptyRow(colspan, msg){ return `<tr><td colspan="${colspan}"><div class="empty-state"><b>${msg}</b></div></td></tr>`; }
+
+document.addEventListener('click', e => {
+  const m = () => window.__ANE_APP__.getModel();
+  if(e.target.id==='btnExportVentGap'){
+    U.exportCSV('ventanilla_sin_registrar.csv', ['Fecha','Usuario','Cédula','Asesor','Estatus 1ra','Estatus 2da'],
+      m().ventGap.map(v=>[U.fmtFecha(v.fecha), v.usuario, v.cedula, v.agente, v.estatus1, v.estatus2]));
+  }
+  if(e.target.id==='btnExportOrientGap'){
+    U.exportCSV('orientacion_sin_registrar.csv', ['Fecha','Usuario','Cédula','Asesor','Orientador','Estatus 1ra','Estatus 2da'],
+      m().orientGap.map(o=>[U.fmtFecha(o.fecha), o.usuario, o.cedula, o.agente, o.orientador, o.estatus1, o.estatus2]));
+  }
+});
+
+window.__ANE_VIEWS__.quality = renderQualityView;
+})();
+</script>
+<script>
+(function(){
+"use strict";
+const C = window.__ANE_CORE__;
+const A = window.__ANE_ANALYTICS__;
+const U = window.__ANE_RENDER_UTILS__;
+const STATE = window.__ANE_STATE__;
+
+const casesUI = { sort:{key:'nombre',dir:1}, filtro:'todos', search:'', page:1, pageSize:25 };
+
+function renderCasesView(m){
+  let rows = m.casosFiltrados.map(c => {
+    const cl = A.clasificar(c);
+    return { c, cl };
+  });
+
+  if(casesUI.filtro!=='todos'){
+    rows = rows.filter(({c}) => {
+      const key = A.normStatusFinal(c.statusFinal);
+      if(casesUI.filtro==='finalizado') return key==='Proceso finalizado';
+      if(casesUI.filtro==='contratado') return key==='Contratado';
+      if(casesUI.filtro==='abandono') return key==='Abandono';
+      if(casesUI.filtro==='proceso') return !key || key==='En proceso' || key==='Otro';
+      if(casesUI.filtro==='duplicados') return !!c._esDuplicado;
+      return true;
+    });
+  }
+
+  // Actualizar contador en la pestaña de duplicados
+  const dupCount = m.casosFiltrados.filter(c => c._esDuplicado).length;
+  const tabDupEl = document.getElementById('tabDupCount');
+  if(tabDupEl){ tabDupEl.textContent = dupCount > 0 ? dupCount : ''; tabDupEl.style.display = dupCount > 0 ? 'inline-flex' : 'none'; }
+  if(casesUI.search){
+    const q = casesUI.search.toLowerCase();
+    rows = rows.filter(({c}) => (c.nombre||'').toLowerCase().includes(q) || (c.cedula||'').includes(q));
+  }
+  rows.sort((ra,rb) => {
+    const map = r => ({
+      nombre:r.c.nombre, cedula:r.c.cedula||'', agente:r.c.agente||'', origen:r.c.origen||'',
+      s1:r.cl.s1Real?1:0, s2:r.cl.s2Real?1:0, taller:r.cl.tallerCount, status:r.c.statusFinal||''
+    })[casesUI.sort.key];
+    const av=map(ra), bv=map(rb);
+    if(typeof av==='string') return av.localeCompare(bv)*casesUI.sort.dir;
+    return (av-bv)*casesUI.sort.dir;
+  });
+
+  document.getElementById('casesCount').textContent = U.fmt(rows.length)+' casos';
+  const totalPages = Math.max(1, Math.ceil(rows.length/casesUI.pageSize));
+  if(casesUI.page>totalPages) casesUI.page = totalPages;
+  const start = (casesUI.page-1)*casesUI.pageSize;
+  const pageRows = rows.slice(start, start+casesUI.pageSize);
+
+  document.getElementById('bodyCases').innerHTML = pageRows.map(({c,cl}) => {
+    const isDup = !!c._esDuplicado;
+    const rowClass = isDup ? 'row-duplicado' : (c.origen==='Ventanilla'?'row-vent':c.origen==='Orientación'?'row-orient':'');
+    // Si por alguna razón el primerAsesor es el mismo que el asesor actual,
+    // no mostrar el tag redundante (ya manejado en construirModelo, pero guarda defensiva)
+    const mismoAsesor = c._primerAsesor && c.agente && c._primerAsesor === c.agente;
+    const agenteCell = isDup && !mismoAsesor
+      ? `${U.esc(c.agente||'—')} <span class="dup-tag">(Atendido primero por: ${U.esc(c._primerAsesor||'—')})</span>`
+      : U.esc(c.agente||'—');
+    const s1Cell = isDup
+      ? '<span class="badge dup">Atendido</span>'
+      : (cl.s1Real?'<span class="badge ok">✓ Efectiva</span>':(c.s1Tiene?'<span class="badge warn">Agendada</span>':'<span class="badge no">—</span>'));
+    return `<tr class="${rowClass}">
+      <td class="cell-strong">${U.esc(c.nombre)}</td>
+      <td>${U.esc(c.cedula||'—')}</td>
+      <td>${agenteCell}</td>
+      <td>${U.esc(c.origen||'—')}</td>
+      <td>${s1Cell}</td>
+      <td>${cl.s2Real?'<span class="badge ok">✓ Efectiva</span>':'<span class="badge no">—</span>'}</td>
+      <td>${cl.tallerCount?'<span class="badge ok">'+cl.tallerCount+'</span>':'<span class="badge no">0</span>'}</td>
+      <td>${statusBadge(c.statusFinal)}</td>
+      <td><input class="obs-input" data-ced="${U.esc(c.cedula)}" value="${U.esc(U.getObs(c.cedula))}" placeholder="Agregar nota..."></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="9"><div class="empty-state"><b>Sin casos que coincidan con el filtro</b></div></td></tr>';
+
+  document.getElementById('pagInfo').textContent = casesUI.page+' / '+totalPages;
+  document.getElementById('pagPrev').disabled = casesUI.page<=1;
+  document.getElementById('pagNext').disabled = casesUI.page>=totalPages;
+
+  document.querySelectorAll('#bodyCases .obs-input').forEach(inp => {
+    inp.addEventListener('change', () => U.setObs(inp.getAttribute('data-ced'), inp.value));
+  });
+
+  window.__ANE_CASES_EXPORT__ = () => rows.map(({c,cl}) => [
+    c.nombre, c.cedula, c.agente, c.origen,
+    c._esDuplicado ? 'Duplicado (primero: '+c._primerAsesor+')' : (cl.s1Real?'Efectiva':(c.s1Tiene?'Agendada':'')),
+    cl.s2Real?'Efectiva':'', cl.tallerCount, c.statusFinal, U.getObs(c.cedula)
+  ]);
+}
+function statusBadge(st){
+  const key = A.normStatusFinal(st);
+  if(!key) return '<span class="badge no">Sin definir</span>';
+  if(key==='Abandono') return '<span class="badge alert">'+U.esc(st)+'</span>';
+  if(key==='Contratado') return '<span class="badge ok">'+U.esc(st)+'</span>';
+  if(key==='Proceso finalizado') return '<span class="badge ok">'+U.esc(st)+'</span>';
+  return '<span class="badge warn">'+U.esc(st)+'</span>';
+}
+
+document.addEventListener('click', e => {
+  const th = e.target.closest('#tableCases thead th[data-sort]');
+  if(th){
+    const key = th.getAttribute('data-sort');
+    if(casesUI.sort.key===key) casesUI.sort.dir*=-1; else { casesUI.sort.key=key; casesUI.sort.dir=1; }
+    window.__ANE_APP__.renderActiveView();
+  }
+  const fbtn = e.target.closest('#filterEstado button');
+  if(fbtn){
+    document.querySelectorAll('#filterEstado button').forEach(b=>b.classList.remove('active'));
+    fbtn.classList.add('active'); casesUI.filtro = fbtn.getAttribute('data-f'); casesUI.page=1;
+    window.__ANE_APP__.renderActiveView();
+  }
+  if(e.target.id==='pagPrev'){ casesUI.page--; window.__ANE_APP__.renderActiveView(); }
+  if(e.target.id==='pagNext'){ casesUI.page++; window.__ANE_APP__.renderActiveView(); }
+  if(e.target.id==='btnExportCases'){
+    U.exportCSV('casos_ane.csv', ['Usuario','Cédula','Asesor','Origen','S1','S2','Talleres','Estado','Observaciones'], window.__ANE_CASES_EXPORT__());
+  }
+});
+document.addEventListener('input', e => {
+  if(e.target.id==='globalSearch'){ casesUI.search = e.target.value; casesUI.page=1; window.__ANE_APP__.renderActiveView(); }
+});
+
+window.__ANE_VIEWS__.cases = renderCasesView;
+})();
+</script>
+<script>
+(function(){
+"use strict";
+const U = window.__ANE_RENDER_UTILS__;
+
+function renderWorkloadView(m){
+  renderHeatmap(m.heat);
+
+  U.mkChart('chartSesionesMes', {
+    type:'bar',
+    data:{ labels:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Set','Oct','Nov','Dic'], datasets:[{
+      data:m.sesionesPorMes, backgroundColor:U.PALETTE.teal, borderRadius:6, maxBarThickness:30
+    }]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } },
+      scales:{ y:{ beginAtZero:true, grid:{ color:'#eef2f1' } }, x:{ grid:{ display:false } } } }
+  });
+
+  const enviada = m.encuestaEnviada, noEnviada = Math.max(0, m.encuestaTotal-m.encuestaEnviada);
+  U.mkChart('chartEncuesta', {
+    type:'doughnut',
+    data:{ labels:['Enviada','No enviada'], datasets:[{ data:[enviada, noEnviada], backgroundColor:[U.PALETTE.teal, U.PALETTE.inkSoft], borderWidth:0 }] },
+    options:{ responsive:true, maintainAspectRatio:false, cutout:'70%', plugins:{ legend:{ position:'bottom', labels:{boxWidth:9,boxHeight:9,usePointStyle:true} } } }
+  });
+}
+
+function renderHeatmap(heat){
+  const dias = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  const horas = Array.from({length:15}, (_,i)=>i+7);
+  let max = 1;
+  heat.forEach(row => row.forEach(v => { if(v>max) max=v; }));
+
+  let html = '<div class="hm-corner"></div>';
+  horas.forEach(h => html += `<div class="hm-hour">${h}h</div>`);
+
+  dias.forEach((d, di) => {
+    html += `<div class="hm-day">${d}</div>`;
+    horas.forEach((h, hi) => {
+      const v = heat[di][hi];
+      const intensity = v/max;
+      const color = v===0 ? 'var(--surface-sunken)' : heatColor(intensity);
+      html += `<div class="hm-cell" style="background:${color};" data-tip="${d} ${h}h: ${v} sesión(es)"></div>`;
+    });
+  });
+  document.getElementById('heatmapGrid').innerHTML = html;
+}
+function heatColor(t){
+  // escala teal: claro -> oscuro institucional
+  const stops = [[227,247,243],[95,209,195],[20,184,166],[15,98,115],[12,52,48]];
+  const idx = Math.min(stops.length-2, Math.floor(t*(stops.length-1)));
+  const frac = t*(stops.length-1) - idx;
+  const a = stops[idx], b = stops[idx+1];
+  const r = Math.round(a[0]+(b[0]-a[0])*frac), g = Math.round(a[1]+(b[1]-a[1])*frac), bl = Math.round(a[2]+(b[2]-a[2])*frac);
+  return `rgb(${r},${g},${bl})`;
+}
+
+window.__ANE_VIEWS__.workload = renderWorkloadView;
+})();
+</script>
+<script>
+(function(){
+"use strict";
+const C = window.__ANE_CORE__;
+const A = window.__ANE_ANALYTICS__;
+const P = window.__ANE_PARSERS__;
+const U = window.__ANE_RENDER_UTILS__;
+const STATE = window.__ANE_STATE__;
+const VIEWS = window.__ANE_VIEWS__;
+
+const PAGE_META = {
+  overview:{ title:'Resumen Ejecutivo', sub:'Vista consolidada del proceso de intermediación laboral' },
+  funnel:{ title:'Embudo & Resultados', sub:'Conversión completa, del referido al resultado final' },
+  team:{ title:'Equipo', sub:'Rendimiento comparado de los 13 asesores' },
+  quality:{ title:'Validación de Datos', sub:'Brecha de captura y calidad de la información' },
+  cases:{ title:'Casos', sub:'Seguimiento detallado con observaciones por caso' },
+  workload:{ title:'Carga de Trabajo', sub:'Distribución horaria de las sesiones agendadas' },
+};
+
+function recompute(){ STATE._model = A.construirModelo(); updateNavBadge(); }
+function getModel(){ return STATE._model || A.construirModelo(); }
+function renderActiveView(){
+  const fn = VIEWS[STATE.vistaActual];
+  if(fn) fn(getModel());
+}
+function recomputeAndRender(){ recompute(); renderActiveView(); }
+function updateNavBadge(){
+  const m = STATE._model;
+  if(!m) return;
+  const el = document.getElementById('navBadgeQuality');
+  const n = m.ventGap.length + m.orientGap.length;
+  el.textContent = n>99 ? '99+' : n;
+  el.style.display = n>0 ? 'inline-flex' : 'none';
+}
+function updateAdvisorPill(){
+  const av = document.getElementById('advisorAvatar');
+  const nm = document.getElementById('advisorName');
+  const sb = document.getElementById('advisorSub');
+  if(STATE.filtroAsesor){
+    av.textContent = U.initials(STATE.filtroAsesor);
+    nm.textContent = STATE.filtroAsesor;
+    sb.textContent = 'Vista individual';
+  } else {
+    av.textContent = 'EQ';
+    nm.textContent = 'Equipo completo';
+    sb.textContent = (STATE.control.length? new Set(STATE.control.map(c=>c.agente)).size : 13)+' asesores';
+  }
+}
+function setFiltroAsesor(val){ STATE.filtroAsesor = val; updateAdvisorPill(); recomputeAndRender(); }
+function setFiltroPeriodo(val){ STATE.filtroPeriodo = val; recomputeAndRender(); }
+
+function switchView(view){
+  STATE.vistaActual = view;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.getAttribute('data-view')===view));
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id==='view-'+view));
+  document.getElementById('pageTitle').textContent = PAGE_META[view].title;
+  document.getElementById('pageSubtitle').textContent = PAGE_META[view].sub;
+  renderActiveView();
+}
+
+window.__ANE_APP__ = { setFiltroAsesor, setFiltroPeriodo, recomputeAndRender, renderActiveView, getModel, switchView };
+
+/* ====================================================================
+   VERIFICACIÓN DE LIBRERÍAS EXTERNAS (XLSX / Chart.js)
+   Si la red institucional bloquea el CDN principal, el loader del
+   <head> ya intentó automáticamente con jsDelivr y unpkg. Aquí solo
+   confirmamos el resultado, lo mostramos con claridad en pantalla, y
+   evitamos que el botón se pueda presionar antes de tiempo (la causa
+   real del error "XLSX is not defined" reportado).
+   ==================================================================== */
+let libsReady = false;
+let libsFailedMsg = '';
+function checkLibsReady(){
+  const ok = typeof XLSX !== 'undefined' && typeof Chart !== 'undefined';
+  if(ok){ libsReady = true; return true; }
+  if(window.__LIBS_FAILED__ && window.__LIBS_FAILED__.length){
+    libsFailedMsg = 'No se pudo cargar: '+window.__LIBS_FAILED__.join(', ');
+  }
+  return false;
+}
+function updateLibStatusUI(){
+  const el = document.getElementById('libStatus');
+  const txt = document.getElementById('libStatusText');
+  if(libsReady){
+    el.className = 'lib-status ready';
+    txt.textContent = 'Componentes cargados correctamente';
+  } else if(libsFailedMsg){
+    el.className = 'lib-status failed';
+    txt.textContent = 'No se pudieron cargar componentes necesarios desde internet. Verifica tu conexión; si estás en una red institucional, solicita a TI permitir los dominios cdnjs.cloudflare.com, cdn.jsdelivr.net y unpkg.com.';
+  } else {
+    el.className = 'lib-status checking';
+    txt.textContent = 'Cargando componentes necesarios…';
+  }
+  refreshProcesarBtn();
+}
+function refreshProcesarBtn(){
+  const allFiles = fileSlots.control && fileSlots.ventanilla && fileSlots.orientacion;
+  document.getElementById('btnProcesar').disabled = !(allFiles && libsReady);
+}
+(function watchdog(){
+  let tries = 0;
+  const interval = setInterval(() => {
+    tries++;
+    if(checkLibsReady() || (window.__LIBS_FAILED__ && window.__LIBS_FAILED__.length>=1) || tries>=40){
+      if(!libsReady && !libsFailedMsg) libsFailedMsg = 'Tiempo de espera agotado cargando componentes.';
+      clearInterval(interval);
+      updateLibStatusUI();
+    } else {
+      updateLibStatusUI();
+    }
+  }, 250);
+})();
+
+/* ====================================================================
+   FLUJO DE CARGA DE ARCHIVOS
+   ==================================================================== */
+const fileSlots = { control:null, ventanilla:null, orientacion:null };
+function wireDropzone(inputId, dzId, fileLabelId, slotKey){
+  const input = document.getElementById(inputId);
+  input.addEventListener('change', () => {
+    const f = input.files[0];
+    fileSlots[slotKey] = f || null;
+    const dz = document.getElementById(dzId);
+    const lbl = document.getElementById(fileLabelId);
+    if(f){ dz.classList.add('filled'); lbl.textContent = f.name; }
+    else { dz.classList.remove('filled'); lbl.textContent = ''; }
+    refreshProcesarBtn();
+  });
+}
+wireDropzone('fileControl','dzControl','dzControlFile','control');
+wireDropzone('fileVentanilla','dzVentanilla','dzVentanillaFile','ventanilla');
+wireDropzone('fileOrientacion','dzOrientacion','dzOrientacionFile','orientacion');
+
+function showUploadStatus(msg, type){
+  const el = document.getElementById('uploadStatus');
+  el.className = 'upload-status show '+type;
+  el.innerHTML = (type==='info'?'<span class="spinner"></span>':'')+'<span>'+msg+'</span>';
+}
+
+document.getElementById('btnProcesar').addEventListener('click', async () => {
+  const btn = document.getElementById('btnProcesar');
+  if(!checkLibsReady()){
+    showUploadStatus('Los componentes necesarios (XLSX/Chart.js) todavía no están disponibles. '+(libsFailedMsg||'Espera unos segundos e intenta de nuevo.'), 'error');
+    return;
+  }
+  btn.disabled = true;
+  showUploadStatus('Leyendo y analizando los 3 archivos…', 'info');
+  try{
+    const [wbControl, wbVent, wbOrient] = await Promise.all([
+      P.leerArchivo(fileSlots.control), P.leerArchivo(fileSlots.ventanilla), P.leerArchivo(fileSlots.orientacion)
+    ]);
+    const { casos:control, badDates } = P.parseControl(wbControl);
+    const ventanilla = P.parseVentanilla(wbVent);
+    const orientacion = P.parseOrientacion(wbOrient);
+
+    if(control.length===0) throw new Error('El archivo de Control no tiene filas reconocibles. Verifica que sea el archivo correcto (hoja "Control de Citas 2026").');
+
+    STATE.control = control; STATE.ventanilla = ventanilla; STATE.orientacion = orientacion; STATE.badDates = badDates;
+    STATE.cargado = true;
+
+    const selAsesor = document.getElementById('selAsesor');
+    selAsesor.innerHTML = '<option value="">Todo el equipo</option>' + C.ROSTER.map(a=>`<option value="${U.esc(a.corto)}">${U.esc(a.corto)}</option>`).join('');
+
+    showUploadStatus(`Listo: ${U.fmt(control.length)} casos en Control · ${U.fmt(ventanilla.length)} de Ventanilla · ${U.fmt(orientacion.length)} de Orientación.`, 'success');
+
+    setTimeout(() => {
+      document.getElementById('uploadScreen').style.display = 'none';
+      document.getElementById('app').classList.add('active');
+      updateAdvisorPill();
+      switchView('overview');
+      recomputeAndRender();
+    }, 550);
+  }catch(err){
+    console.error(err);
+    showUploadStatus('Error: '+err.message, 'error');
+    btn.disabled = false;
+  }
+});
+
+/* ====================================================================
+   NAVEGACIÓN Y FILTROS GLOBALES
+   ==================================================================== */
+document.querySelectorAll('.nav-item[data-view]').forEach(item => {
+  item.addEventListener('click', () => switchView(item.getAttribute('data-view')));
+});
+document.addEventListener('click', e => {
+  const g = e.target.closest('[data-goto]');
+  if(g) switchView(g.getAttribute('data-goto'));
+});
+document.getElementById('selAsesor').addEventListener('change', e => setFiltroAsesor(e.target.value));
+document.getElementById('selPeriodo').addEventListener('change', e => setFiltroPeriodo(e.target.value));
+
+document.getElementById('btnCollapse').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+});
+document.getElementById('btnPrint').addEventListener('click', () => window.print());
+
+document.getElementById('btnRefresh').addEventListener('click', () => {
+  document.getElementById('modalTitle').textContent = '¿Cargar nuevos archivos?';
+  document.getElementById('modalText').textContent = 'Esto reemplazará los datos actuales del dashboard. Las observaciones guardadas en este navegador se mantienen.';
+  document.getElementById('modalConfirm').classList.add('show');
+});
+document.getElementById('modalCancel').addEventListener('click', () => document.getElementById('modalConfirm').classList.remove('show'));
+document.getElementById('modalConfirmBtn').addEventListener('click', () => {
+  document.getElementById('modalConfirm').classList.remove('show');
+  document.getElementById('app').classList.remove('active');
+  document.getElementById('uploadScreen').style.display = 'flex';
+  document.getElementById('uploadStatus').className = 'upload-status';
+  ['control','ventanilla','orientacion'].forEach(k => {
+    fileSlots[k] = null;
+    document.getElementById('file'+k.charAt(0).toUpperCase()+k.slice(1)).value = '';
+    document.getElementById('dz'+k.charAt(0).toUpperCase()+k.slice(1)).classList.remove('filled');
+    document.getElementById('dz'+k.charAt(0).toUpperCase()+k.slice(1)+'File').textContent = '';
+  });
+  refreshProcesarBtn();
+});
+
+})();
+</script>

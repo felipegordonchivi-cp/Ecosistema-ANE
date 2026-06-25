@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ecosistema ANE · Agencia Nacional del Empleo · Costa Rica</title>
+<meta name="description" content="Portal integrado del Ecosistema ANE: ATS, Simulador de Entrevistas, Centro de Control de Intermediación y Laboratorio IA ESCO-CR.">
+<style>
+/* ================================================================
+   ECOSISTEMA ANE — PORTAL INTEGRADO v16
+   4 módulos embebidos: ATS · Simulador · Dashboard · Laboratorio IA
+   ================================================================ */
+:root {
+  --bg: #041616;
+  --bg2: #020d0d;
+  --panel: #082020;
+  --panel2: #0d2d2d;
+  --line: rgba(125,211,211,.16);
+  --teal: #0d7373;
+  --teal2: #1a9595;
+  --mint: #7dd3d3;
+  --emerald: #22c55e;
+  --amber: #eab308;
+  --red: #ef4444;
+  --ink: #f7ffff;
+  --muted: #8abbbb;
+  --muted2: #4f8585;
+  --shadow: 0 30px 90px rgba(0,0,0,.42);
+  --radius: 20px;
+  --sidebar-w: 278px;
+  --topbar-h: 0px;
+  --font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+[data-theme="light"] {
+  --bg: #eef4f3;
+  --bg2: #f8fbfa;
+  --panel: #ffffff;
+  --panel2: #f4f8f7;
+  --line: rgba(13,115,115,.18);
+  --ink: #0b1f1c;
+  --muted: #5f7270;
+  --muted2: #8a9c99;
+  --shadow: 0 24px 70px rgba(11,31,28,.12);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  overflow: hidden;
+  height: 100vh;
+}
+button, a { font-family: inherit; }
+a { color: inherit; }
+
+/* ---- Layout shell ---- */
+.shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ---- Ambient ---- */
+#ambient {
+  position: fixed;
+  inset: 0;
+  z-index: -3;
+  pointer-events: none;
+  background:
+    radial-gradient(900px 600px at 10% -5%, rgba(26,149,149,.32), transparent 55%),
+    radial-gradient(800px 560px at 100% 15%, rgba(13,115,115,.14), transparent 55%),
+    linear-gradient(135deg, var(--bg2), var(--bg) 52%, #062424);
+}
+[data-theme="light"] #ambient {
+  background:
+    radial-gradient(800px 500px at 10% -5%, rgba(20,184,166,.15), transparent 56%),
+    radial-gradient(700px 480px at 100% 8%, rgba(13,115,115,.10), transparent 54%),
+    linear-gradient(135deg, var(--bg2), var(--bg));
+}
+#grid {
+  position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  background-image: linear-gradient(rgba(125,211,211,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(125,211,211,.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: linear-gradient(to bottom, black, transparent 88%);
+}
+
+/* ---- Sidebar ---- */
+.sidebar {
+  height: 100vh;
+  border-right: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(8,32,32,.96), rgba(4,22,22,.90));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 20px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 30;
+  position: relative;
+}
+[data-theme="light"] .sidebar {
+  background: rgba(255,255,255,.88);
+  border-color: var(--line);
+}
+
+/* Brand */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 8px 16px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.brandmark {
+  width: 44px; height: 44px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, var(--teal), var(--teal2));
+  display: grid; place-items: center;
+  box-shadow: 0 10px 28px rgba(13,115,115,.38);
+  flex-shrink: 0;
+}
+.brandmark svg { width: 28px; height: 24px; }
+.brand-text b { display: block; font-size: 14px; letter-spacing: -.02em; }
+.brand-text span { color: var(--mint); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; font-weight: 800; }
+
+/* Nav */
+.navlabel {
+  font-size: 10px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  font-weight: 900;
+  margin: 4px 10px 2px;
+}
+.nav { display: grid; gap: 5px; }
+.nav-btn {
+  width: 100%;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 13px;
+  padding: 10px 12px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  transition: .15s;
+  position: relative;
+}
+.nav-btn:hover { background: rgba(13,115,115,.16); border-color: rgba(125,211,211,.18); color: var(--ink); }
+.nav-btn.active { background: rgba(13,115,115,.22); border-color: rgba(125,211,211,.28); color: var(--ink); }
+[data-theme="light"] .nav-btn:hover,
+[data-theme="light"] .nav-btn.active { background: #e3f7f3; color: #0b1f1c; border-color: rgba(13,115,115,.25); }
+.nav-ico {
+  width: 28px; height: 28px;
+  border-radius: 9px;
+  display: grid; place-items: center;
+  background: rgba(13,115,115,.18);
+  color: var(--mint);
+  flex-shrink: 0;
+  font-size: 14px;
+}
+.nav-badge {
+  margin-left: auto;
+  font-size: 10px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: 3px 7px;
+  font-weight: 900;
+  border: 1px solid rgba(125,211,211,.24);
+  color: var(--mint);
+  background: rgba(13,115,115,.14);
+}
+.nav-badge.live { color: var(--emerald); background: rgba(34,197,94,.1); border-color: rgba(34,197,94,.3); }
+.nav-badge.new { color: var(--amber); background: rgba(234,179,8,.1); border-color: rgba(234,179,8,.3); }
+
+/* Loading indicator per btn */
+.nav-btn .loading-dot {
+  display: none;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--teal2);
+  margin-left: auto;
+  animation: pulse-dot 1s infinite;
+}
+.nav-btn.loading .loading-dot { display: block; }
+.nav-btn.loading .nav-badge { display: none; }
+@keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+/* Sidebar bottom */
+.sidebar-bottom { margin-top: auto; }
+.sidecard {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px;
+  background: rgba(13,45,45,.42);
+  margin-bottom: 10px;
+}
+[data-theme="light"] .sidecard { background: var(--panel2); }
+.sidecard b { display: block; font-size: 12px; margin-bottom: 4px; }
+.sidecard p { margin: 0 0 10px; color: var(--muted); font-size: 11px; line-height: 1.55; }
+.mini-bar { height: 6px; border-radius: 999px; background: rgba(125,211,211,.1); overflow: hidden; }
+.mini-bar i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, var(--teal), var(--teal2)); border-radius: 999px; }
+.sidebar-utils { display: flex; gap: 8px; }
+.util-btn {
+  flex: 1;
+  border: 1px solid var(--line);
+  background: rgba(13,45,45,.52);
+  color: var(--muted);
+  border-radius: 11px;
+  padding: 8px 6px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+  transition: .15s;
+}
+.util-btn:hover { border-color: rgba(125,211,211,.35); color: var(--ink); }
+[data-theme="light"] .util-btn { background: #fff; }
+
+/* ---- Main area ---- */
+.main-area {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ---- Topbar ---- */
+.topbar {
+  height: 58px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(4,22,22,.80);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 24px;
+  flex-shrink: 0;
+  z-index: 20;
+}
+[data-theme="light"] .topbar { background: rgba(255,255,255,.88); }
+.topbar-info { margin-right: auto; }
+.topbar-info b { display: block; font-size: 13px; }
+.topbar-info span { display: block; color: var(--muted); font-size: 11px; margin-top: 1px; }
+.topbar-btn {
+  border: 1px solid var(--line);
+  background: rgba(13,45,45,.52);
+  color: var(--ink);
+  border-radius: 12px;
+  height: 36px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 12px;
+  text-decoration: none;
+  transition: .15s;
+}
+.topbar-btn:hover { border-color: rgba(125,211,211,.4); }
+.topbar-btn.primary {
+  background: linear-gradient(135deg, var(--teal), var(--teal2));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 10px 28px rgba(13,115,115,.3);
+}
+[data-theme="light"] .topbar-btn { background: #fff; }
+
+/* ---- Content panels ---- */
+.content-area {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* HOME panel */
+.home-panel {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  padding: 28px 32px 48px;
+  display: none;
+}
+.home-panel.visible { display: block; }
+
+/* MODULE iframes */
+.module-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #fff;
+  display: none;
+}
+.module-frame.visible { display: block; }
+
+/* Loading overlay */
+.load-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 5;
+}
+.load-overlay.show { display: flex; }
+.load-spinner {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  border: 3px solid rgba(125,211,211,.15);
+  border-top-color: var(--teal2);
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.load-overlay p { color: var(--muted); font-size: 13px; font-weight: 700; }
+
+/* ---- HOME content ---- */
+.hero-home {
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(8,32,32,.90), rgba(13,45,45,.62));
+  box-shadow: var(--shadow);
+  padding: 40px;
+  position: relative;
+  margin-bottom: 24px;
+}
+.hero-home::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(700px 300px at 75% 20%, rgba(125,211,211,.14), transparent 60%);
+  pointer-events: none;
+}
+[data-theme="light"] .hero-home { background: linear-gradient(135deg, #fff, #f4f8f7); }
+.hero-home > * { position: relative; }
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #c9ffff;
+  background: rgba(13,115,115,.18);
+  border: 1px solid rgba(125,211,211,.26);
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+[data-theme="light"] .eyebrow { color: #0d7373; background: #e3f7f3; }
+.pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--emerald); box-shadow: 0 0 0 7px rgba(34,197,94,.12); display: inline-block; }
+.hero-home h1 {
+  font-size: clamp(32px, 4.5vw, 62px);
+  line-height: .9;
+  letter-spacing: -.07em;
+  margin: 0 0 16px;
+}
+.hero-home h1 span {
+  display: block;
+  color: transparent;
+  background: linear-gradient(90deg, #fff, var(--mint), #c7fffb);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+[data-theme="light"] .hero-home h1 span {
+  background: linear-gradient(90deg, #0b1f1c, #0d7373);
+  -webkit-background-clip: text; background-clip: text;
+}
+.hero-lead { color: var(--muted); font-size: 15px; line-height: 1.72; max-width: 680px; margin-bottom: 24px; }
+.hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn {
+  border: 1px solid var(--line);
+  background: rgba(13,45,45,.55);
+  color: var(--ink);
+  border-radius: 14px;
+  padding: 11px 16px;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  text-decoration: none;
+  font-weight: 900;
+  font-size: 13px;
+  cursor: pointer;
+  transition: .15s;
+}
+.btn:hover { border-color: rgba(125,211,211,.4); transform: translateY(-1px); }
+.btn.primary { background: linear-gradient(135deg, var(--teal), var(--teal2)); border-color: transparent; color: #fff; box-shadow: 0 12px 32px rgba(13,115,115,.32); }
+[data-theme="light"] .btn { background: #fff; border-color: var(--line); }
+
+/* KPI strip */
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+.kpi {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(8,32,32,.72);
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+}
+[data-theme="light"] .kpi { background: #fff; }
+.kpi small { color: var(--muted); font-weight: 800; text-transform: uppercase; letter-spacing: .08em; font-size: 10px; }
+.kpi b { display: block; font-size: 30px; letter-spacing: -.05em; margin-top: 6px; }
+.kpi span { color: var(--mint); font-size: 11px; font-weight: 800; }
+
+/* Module cards */
+.modules-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px; }
+.module-card {
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: rgba(8,32,32,.80);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  cursor: pointer;
+  transition: .18s;
+  position: relative;
+  overflow: hidden;
+}
+.module-card::after {
+  content: "";
+  position: absolute;
+  right: -30px; top: -30px;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(125,211,211,.12), transparent 66%);
+}
+.module-card:hover { transform: translateY(-3px); border-color: rgba(125,211,211,.38); box-shadow: 0 20px 60px rgba(0,0,0,.28); }
+[data-theme="light"] .module-card { background: #fff; }
+[data-theme="light"] .module-card:hover { box-shadow: 0 20px 60px rgba(11,31,28,.12); }
+.mod-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; position: relative; }
+.mod-icon {
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  background: rgba(13,115,115,.18);
+  border: 1px solid rgba(125,211,211,.18);
+  display: grid; place-items: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.mod-status {
+  font-size: 10px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  font-weight: 900;
+  border-radius: 999px;
+  padding: 5px 8px;
+  border: 1px solid rgba(34,197,94,.3);
+  color: var(--emerald);
+  background: rgba(34,197,94,.1);
+}
+.mod-status.ia { color: var(--amber); background: rgba(234,179,8,.1); border-color: rgba(234,179,8,.3); }
+.module-card h3 { font-size: 17px; letter-spacing: -.03em; margin: 0; position: relative; }
+.module-card p { color: var(--muted); font-size: 12px; line-height: 1.65; margin: 0; position: relative; }
+.mod-tags { display: flex; flex-wrap: wrap; gap: 6px; position: relative; }
+.mod-tag {
+  font-size: 10px; color: var(--muted);
+  background: rgba(125,211,211,.07);
+  border: 1px solid rgba(125,211,211,.14);
+  border-radius: 999px; padding: 4px 8px;
+}
+.mod-cta {
+  margin-top: auto;
+  display: flex; gap: 8px;
+  position: relative;
+}
+.mod-open {
+  flex: 1;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--teal), var(--teal2));
+  color: #fff;
+  font-weight: 900;
+  font-size: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+  text-align: center;
+  transition: .15s;
+}
+.mod-open:hover { opacity: .88; }
+.mod-manual {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(13,45,45,.52);
+  color: var(--ink);
+  font-weight: 900;
+  font-size: 11px;
+  padding: 10px 12px;
+  text-decoration: none;
+  display: inline-flex; align-items: center;
+  transition: .15s;
+}
+.mod-manual:hover { border-color: rgba(125,211,211,.35); }
+[data-theme="light"] .mod-manual { background: #fff; }
+
+/* Flow section */
+.flow-section { margin-bottom: 24px; }
+.section-h { display: flex; justify-content: space-between; align-items: flex-end; gap: 18px; margin-bottom: 14px; }
+.section-h h2 { margin: 0; font-size: 20px; letter-spacing: -.03em; }
+.section-h p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+.flow { border: 1px solid var(--line); border-radius: 22px; background: rgba(8,32,32,.70); padding: 18px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+[data-theme="light"] .flow { background: #fff; }
+.step { border: 1px solid var(--line); border-radius: 16px; background: rgba(13,45,45,.38); padding: 16px; position: relative; }
+[data-theme="light"] .step { background: var(--panel2); }
+.step:not(:last-child)::after { content: "→"; position: absolute; right: -20px; top: 50%; transform: translateY(-50%); color: var(--mint); font-weight: 900; font-size: 18px; }
+.step-num { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, var(--teal), var(--teal2)); color: #fff; font-weight: 900; font-size: 13px; margin-bottom: 10px; }
+.step b { display: block; font-size: 13px; margin-bottom: 5px; }
+.step p { font-size: 11px; color: var(--muted); margin: 0; line-height: 1.55; }
+
+/* Footer */
+.home-footer {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(8,32,32,.60);
+  padding: 18px;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  color: var(--muted);
+  font-size: 11px;
+}
+[data-theme="light"] .home-footer { background: #fff; }
+.home-footer b { color: var(--ink); }
+.home-footer a { color: var(--mint); text-decoration: none; }
+.home-footer a:hover { text-decoration: underline; }
+
+/* Audit panel */
+.audit-panel {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  padding: 28px 32px 48px;
+  display: none;
+}
+.audit-panel.visible { display: block; }
+.audit-card {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(8,32,32,.72);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+[data-theme="light"] .audit-card { background: #fff; }
+.audit-card h3 { font-size: 16px; margin: 0 0 10px; }
+.audit-card p { color: var(--muted); font-size: 13px; line-height: 1.65; margin: 0 0 8px; }
+.audit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.status-ok { color: var(--emerald); }
+.status-warn { color: var(--amber); }
+.status-info { color: var(--mint); }
+.tag-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px; }
+.atag {
+  font-size: 11px;
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-weight: 800;
+  border: 1px solid rgba(125,211,211,.22);
+  background: rgba(125,211,211,.07);
+  color: var(--muted);
+}
+.atag.ok { color: var(--emerald); background: rgba(34,197,94,.09); border-color: rgba(34,197,94,.25); }
+.atag.warn { color: var(--amber); background: rgba(234,179,8,.09); border-color: rgba(234,179,8,.25); }
+.atag.info { color: var(--mint); background: rgba(13,115,115,.12); border-color: rgba(125,211,211,.28); }
+.score-row { display: flex; align-items: center; gap: 12px; margin: 10px 0; }
+.score-circle {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  background: conic-gradient(var(--teal2) 0deg, var(--teal2) 320deg, rgba(125,211,211,.12) 320deg);
+  position: relative;
+}
+.score-circle::after { content: ""; position: absolute; inset: 10px; border-radius: 50%; background: var(--panel); }
+.score-circle span { position: relative; z-index: 1; font-weight: 900; font-size: 15px; }
+.score-desc { color: var(--muted); font-size: 13px; line-height: 1.6; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  left: 50%; bottom: 20px;
+  transform: translateX(-50%) translateY(16px);
+  background: #071c1c;
+  color: #d9ffff;
+  border: 1px solid rgba(125,211,211,.22);
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 12px;
+  font-weight: 800;
+  opacity: 0;
+  pointer-events: none;
+  transition: .25s;
+  z-index: 100;
+  box-shadow: 0 16px 40px rgba(0,0,0,.32);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Mobile toggle */
+.menu-toggle {
+  display: none;
+  border: 1px solid var(--line);
+  background: rgba(13,45,45,.52);
+  color: var(--ink);
+  border-radius: 10px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 1100px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .flow { grid-template-columns: repeat(2, 1fr); }
+  .step:nth-child(2)::after { display: none; }
+}
+@media (max-width: 820px) {
+  :root { --sidebar-w: 0px; }
+  .shell { grid-template-columns: 1fr; }
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: 270px;
+    transform: translateX(-100%);
+    transition: transform .28s;
+    z-index: 50;
+  }
+  .sidebar.open { transform: translateX(0); }
+  .menu-toggle { display: inline-flex; }
+  .modules-grid { grid-template-columns: 1fr; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .flow { grid-template-columns: 1fr; }
+  .step::after { display: none !important; }
+  .home-panel, .audit-panel { padding: 16px 16px 40px; }
+  .hero-home { padding: 24px; }
+}
+@media (max-width: 480px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .topbar { padding: 0 14px; }
+}
+</style>
+</head>
+<body>
+<div id="ambient"></div>
+<div id="grid"></div>
+
+<div class="shell">
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar" aria-label="Navegación del ecosistema">
+    <div class="brand">
+      <div class="brandmark" aria-hidden="true">
+        <svg viewBox="0 0 32 28" fill="none">
+          <circle cx="4" cy="4" r="4" fill="#fff"/><circle cx="28" cy="4" r="4" fill="#fff"/>
+          <circle cx="4" cy="14" r="4" fill="#fff"/><circle cx="28" cy="14" r="4" fill="#fff"/>
+          <circle cx="4" cy="24" r="4" fill="#fff"/><circle cx="28" cy="24" r="4" fill="#fff"/>
+          <line x1="8" y1="4" x2="24" y2="4" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="8" y1="14" x2="24" y2="14" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="8" y1="24" x2="24" y2="24" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="4" y1="8" x2="4" y2="10" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="28" y1="8" x2="28" y2="10" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="4" y1="18" x2="4" y2="20" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="28" y1="18" x2="28" y2="20" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <b>Ecosistema ANE</b>
+        <span>Costa Rica · v16</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="navlabel">Centro de mando</div>
+      <nav class="nav">
+        <button class="nav-btn active" data-panel="home" onclick="switchPanel('home', this, 'Inicio ejecutivo', 'Panel maestro del ecosistema ANE')">
+          <span class="nav-ico">⌁</span>
+          <span>Inicio ejecutivo</span>
+          <div class="loading-dot"></div>
+        </button>
+        <button class="nav-btn" data-panel="audit" onclick="switchPanel('audit', this, 'Auditoría del ecosistema', 'Estado técnico y diagnóstico de los 4 módulos')">
+          <span class="nav-ico">◈</span>
+          <span>Auditoría técnica</span>
+          <div class="loading-dot"></div>
+        </button>
+      </nav>
+    </div>
+
+    <div>
+      <div class="navlabel">Módulos activos</div>
+      <nav class="nav">
+        <button class="nav-btn" data-panel="ats" data-src="app-ats-ane.html"
+          onclick="loadModule('ats','app-ats-ane.html',this,'ATS ANE · Preselección curricular','Motor de ranking y evaluación de CV por competencias ESCO-CR')">
+          <span class="nav-ico">☑</span>
+          <span>ATS · Ranking CV</span>
+          <span class="nav-badge live">Activo</span>
+          <div class="loading-dot"></div>
+        </button>
+        <button class="nav-btn" data-panel="sim" data-src="app-simulador-entrevistas-ane.html"
+          onclick="loadModule('sim','app-simulador-entrevistas-ane.html',this,'Simulador de Entrevistas STAR','Evaluación por competencias con metodología STAR, audio y reportes')">
+          <span class="nav-ico">🎙</span>
+          <span>Simulador STAR</span>
+          <span class="nav-badge live">Activo</span>
+          <div class="loading-dot"></div>
+        </button>
+        <button class="nav-btn" data-panel="dash" data-src="app-dashboard-intermediacion-ane.html"
+          onclick="loadModule('dash','app-dashboard-intermediacion-ane.html',this,'Centro de Control · Intermediación','Dashboard ejecutivo: citas, sesiones, referidos y productividad')">
+          <span class="nav-ico">📊</span>
+          <span>Centro de Control</span>
+          <span class="nav-badge live">Activo</span>
+          <div class="loading-dot"></div>
+        </button>
+        <button class="nav-btn" data-panel="lab" data-src="app-4-laboratorio-ia-ane.html"
+          onclick="loadModule('lab','app-4-laboratorio-ia-ane.html',this,'Laboratorio IA · ESCO-CR v15','Copiloto de orientación con confianza calibrada y trazabilidad')">
+          <span class="nav-ico">⚡</span>
+          <span>Laboratorio IA</span>
+          <span class="nav-badge new">IA v15</span>
+          <div class="loading-dot"></div>
+        </button>
+      </nav>
+    </div>
+
+    <div>
+      <div class="navlabel">Recursos</div>
+      <nav class="nav">
+        <button class="nav-btn" data-panel="help"
+          onclick="loadModule('help','manual-centro-ayuda-ane.html',this,'Centro de Ayuda','Manuales, FAQ y guías de uso del ecosistema ANE')">
+          <span class="nav-ico">📘</span>
+          <span>Centro de ayuda</span>
+          <div class="loading-dot"></div>
+        </button>
+        <button class="nav-btn" data-panel="informe"
+          onclick="loadModule('informe','Informe_Ejecutivo_Ecosistema_ANE_Membretado.html',this,'Informe ejecutivo ANE','Resumen ejecutivo membretado del ecosistema')">
+          <span class="nav-ico">📄</span>
+          <span>Informe ejecutivo</span>
+          <div class="loading-dot"></div>
+        </button>
+      </nav>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="sidecard">
+        <b>Madurez del ecosistema</b>
+        <p>4/4 módulos activos · 100% operativo · Uso interno ANE</p>
+        <div class="mini-bar"><i></i></div>
+      </div>
+      <div class="sidebar-utils">
+        <button class="util-btn" onclick="toggleTheme()" title="Cambiar tema">◐ Tema</button>
+        <button class="util-btn" onclick="toggleFullscreen()" title="Pantalla completa">⛶ Pantalla</button>
+        <button class="util-btn" onclick="reloadCurrent()" title="Recargar módulo">↺ Recargar</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN AREA ===== -->
+  <div class="main-area">
+    <!-- Topbar -->
+    <header class="topbar">
+      <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Menú">☰</button>
+      <div class="topbar-info">
+        <b id="topbar-title">Agencia Nacional del Empleo · Costa Rica</b>
+        <span id="topbar-sub">Portal integrado · 4 módulos activos</span>
+      </div>
+      <button class="topbar-btn" onclick="openCurrentInTab()" title="Abrir módulo en pestaña nueva">↗ Nueva pestaña</button>
+      <button class="topbar-btn primary" onclick="loadModule('ats','app-ats-ane.html',document.querySelector('[data-panel=ats]'),'ATS ANE · Preselección curricular','Motor de ranking y evaluación de CV por competencias ESCO-CR')">⚡ Iniciar ATS</button>
+    </header>
+
+    <!-- Content area -->
+    <div class="content-area">
+
+      <!-- Loading overlay -->
+      <div class="load-overlay" id="loadOverlay">
+        <div class="load-spinner"></div>
+        <p id="loadMsg">Cargando módulo…</p>
+      </div>
+
+      <!-- HOME panel -->
+      <div class="home-panel visible" id="panel-home">
+        <!-- Hero -->
+        <div class="hero-home">
+          <div class="eyebrow"><span class="pulse"></span> Uso interno · ANE Costa Rica</div>
+          <h1>Un solo portal.<br><span>Cuatro capacidades.</span></h1>
+          <p class="hero-lead">El ecosistema ANE integra evaluación curricular ATS, simulación de entrevistas STAR, control ejecutivo de intermediación y Laboratorio IA con recomendación responsable basada en ESCO-CR. Todo en un portal unificado.</p>
+          <div class="hero-actions">
+            <button class="btn primary" onclick="loadModule('ats','app-ats-ane.html',document.querySelector('[data-panel=ats]'),'ATS ANE · Preselección curricular','Motor de ranking y evaluación de CV por competencias ESCO-CR')">⚡ Abrir ATS ANE</button>
+            <button class="btn" onclick="loadModule('sim','app-simulador-entrevistas-ane.html',document.querySelector('[data-panel=sim]'),'Simulador de Entrevistas STAR','Evaluación por competencias con metodología STAR, audio y reportes')">🎙 Simulador STAR</button>
+            <button class="btn" onclick="loadModule('dash','app-dashboard-intermediacion-ane.html',document.querySelector('[data-panel=dash]'),'Centro de Control · Intermediación','Dashboard ejecutivo: citas, sesiones, referidos y productividad')">📊 Centro de Control</button>
+            <button class="btn" onclick="loadModule('lab','app-4-laboratorio-ia-ane.html',document.querySelector('[data-panel=lab]'),'Laboratorio IA · ESCO-CR v15','Copiloto de orientación con confianza calibrada y trazabilidad')">⚡ Laboratorio IA</button>
+          </div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="kpi-grid">
+          <div class="kpi"><small>Módulos integrados</small><b>4/4</b><span>100% operativo</span></div>
+          <div class="kpi"><small>Flujo candidato</small><b>360°</b><span>CV · STAR · Seguimiento</span></div>
+          <div class="kpi"><small>Marco de competencias</small><b>ESCO-CR</b><span>2 000 perfiles</span></div>
+          <div class="kpi"><small>Procesamiento</small><b>Local</b><span>Privacidad por diseño</span></div>
+        </div>
+
+        <!-- Module cards -->
+        <div class="section-h">
+          <div>
+            <h2>Módulos del ecosistema</h2>
+            <p>Haga clic en cualquier módulo para cargarlo directamente en el portal.</p>
+          </div>
+        </div>
+        <div class="modules-grid">
+          <div class="module-card" onclick="loadModule('ats','app-ats-ane.html',document.querySelector('[data-panel=ats]'),'ATS ANE · Preselección curricular','Motor de ranking y evaluación de CV por competencias ESCO-CR')">
+            <div class="mod-top">
+              <div class="mod-icon">☑</div>
+              <span class="mod-status">Activo</span>
+            </div>
+            <h3>ATS ANE · Preselección curricular</h3>
+            <p>Motor de ranking de CV basado en competencias ESCO-CR. Evalúa ajuste técnico y cultural, filtra por criterios obligatorios y genera informes trazables en PDF.</p>
+            <div class="mod-tags">
+              <span class="mod-tag">Ranking CV</span>
+              <span class="mod-tag">Competencias ESCO</span>
+              <span class="mod-tag">PDF trazable</span>
+              <span class="mod-tag">Privacidad local</span>
+            </div>
+            <div class="mod-cta">
+              <button class="mod-open">⚡ Abrir módulo</button>
+              <a class="mod-manual" href="manual-ats-ane.html" target="_blank" rel="noopener" onclick="event.stopPropagation()">📘 Manual</a>
+            </div>
+          </div>
+
+          <div class="module-card" onclick="loadModule('sim','app-simulador-entrevistas-ane.html',document.querySelector('[data-panel=sim]'),'Simulador de Entrevistas STAR','Evaluación por competencias con metodología STAR, audio y reportes')">
+            <div class="mod-top">
+              <div class="mod-icon">🎙</div>
+              <span class="mod-status">Activo</span>
+            </div>
+            <h3>Simulador de Entrevistas STAR</h3>
+            <p>Panel dual entrevistador/candidato para sesiones virtuales por competencias. Incluye grabación de audio, transcripción automática, metodología STAR y exportación a PDF.</p>
+            <div class="mod-tags">
+              <span class="mod-tag">Metodología STAR</span>
+              <span class="mod-tag">Audio / Transcripción</span>
+              <span class="mod-tag">Dual mode</span>
+              <span class="mod-tag">Reporte PDF</span>
+            </div>
+            <div class="mod-cta">
+              <button class="mod-open">⚡ Abrir módulo</button>
+              <a class="mod-manual" href="manual-simulador-entrevistas-ane.html" target="_blank" rel="noopener" onclick="event.stopPropagation()">📘 Manual</a>
+            </div>
+          </div>
+
+          <div class="module-card" onclick="loadModule('dash','app-dashboard-intermediacion-ane.html',document.querySelector('[data-panel=dash]'),'Centro de Control · Intermediación','Dashboard ejecutivo: citas, sesiones, referidos y productividad')">
+            <div class="mod-top">
+              <div class="mod-icon">📊</div>
+              <span class="mod-status">Activo</span>
+            </div>
+            <h3>Centro de Control · Intermediación</h3>
+            <p>Dashboard ejecutivo de intermediación laboral. Gestiona citas, sesiones, talleres, referidos y productividad del equipo. Importa/exporta Excel (XLSX).</p>
+            <div class="mod-tags">
+              <span class="mod-tag">BI ejecutivo</span>
+              <span class="mod-tag">Citas y sesiones</span>
+              <span class="mod-tag">XLSX import/export</span>
+              <span class="mod-tag">Chart.js</span>
+            </div>
+            <div class="mod-cta">
+              <button class="mod-open">⚡ Abrir módulo</button>
+              <a class="mod-manual" href="manual-dashboard-intermediacion-ane.html" target="_blank" rel="noopener" onclick="event.stopPropagation()">📘 Manual</a>
+            </div>
+          </div>
+
+          <div class="module-card" onclick="loadModule('lab','app-4-laboratorio-ia-ane.html',document.querySelector('[data-panel=lab]'),'Laboratorio IA · ESCO-CR v15','Copiloto de orientación con confianza calibrada y trazabilidad')">
+            <div class="mod-top">
+              <div class="mod-icon">⚡</div>
+              <span class="mod-status ia">IA v15</span>
+            </div>
+            <h3>Laboratorio IA · ESCO-CR v15</h3>
+            <p>Copiloto de orientación laboral con confianza calibrada, nivel de ajuste ESCO-CR, explicación del razonamiento, verificación de oferta académica y trazabilidad para revisión humana.</p>
+            <div class="mod-tags">
+              <span class="mod-tag">Recomendación responsable</span>
+              <span class="mod-tag">Confianza calibrada</span>
+              <span class="mod-tag">ESCO-CR 2000 perfiles</span>
+              <span class="mod-tag">Oferta académica CR</span>
+            </div>
+            <div class="mod-cta">
+              <button class="mod-open">⚡ Abrir módulo</button>
+              <a class="mod-manual" href="manual-laboratorio-ia-ane.html" target="_blank" rel="noopener" onclick="event.stopPropagation()">📘 Manual</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Flow -->
+        <div class="flow-section">
+          <div class="section-h">
+            <div>
+              <h2>Flujo operacional integrado</h2>
+              <p>Arquitectura de 4 pasos: del ingreso de vacante hasta el control ejecutivo de resultados.</p>
+            </div>
+          </div>
+          <div class="flow">
+            <div class="step">
+              <div class="step-num">1</div>
+              <b>Captura y perfil</b>
+              <p>Ingreso de vacante, requisitos, filtros, CV y criterios de elegibilidad en el ATS.</p>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <b>Preselección ATS</b>
+              <p>Ranking técnico y trazable para priorizar candidatos con mejor ajuste ESCO-CR.</p>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <b>Entrevista STAR</b>
+              <p>Evaluación por competencias con preguntas, transcripción, notas y reporte PDF.</p>
+            </div>
+            <div class="step">
+              <div class="step-num">4</div>
+              <b>Control ejecutivo</b>
+              <p>Seguimiento de citas, referidos, productividad y brechas en el Centro de Control.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="home-footer">
+          <div>
+            <b>Ecosistema ANE · Agencia Nacional del Empleo · Costa Rica</b><br>
+            Portal integrado v16 · Recomendación responsable · Privacidad por diseño
+          </div>
+          <div style="text-align:right">
+            <a href="Informe_Ejecutivo_Ecosistema_ANE_Membretado.html" target="_blank" rel="noopener">📄 Informe ejecutivo</a><br>
+            <span style="margin-top:4px;display:block">2026 · Uso interno ANE</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- AUDIT panel -->
+      <div class="audit-panel" id="panel-audit">
+        <div class="hero-home" style="margin-bottom:22px">
+          <div class="eyebrow">◈ Auditoría técnica del ecosistema</div>
+          <h1>Diagnóstico <span>técnico v16</span></h1>
+          <p class="hero-lead">Estado actual de los 4 módulos: arquitectura, diseño, funcionalidades, hallazgos y recomendaciones de mejora continua para la Agencia Nacional del Empleo.</p>
+        </div>
+
+        <div class="section-h" style="margin-bottom:14px">
+          <div><h2>Resumen ejecutivo</h2><p>Evaluación de madurez por módulo</p></div>
+        </div>
+
+        <div class="audit-grid" style="margin-bottom:20px">
+          <div class="audit-card">
+            <div class="score-row">
+              <div class="score-circle"><span>89</span></div>
+              <div class="score-desc"><b class="status-ok">ATS ANE</b> — Módulo maduro<br>Ranking curricular ESCO-CR con generación de informes PDF, modo de privacidad local, términos y condiciones.</div>
+            </div>
+            <div class="tag-row">
+              <span class="atag ok">✓ Ranking CV</span>
+              <span class="atag ok">✓ PDF trazable</span>
+              <span class="atag ok">✓ Filtros obligatorios</span>
+              <span class="atag ok">✓ Modo privacidad</span>
+              <span class="atag warn">⚠ JS ofuscado</span>
+            </div>
+          </div>
+          <div class="audit-card">
+            <div class="score-row">
+              <div class="score-circle" style="background:conic-gradient(var(--teal2) 0deg, var(--teal2) 288deg, rgba(125,211,211,.12) 288deg)"><span>80</span></div>
+              <div class="score-desc"><b class="status-ok">Simulador STAR</b> — Módulo robusto<br>Panel dual entrevistador/candidato, grabación de audio, transcripción, metodología STAR, exportación PDF.</div>
+            </div>
+            <div class="tag-row">
+              <span class="atag ok">✓ Panel dual</span>
+              <span class="atag ok">✓ Metodología STAR</span>
+              <span class="atag ok">✓ Audio/Transcripción</span>
+              <span class="atag info">ℹ Requiere HTTPS para audio</span>
+            </div>
+          </div>
+          <div class="audit-card">
+            <div class="score-row">
+              <div class="score-circle" style="background:conic-gradient(var(--teal2) 0deg, var(--teal2) 304deg, rgba(125,211,211,.12) 304deg)"><span>84</span></div>
+              <div class="score-desc"><b class="status-ok">Centro de Control</b> — Dashboard completo<br>BI ejecutivo con Chart.js, importación/exportación XLSX, gestión de citas y equipos, CDN con fallback.</div>
+            </div>
+            <div class="tag-row">
+              <span class="atag ok">✓ Chart.js integrado</span>
+              <span class="atag ok">✓ XLSX import/export</span>
+              <span class="atag ok">✓ CDN fallback</span>
+              <span class="atag warn">⚠ Requiere conexión CDN</span>
+            </div>
+          </div>
+          <div class="audit-card">
+            <div class="score-row">
+              <div class="score-circle" style="background:conic-gradient(var(--teal2) 0deg, var(--teal2) 334deg, rgba(125,211,211,.12) 334deg)"><span>93</span></div>
+              <div class="score-desc"><b class="status-ok">Laboratorio IA v15</b> — Módulo avanzado<br>Copiloto ESCO-CR con 2 000 perfiles embebidos, confianza calibrada, verificación académica CR.</div>
+            </div>
+            <div class="tag-row">
+              <span class="atag ok">✓ 2 000 perfiles ESCO-CR</span>
+              <span class="atag ok">✓ Confianza calibrada</span>
+              <span class="atag ok">✓ Oferta académica CR</span>
+              <span class="atag info">ℹ Archivo grande 3.8 MB</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-h" style="margin-bottom:14px">
+          <div><h2>Hallazgos técnicos detallados</h2><p>Análisis de arquitectura, diseño y seguridad</p></div>
+        </div>
+
+        <div class="audit-card">
+          <h3>🏗 Arquitectura y despliegue</h3>
+          <p>El ecosistema es un paquete de archivos HTML estáticos con procesamiento 100% local (sin servidor, sin base de datos externa). Esto garantiza privacidad por diseño. El portal integrado (este archivo) usa iframes para cargar cada módulo de forma aislada, evitando conflictos de CSS/JS entre módulos.</p>
+          <div class="tag-row">
+            <span class="atag ok">✓ Sin backend requerido</span>
+            <span class="atag ok">✓ Archivos HTML estáticos</span>
+            <span class="atag ok">✓ Iframes aislados</span>
+            <span class="atag ok">✓ Compatible GitHub Pages / Netlify / S3</span>
+            <span class="atag ok">✓ Compatible servidor institucional</span>
+          </div>
+        </div>
+
+        <div class="audit-card">
+          <h3>🎨 Sistemas de diseño</h3>
+          <p>Cada módulo tiene su propio sistema de diseño. ATS usa Fraunces/Public Sans con tema claro editorial. Simulador usa Syne con tema oscuro teal. Dashboard usa Manrope/IBM Plex Sans con diseño BI. Laboratorio IA usa Manrope/IBM Plex Sans con tema oscuro. El portal unificado emplea Inter con soporte dark/light como capa integradora.</p>
+          <div class="tag-row">
+            <span class="atag warn">⚠ 4 sistemas de diseño distintos</span>
+            <span class="atag info">ℹ Iframes preservan aislamiento visual</span>
+            <span class="atag ok">✓ Portal unificador cohesivo</span>
+            <span class="atag info">ℹ Recomendable unificar en v2</span>
+          </div>
+        </div>
+
+        <div class="audit-card">
+          <h3>🔒 Seguridad y privacidad</h3>
+          <p>El ATS incluye Content-Security-Policy en meta tag que restringe orígenes externos. El Laboratorio IA incluye protocolo de uso seguro y panel de confianza calibrada. Los datos ingresados en los módulos no se envían a ningún servidor externo — todo el procesamiento ocurre en el navegador del usuario.</p>
+          <div class="tag-row">
+            <span class="atag ok">✓ CSP en ATS</span>
+            <span class="atag ok">✓ Procesamiento local</span>
+            <span class="atag ok">✓ Sin cookies de seguimiento</span>
+            <span class="atag ok">✓ Protocolo de uso seguro en IA</span>
+            <span class="atag warn">⚠ ATS con JS ofuscado (revisar)</span>
+          </div>
+        </div>
+
+        <div class="audit-card">
+          <h3>📊 Funcionalidades por módulo</h3>
+          <div class="audit-grid" style="gap:10px;margin-top:10px">
+            <div>
+              <p style="margin-bottom:6px"><b>ATS ANE</b></p>
+              <div class="tag-row">
+                <span class="atag ok">✓ Ingreso de vacante</span>
+                <span class="atag ok">✓ Carga de CV (texto)</span>
+                <span class="atag ok">✓ Ranking ponderado</span>
+                <span class="atag ok">✓ Filtros obligatorios</span>
+                <span class="atag ok">✓ Informe PDF por candidato</span>
+                <span class="atag ok">✓ Ruta ESCO de crecimiento</span>
+                <span class="atag ok">✓ Términos y condiciones</span>
+              </div>
+            </div>
+            <div>
+              <p style="margin-bottom:6px"><b>Simulador STAR</b></p>
+              <div class="tag-row">
+                <span class="atag ok">✓ Vista entrevistador</span>
+                <span class="atag ok">✓ Vista candidato</span>
+                <span class="atag ok">✓ Banco de preguntas STAR</span>
+                <span class="atag ok">✓ Grabación de audio</span>
+                <span class="atag ok">✓ Transcripción automática</span>
+                <span class="atag ok">✓ Calificación por competencia</span>
+                <span class="atag ok">✓ Exportación PDF</span>
+              </div>
+            </div>
+            <div>
+              <p style="margin-bottom:6px"><b>Centro de Control</b></p>
+              <div class="tag-row">
+                <span class="atag ok">✓ KPIs ejecutivos</span>
+                <span class="atag ok">✓ Gráficas Chart.js</span>
+                <span class="atag ok">✓ Registro de citas</span>
+                <span class="atag ok">✓ Gestión de equipo</span>
+                <span class="atag ok">✓ Referidos y colocados</span>
+                <span class="atag ok">✓ Import/Export XLSX</span>
+                <span class="atag ok">✓ CDN con fallback triple</span>
+              </div>
+            </div>
+            <div>
+              <p style="margin-bottom:6px"><b>Laboratorio IA v15</b></p>
+              <div class="tag-row">
+                <span class="atag ok">✓ 2 000 perfiles ESCO-CR</span>
+                <span class="atag ok">✓ Puntuación de confianza</span>
+                <span class="atag ok">✓ Explicación del porqué</span>
+                <span class="atag ok">✓ Verificación académica CR</span>
+                <span class="atag ok">✓ Trazabilidad para revisión</span>
+                <span class="atag ok">✓ Modo dual dark/light</span>
+                <span class="atag ok">✓ Protocolo uso responsable</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="audit-card">
+          <h3>🚀 Recomendaciones prioritarias</h3>
+          <div style="display:grid;gap:8px;margin-top:8px">
+            <div style="display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:12px;background:rgba(13,45,45,.3)">
+              <span style="color:var(--amber);font-size:18px;flex-shrink:0">1</span>
+              <div><b style="font-size:13px">Desofuscar el JS del ATS</b><p style="margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.55">El módulo ATS contiene JavaScript ofuscado (a0_0x). Se recomienda obtener la versión fuente limpia para mantenimiento, auditoría de seguridad y cumplimiento institucional.</p></div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:12px;background:rgba(13,45,45,.3)">
+              <span style="color:var(--mint);font-size:18px;flex-shrink:0">2</span>
+              <div><b style="font-size:13px">Despliegue en servidor HTTPS</b><p style="margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.55">El Simulador de Entrevistas requiere HTTPS para acceder a la API de grabación de audio (MediaRecorder/getUserMedia). GitHub Pages, Netlify y cualquier dominio institucional con TLS cumplen este requisito.</p></div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:12px;background:rgba(13,45,45,.3)">
+              <span style="color:var(--mint);font-size:18px;flex-shrink:0">3</span>
+              <div><b style="font-size:13px">Unificación del sistema de diseño (v2)</b><p style="margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.55">Los 4 módulos usan fuentes y paletas distintas. Migrar a un único design token set (teal institucional + Inter/Manrope) mejorará la coherencia visual y reducirá el tiempo de carga.</p></div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:12px;background:rgba(13,45,45,.3)">
+              <span style="color:var(--mint);font-size:18px;flex-shrink:0">4</span>
+              <div><b style="font-size:13px">Integración de datos entre módulos</b><p style="margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.55">Actualmente cada módulo es independiente. En v2 se recomienda usar localStorage o IndexedDB para pasar candidatos preseleccionados del ATS al Simulador y al Centro de Control automáticamente.</p></div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:12px;background:rgba(13,45,45,.3)">
+              <span style="color:var(--mint);font-size:18px;flex-shrink:0">5</span>
+              <div><b style="font-size:13px">Comprimir el Laboratorio IA</b><p style="margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.55">El módulo pesa 3.8 MB porque los 2 000 perfiles ESCO-CR están embebidos inline. Extraer los datos a un archivo JSON/CSV separado reduciría el archivo principal a ~100 KB y mejoraría el tiempo de carga inicial.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="home-footer" style="margin-top:0">
+          <div><b>Auditoría técnica Ecosistema ANE v16</b><br>Análisis realizado sobre el paquete portable v15 · Recomendación responsable</div>
+          <div style="text-align:right">Generado: <span id="auditDate"></span><br>Portal integrado · Costa Rica 2026</div>
+        </div>
+      </div>
+
+      <!-- MODULE iframes — se crean dinámicamente -->
+      <iframe class="module-frame" id="frame-ats" title="ATS ANE"></iframe>
+      <iframe class="module-frame" id="frame-sim" title="Simulador de Entrevistas STAR"></iframe>
+      <iframe class="module-frame" id="frame-dash" title="Centro de Control Intermediación"></iframe>
+      <iframe class="module-frame" id="frame-lab" title="Laboratorio IA ESCO-CR"></iframe>
+      <iframe class="module-frame" id="frame-help" title="Centro de Ayuda"></iframe>
+      <iframe class="module-frame" id="frame-informe" title="Informe Ejecutivo"></iframe>
+
+    </div><!-- /content-area -->
+  </div><!-- /main-area -->
+</div><!-- /shell -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================================================================
+   ECOSISTEMA ANE — Portal integrado JS
+   ================================================================ */
+
+let currentPanel = 'home';
+let currentSrc = null;
+let loadedModules = {};
+
+const panels = {
+  home: { el: document.getElementById('panel-home'), type: 'panel' },
+  audit: { el: document.getElementById('panel-audit'), type: 'panel' },
+  ats: { el: document.getElementById('frame-ats'), type: 'frame' },
+  sim: { el: document.getElementById('frame-sim'), type: 'frame' },
+  dash: { el: document.getElementById('frame-dash'), type: 'frame' },
+  lab: { el: document.getElementById('frame-lab'), type: 'frame' },
+  help: { el: document.getElementById('frame-help'), type: 'frame' },
+  informe: { el: document.getElementById('frame-informe'), type: 'frame' },
+};
+
+function switchPanel(id, btn, title, subtitle) {
+  // Hide all
+  Object.values(panels).forEach(p => p.el.classList.remove('visible'));
+  // Show target
+  const target = panels[id];
+  if (target) target.el.classList.add('visible');
+  // Update nav
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  // Update topbar
+  document.getElementById('topbar-title').textContent = title || 'Ecosistema ANE';
+  document.getElementById('topbar-sub').textContent = subtitle || 'Agencia Nacional del Empleo · Costa Rica';
+  currentPanel = id;
+  currentSrc = null;
+  // Close mobile sidebar
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+function loadModule(id, src, btn, title, subtitle) {
+  const frame = panels[id]?.el;
+  if (!frame) return;
+
+  // Update nav state
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active', 'loading'));
+  if (btn) {
+    btn.classList.add('active', 'loading');
+  }
+
+  // Update topbar
+  document.getElementById('topbar-title').textContent = title || src;
+  document.getElementById('topbar-sub').textContent = subtitle || 'Módulo ANE';
+  currentPanel = id;
+  currentSrc = src;
+
+  // Hide all panels/frames
+  Object.values(panels).forEach(p => p.el.classList.remove('visible'));
+
+  // Show loading overlay
+  const overlay = document.getElementById('loadOverlay');
+  document.getElementById('loadMsg').textContent = 'Cargando ' + (title || src) + '…';
+  overlay.classList.add('show');
+
+  // If already loaded, just show
+  if (loadedModules[id]) {
+    frame.classList.add('visible');
+    overlay.classList.remove('show');
+    if (btn) btn.classList.remove('loading');
+    document.getElementById('sidebar').classList.remove('open');
+    return;
+  }
+
+  // Load the iframe
+  frame.onload = function() {
+    overlay.classList.remove('show');
+    frame.classList.add('visible');
+    if (btn) btn.classList.remove('loading');
+    loadedModules[id] = true;
+    document.getElementById('sidebar').classList.remove('open');
+  };
+  frame.onerror = function() {
+    overlay.classList.remove('show');
+    showToast('Error al cargar el módulo. Verifique que todos los archivos estén en la misma carpeta.');
+    if (btn) btn.classList.remove('loading');
+    // Show home as fallback
+    panels.home.el.classList.add('visible');
+  };
+  frame.src = src;
+}
+
+function openCurrentInTab() {
+  if (currentSrc) {
+    window.open(currentSrc, '_blank', 'noopener');
+  } else {
+    showToast('Abra un módulo primero para usar esta función.');
+  }
+}
+
+function reloadCurrent() {
+  if (currentSrc && panels[currentPanel]) {
+    loadedModules[currentPanel] = false;
+    const btn = document.querySelector(`.nav-btn[data-panel="${currentPanel}"]`);
+    loadModule(currentPanel, currentSrc, btn,
+      document.getElementById('topbar-title').textContent,
+      document.getElementById('topbar-sub').textContent);
+    showToast('Módulo recargado.');
+  } else {
+    showToast('No hay módulo activo para recargar.');
+  }
+}
+
+function toggleTheme() {
+  const root = document.documentElement;
+  const current = root.getAttribute('data-theme') || 'dark';
+  root.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+  showToast(current === 'dark' ? 'Tema claro activado' : 'Tema oscuro activado');
+}
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => showToast('Pantalla completa no disponible'));
+  } else {
+    document.exitFullscreen();
+  }
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey) {
+    if (e.key === '1') { e.preventDefault(); document.querySelector('[data-panel="ats"]').click(); }
+    if (e.key === '2') { e.preventDefault(); document.querySelector('[data-panel="sim"]').click(); }
+    if (e.key === '3') { e.preventDefault(); document.querySelector('[data-panel="dash"]').click(); }
+    if (e.key === '4') { e.preventDefault(); document.querySelector('[data-panel="lab"]').click(); }
+    if (e.key === '0') { e.preventDefault(); switchPanel('home', document.querySelector('[data-panel="home"]'), 'Inicio ejecutivo', 'Panel maestro del ecosistema ANE'); }
+  }
+});
+
+// Close sidebar on outside click (mobile)
+document.getElementById('loadOverlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) document.getElementById('sidebar').classList.remove('open');
+});
+
+// Set audit date
+document.addEventListener('DOMContentLoaded', () => {
+  const d = new Date();
+  const fmt = d.toLocaleDateString('es-CR', { year:'numeric', month:'long', day:'numeric' });
+  const el = document.getElementById('auditDate');
+  if (el) el.textContent = fmt;
+});
+
+// Hash-based navigation
+function navigateFromHash() {
+  const map = { '#ats': 'ats', '#sim': 'sim', '#dash': 'dash', '#lab': 'lab', '#help': 'help', '#audit': 'audit', '#home': 'home' };
+  const target = map[window.location.hash];
+  if (target && target !== 'home' && target !== 'audit') {
+    const btn = document.querySelector(`[data-panel="${target}"]`);
+    if (btn) btn.click();
+  }
+}
+window.addEventListener('hashchange', navigateFromHash);
+navigateFromHash();
+</script>
+</body>
+</html>
