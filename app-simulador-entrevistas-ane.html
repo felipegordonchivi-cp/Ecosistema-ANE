@@ -397,6 +397,8 @@ textarea{resize:vertical}
             <option>30 minutos</option>
             <option>45 minutos</option>
             <option>60 minutos</option>
+            <option>1 hora</option>
+            <option>1 hora 30 minutos</option>
           </select>
         </div>
       </div>
@@ -520,6 +522,8 @@ textarea{resize:vertical}
               <option>30 minutos</option>
               <option>45 minutos</option>
               <option>60 minutos</option>
+              <option>1 hora</option>
+              <option>1 hora 30 minutos</option>
             </select>
           </div>
         </div>
@@ -536,6 +540,7 @@ textarea{resize:vertical}
             <div style="display:flex;gap:6px">
               <button onclick="copiarCorreo()" id="btn-copiar-correo" style="background:rgba(13,115,115,.3);border:1px solid var(--teal);color:var(--tl);padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700">📋 Copiar</button>
               <button onclick="abrirEnCorreo()" style="background:rgba(13,115,115,.15);border:1px solid var(--db);color:#7dd3d3;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700">📨 Abrir en correo</button>
+              <button onclick="mostrarCRM()" style="background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);color:#a5b4fc;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700">🗂 CRM</button>
             </div>
           </div>
           <div id="email-body" style="background:rgba(13,115,115,.05);border:1px solid rgba(13,115,115,.2);border-radius:8px;padding:14px;font-size:12px;line-height:1.75;color:#a8dede;white-space:pre-wrap;max-height:320px;overflow-y:auto;font-family:'IBM Plex Mono',monospace"></div>
@@ -570,6 +575,42 @@ textarea{resize:vertical}
       <button onclick="openCandidateView();updateBcStatus()" style="width:100%;background:linear-gradient(135deg,var(--teal),var(--tl));border:none;color:#fff;padding:12px;border-radius:10px;font-size:14px;font-weight:800">📺 Abrir Vista Candidato</button>
     </div>
 
+  </div>
+</div>
+
+<!-- ===== MODAL CRM ===== -->
+<div id="crm-modal" class="modal-overlay hidden" onclick="if(event.target===this)document.getElementById('crm-modal').classList.add('hidden')">
+  <div class="modal-box" style="max-width:660px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div>
+        <div style="font-size:10px;color:#a5b4fc;text-transform:uppercase;letter-spacing:1.5px;font-weight:700">Exportar para CRM</div>
+        <h2 style="font-size:18px;font-weight:900;margin:4px 0 0">Plantilla de registro</h2>
+        <p style="font-size:11px;color:#4a8a8a;margin:4px 0 0">Copia en el formato que use tu CRM o sistema de gestión.</p>
+      </div>
+      <button onclick="document.getElementById('crm-modal').classList.add('hidden')" style="background:var(--s2);border:1px solid var(--db);color:#7dd3d3;width:32px;height:32px;border-radius:8px;font-size:16px">✕</button>
+    </div>
+
+    <!-- FORMATO TABS -->
+    <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+      <button onclick="setCrmFmt('tabla')" id="crm-tab-tabla" class="tab-btn active" style="font-size:11px;padding:5px 12px">📋 Tabla texto</button>
+      <button onclick="setCrmFmt('json')" id="crm-tab-json" class="tab-btn" style="font-size:11px;padding:5px 12px">{ } JSON</button>
+      <button onclick="setCrmFmt('csv')" id="crm-tab-csv" class="tab-btn" style="font-size:11px;padding:5px 12px">📊 CSV</button>
+      <button onclick="setCrmFmt('salesforce')" id="crm-tab-salesforce" class="tab-btn" style="font-size:11px;padding:5px 12px">☁ Salesforce</button>
+      <button onclick="setCrmFmt('hubspot')" id="crm-tab-hubspot" class="tab-btn" style="font-size:11px;padding:5px 12px">🟠 HubSpot</button>
+    </div>
+
+    <div id="crm-fmt-hint" style="font-size:11px;color:#4a8a8a;margin-bottom:8px"></div>
+
+    <div style="position:relative">
+      <pre id="crm-body" style="background:rgba(13,115,115,.06);border:1px solid rgba(99,102,241,.25);border-radius:8px;padding:14px;font-size:11px;line-height:1.7;color:#c7d2fe;white-space:pre-wrap;max-height:340px;overflow-y:auto;font-family:'IBM Plex Mono',monospace;margin:0"></pre>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button onclick="copiarCRM()" id="btn-copiar-crm" style="flex:1;background:linear-gradient(135deg,#4f46e5,#6366f1);border:none;color:#fff;padding:10px;border-radius:8px;font-size:13px;font-weight:800">📋 Copiar plantilla</button>
+      <button onclick="descargarCRM()" style="background:var(--s2);border:1px solid rgba(99,102,241,.4);color:#a5b4fc;padding:10px 16px;border-radius:8px;font-size:12px;font-weight:700">⬇ Descargar .txt</button>
+    </div>
+    <div style="margin-top:10px;font-size:10px;color:#3a7272;line-height:1.6">
+      ⚠️ Esta plantilla no contiene datos personales sensibles ni de evaluación. Solo incluye los datos de convocatoria ingresados en el formulario. Verifique la política de datos de su CRM antes de cargar información de candidatos.
+    </div>
   </div>
 </div>
 
@@ -2589,6 +2630,182 @@ function abrirEnCorreo(){
   const {asunto,cuerpo}=buildCorreoTxt();
   const mailto=`mailto:?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
   window.open(mailto,'_self');
+}
+
+// ── CRM TEMPLATE ──────────────────────────────────────────
+let crmFmt='tabla';
+function getCrmData(){
+  const p=cargarPerfil();
+  const fechaRaw=document.getElementById('email-fecha').value;
+  let fecha=''; let fechaISO='';
+  if(fechaRaw){
+    const d=new Date(fechaRaw+'T12:00:00');
+    fecha=d.toLocaleDateString('es-CR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    fechaISO=fechaRaw;
+  }
+  return {
+    candidato: document.getElementById('email-cand-name').value.trim()||'',
+    puesto: document.getElementById('email-puesto').value.trim()||'',
+    fecha_texto: fecha||'[por confirmar]',
+    fecha_iso: fechaISO||'',
+    hora: document.getElementById('email-hora').value||'',
+    plataforma: document.getElementById('email-plataforma').value||'',
+    duracion: document.getElementById('email-duracion').value||'',
+    enlace: document.getElementById('email-link').value.trim()||'',
+    asesor: document.getElementById('email-asesor-name').value.trim()||p.nombre||'',
+    cargo_asesor: p.cargo||'',
+    oficina: p.oficina||'',
+    telefono_asesor: p.telefono||'',
+    email_asesor: p.email||'',
+    estado: 'Convocado/a',
+    tipo_entrevista: 'Virtual por competencias — STAR',
+    sistema: 'Simulador ANE v7',
+    fecha_registro: new Date().toISOString().split('T')[0]
+  };
+}
+const CRM_HINTS={
+  tabla:'Formato legible para pegar en cualquier sistema, correo interno o nota de expediente.',
+  json:'Para APIs o CRMs con importación JSON (Zoho, Dynamics, sistemas a medida).',
+  csv:'Para importar como fila en Excel, Google Sheets o CRM con carga masiva CSV.',
+  salesforce:'Campos mapeados a objetos estándar de Salesforce (Lead / Activity / Task).',
+  hubspot:'Propiedades de contacto y actividad para importar vía HubSpot.',
+};
+function buildCrmText(d,fmt){
+  if(fmt==='tabla') return [
+    '══════════════════════════════════════════════',
+    '  REGISTRO DE CONVOCATORIA — ANE COSTA RICA',
+    '══════════════════════════════════════════════',
+    `Candidato/a:        ${d.candidato||'—'}`,
+    `Puesto evaluado:    ${d.puesto||'—'}`,
+    `Estado:             ${d.estado}`,
+    `Tipo de entrevista: ${d.tipo_entrevista}`,
+    '──────────────────────────────────────────────',
+    `Fecha:              ${d.fecha_texto}`,
+    `Fecha ISO:          ${d.fecha_iso||'—'}`,
+    `Hora (CR UTC-6):    ${d.hora||'—'} hrs`,
+    `Plataforma:         ${d.plataforma||'—'}`,
+    `Duración:           ${d.duracion||'—'}`,
+    `Enlace de acceso:   ${d.enlace||'—'}`,
+    '──────────────────────────────────────────────',
+    `Asesor/a:           ${d.asesor||'—'}`,
+    `Cargo:              ${d.cargo_asesor||'—'}`,
+    `Oficina ANE:        ${d.oficina||'—'}`,
+    `Teléfono:           ${d.telefono_asesor||'—'}`,
+    `Correo asesor:      ${d.email_asesor||'—'}`,
+    '──────────────────────────────────────────────',
+    `Fecha de registro:  ${d.fecha_registro}`,
+    `Generado por:       ${d.sistema}`,
+    '══════════════════════════════════════════════',
+  ].join('\n');
+
+  if(fmt==='json') return JSON.stringify({
+    registro_convocatoria:{
+      candidato: d.candidato,
+      puesto_evaluado: d.puesto,
+      estado: d.estado,
+      tipo_entrevista: d.tipo_entrevista,
+      sesion:{
+        fecha: d.fecha_iso,
+        hora_cr: d.hora,
+        plataforma: d.plataforma,
+        duracion: d.duracion,
+        enlace: d.enlace
+      },
+      asesor:{
+        nombre: d.asesor,
+        cargo: d.cargo_asesor,
+        oficina_ane: d.oficina,
+        telefono: d.telefono_asesor,
+        email: d.email_asesor
+      },
+      meta:{
+        fecha_registro: d.fecha_registro,
+        fuente: d.sistema
+      }
+    }
+  },null,2);
+
+  if(fmt==='csv'){
+    const headers=['candidato','puesto_evaluado','estado','tipo_entrevista','fecha_iso','hora_cr','plataforma','duracion','enlace','asesor','cargo_asesor','oficina_ane','email_asesor','fecha_registro','fuente'];
+    const vals=[d.candidato,d.puesto,d.estado,d.tipo_entrevista,d.fecha_iso,d.hora,d.plataforma,d.duracion,d.enlace,d.asesor,d.cargo_asesor,d.oficina,d.email_asesor,d.fecha_registro,d.sistema];
+    const esc=v=>`"${(v||'').replace(/"/g,'""')}"`;
+    return headers.join(',')+'\n'+vals.map(esc).join(',');
+  }
+
+  if(fmt==='salesforce') return [
+    '-- Salesforce Lead / Activity Record',
+    '-- Pegar en Data Loader o importar via Setup > Data Import Wizard',
+    '',
+    `FirstName:         ${(d.candidato||'').split(' ')[0]||'—'}`,
+    `LastName:          ${(d.candidato||'').split(' ').slice(1).join(' ')||'—'}`,
+    `Title:             ${d.puesto||'—'}`,
+    `LeadSource:        ANE Costa Rica`,
+    `Status:            Convocado`,
+    `Description:       Entrevista virtual STAR — ${d.puesto} — ${d.fecha_iso} ${d.hora}hrs via ${d.plataforma}`,
+    '',
+    '-- Task (Actividad)',
+    `Subject:           Entrevista virtual: ${d.puesto}`,
+    `ActivityDate:      ${d.fecha_iso||'—'}`,
+    `Status:            Not Started`,
+    `Priority:          Normal`,
+    `OwnerId:           [ID del usuario Salesforce de ${d.asesor}]`,
+    `Description:       ${d.tipo_entrevista} | ${d.plataforma} | ${d.duracion} | Enlace: ${d.enlace||'—'}`,
+  ].join('\n');
+
+  if(fmt==='hubspot') return [
+    '# HubSpot — Contact + Activity properties',
+    '# Importar via Contacts > Import o API /crm/v3/objects/contacts',
+    '',
+    'CONTACT PROPERTIES',
+    `firstname:             ${(d.candidato||'').split(' ')[0]||''}`,
+    `lastname:              ${(d.candidato||'').split(' ').slice(1).join(' ')||''}`,
+    `jobtitle:              ${d.puesto||''}`,
+    `hs_lead_status:        IN_PROGRESS`,
+    `lifecyclestage:        lead`,
+    `lead_source:           ANE Costa Rica`,
+    '',
+    'ACTIVITY / NOTE',
+    `hs_activity_type:      MEETING`,
+    `hs_meeting_title:      Entrevista virtual: ${d.puesto}`,
+    `hs_meeting_start_time: ${d.fecha_iso}T${d.hora||'09:00'}:00-06:00`,
+    `hs_meeting_outcome:    SCHEDULED`,
+    `hs_meeting_location:   ${d.plataforma}${d.enlace?' — '+d.enlace:''}`,
+    `hs_internal_meeting_notes: ${d.tipo_entrevista} | ${d.duracion} | Asesor: ${d.asesor} (${d.oficina||'ANE'})`,
+  ].join('\n');
+
+  return '';
+}
+function mostrarCRM(){
+  const d=getCrmData();
+  document.getElementById('crm-body').textContent=buildCrmText(d,crmFmt);
+  document.getElementById('crm-fmt-hint').textContent=CRM_HINTS[crmFmt]||'';
+  document.getElementById('crm-modal').classList.remove('hidden');
+}
+function setCrmFmt(fmt){
+  crmFmt=fmt;
+  ['tabla','json','csv','salesforce','hubspot'].forEach(f=>{
+    const t=document.getElementById('crm-tab-'+f);
+    if(t){t.classList.toggle('active',f===fmt);}
+  });
+  const d=getCrmData();
+  document.getElementById('crm-body').textContent=buildCrmText(d,fmt);
+  document.getElementById('crm-fmt-hint').textContent=CRM_HINTS[fmt]||'';
+}
+function copiarCRM(){
+  const txt=document.getElementById('crm-body').textContent;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn=document.getElementById('btn-copiar-crm');
+    btn.textContent='✅ Copiado'; setTimeout(()=>{ btn.textContent='📋 Copiar plantilla'; },2500);
+  }).catch(()=>{ prompt('Copia manualmente:',txt); });
+}
+function descargarCRM(){
+  const txt=document.getElementById('crm-body').textContent;
+  const ext=crmFmt==='json'?'json':crmFmt==='csv'?'csv':'txt';
+  const cand=(document.getElementById('email-cand-name').value.trim()||'candidato').replace(/\s+/g,'_');
+  const a=document.createElement('a');
+  a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(txt);
+  a.download=`ane_convocatoria_${cand}_${new Date().toISOString().split('T')[0]}.${ext}`;
+  a.click();
 }
 function updateBcStatus(){
   if(!bc) return;
