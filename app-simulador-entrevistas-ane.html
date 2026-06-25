@@ -199,8 +199,8 @@ textarea{resize:vertical}
         <button onclick="showApp()" style="background:linear-gradient(135deg,var(--teal),var(--tl));border:none;color:#fff;padding:14px 20px;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 6px 24px rgba(13,115,115,.4);display:flex;align-items:center;justify-content:center;gap:8px">
           🎙 Panel Entrevistador
         </button>
-        <button onclick="openCandidateView()" style="background:rgba(13,115,115,.15);border:2px solid var(--teal);color:var(--tl);padding:14px 20px;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
-          📺 Vista Candidato
+        <button onclick="showSalaModal()" style="background:rgba(13,115,115,.15);border:2px solid var(--teal);color:var(--tl);padding:14px 20px;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+          📡 Conectar Candidato
         </button>
       </div>
 
@@ -334,6 +334,102 @@ textarea{resize:vertical}
           <div id="cand-q-history" style="font-size:11px;color:#5a9898;max-height:80px;overflow-y:auto"><span style="color:#2a5050">—</span></div>
         </div>
       </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== MODAL SALA VIRTUAL ===== -->
+<div id="sala-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeSalaModal()">
+  <div class="modal-box" style="max-width:640px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div>
+        <div style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:1.5px;font-weight:700">Sala Virtual</div>
+        <h2 style="font-size:20px;font-weight:900;margin:4px 0 0">Conectar al candidato</h2>
+      </div>
+      <button onclick="closeSalaModal()" style="background:var(--s2);border:1px solid var(--db);color:#7dd3d3;width:32px;height:32px;border-radius:8px;font-size:16px">✕</button>
+    </div>
+
+    <!-- TABS MODO -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px">
+      <div id="sala-tab-remota" onclick="setSalaTab('remota')" style="background:rgba(13,115,115,.25);border:2px solid var(--teal);border-radius:10px;padding:12px;text-align:center;cursor:pointer">
+        <div style="font-size:20px;margin-bottom:4px">🖥️</div>
+        <div style="font-size:12px;font-weight:800;color:#7dd3d3">Entrevista Virtual</div>
+        <div style="font-size:10px;color:#4a8a8a;margin-top:2px">Teams · Zoom · Meet</div>
+      </div>
+      <div id="sala-tab-presencial" onclick="setSalaTab('presencial')" style="background:var(--s2);border:2px solid var(--db);border-radius:10px;padding:12px;text-align:center;cursor:pointer">
+        <div style="font-size:20px;margin-bottom:4px">🏢</div>
+        <div style="font-size:12px;font-weight:800;color:#7dd3d3">Presencial / Mismo equipo</div>
+        <div style="font-size:10px;color:#4a8a8a;margin-top:2px">Candidato en sala ANE</div>
+      </div>
+    </div>
+
+    <!-- CONTENIDO MODO REMOTA -->
+    <div id="sala-content-remota">
+      <div style="background:rgba(13,115,115,.08);border:1px solid rgba(13,115,115,.25);border-radius:12px;padding:16px;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:800;color:#7dd3d3;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Cómo funciona la sala virtual</div>
+        <div style="display:grid;gap:10px">
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="background:var(--teal);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">1</div>
+            <div><div style="font-size:13px;font-weight:700">Inicia la videollamada con el candidato</div><div style="font-size:11px;color:#4a8a8a;margin-top:2px">Usa Teams, Zoom, Google Meet u otra plataforma. El candidato solo necesita su cámara y micrófono — no instala nada.</div></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="background:var(--teal);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">2</div>
+            <div><div style="font-size:13px;font-weight:700">Abre la Vista Candidato en tu equipo</div><div style="font-size:11px;color:#4a8a8a;margin-top:2px">Abre una segunda ventana con el botón de abajo. Esa ventana mostrará las preguntas en grande, sin datos internos del sistema.</div></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="background:var(--teal);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">3</div>
+            <div><div style="font-size:13px;font-weight:700">Comparte ESA ventana por pantalla</div><div style="font-size:11px;color:#4a8a8a;margin-top:2px">En Teams/Zoom, usa "Compartir pantalla" → selecciona solo esa ventana. El candidato la ve en su pantalla. Tú activas las preguntas desde el Panel Entrevistador.</div></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="background:var(--teal);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">4</div>
+            <div><div style="font-size:13px;font-weight:700">El candidato responde verbalmente</div><div style="font-size:11px;color:#4a8a8a;margin-top:2px">Tú capturas y evalúas la respuesta desde el Panel Entrevistador. El candidato no accede al sistema ANE.</div></div>
+          </div>
+        </div>
+      </div>
+      <!-- Estado conexión BroadcastChannel -->
+      <div style="background:var(--s2);border:1px solid var(--db);border-radius:10px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:12px">
+        <span id="bc-conn-dot" style="width:10px;height:10px;border-radius:50%;background:#3a7272;flex-shrink:0"></span>
+        <div style="flex:1">
+          <div id="bc-conn-txt" style="font-size:12px;font-weight:700;color:#5a9898">Vista Candidato: no abierta</div>
+          <div style="font-size:10px;color:#3a7272;margin-top:2px">La sincronización de preguntas es automática en el mismo equipo</div>
+        </div>
+        <button onclick="pingCandidateView()" style="background:rgba(13,115,115,.2);border:1px solid var(--db);color:#7dd3d3;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700">Verificar</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button onclick="openCandidateView();updateBcStatus()" style="background:linear-gradient(135deg,var(--teal),var(--tl));border:none;color:#fff;padding:12px;border-radius:10px;font-size:13px;font-weight:800">📺 Abrir Vista Candidato</button>
+        <button onclick="copyCandUrl()" style="background:var(--s2);border:1px solid var(--teal);color:var(--tl);padding:12px;border-radius:10px;font-size:13px;font-weight:800">📋 Copiar URL</button>
+      </div>
+      <div style="margin-top:10px;background:rgba(234,179,8,.06);border:1px solid rgba(234,179,8,.2);border-radius:8px;padding:10px;font-size:11px;color:#92400e">
+        ⚠️ <b>Nota de privacidad:</b> La Vista Candidato solo muestra el texto de la pregunta. No tiene acceso al panel del asesor, evaluaciones, transcripciones ni datos del sistema ANE. Es seguro compartirla por pantalla.
+      </div>
+    </div>
+
+    <!-- CONTENIDO MODO PRESENCIAL -->
+    <div id="sala-content-presencial" class="hidden">
+      <div style="background:rgba(13,115,115,.08);border:1px solid rgba(13,115,115,.25);border-radius:12px;padding:16px;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:800;color:#7dd3d3;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Modo presencial — mismo equipo</div>
+        <div style="display:grid;gap:10px">
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="background:var(--teal);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">1</div>
+            <div><div style="font-size:13px;font-weight:700">Abre la Vista Candidato en una segunda pantalla o pestaña</div><div style="font-size:11px;color:#4a8a8a;margin-top:2px">Si tienes monitor dual, arrastra esa ventana al segundo monitor. El candidato lo ve ahí. Tú operas el Panel en el primer monitor.</div></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="background:var(--teal);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">2</div>
+            <div><div style="font-size:13px;font-weight:700">Las preguntas se sincronizan automáticamente</div><div style="font-size:11px;color:#4a8a8a;margin-top:2px">Cada vez que activas una pregunta en el Panel, aparece al instante en la Vista Candidato. No necesitas hacer nada más.</div></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="background:var(--teal);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">3</div>
+            <div><div style="font-size:13px;font-weight:700">El candidato solo ve la pregunta — no el sistema</div><div style="font-size:11px;color:#4a8a8a;margin-top:2px">La Vista no tiene el evaluador STAR, notas del asesor ni datos internos.</div></div>
+          </div>
+        </div>
+      </div>
+      <div id="bc-conn-status2" style="background:var(--s2);border:1px solid var(--db);border-radius:10px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:12px">
+        <span id="bc-conn-dot2" style="width:10px;height:10px;border-radius:50%;background:#3a7272;flex-shrink:0"></span>
+        <div id="bc-conn-txt2" style="font-size:12px;font-weight:700;color:#5a9898;flex:1">Vista Candidato: no abierta</div>
+        <button onclick="pingCandidateView()" style="background:rgba(13,115,115,.2);border:1px solid var(--db);color:#7dd3d3;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700">Verificar</button>
+      </div>
+      <button onclick="openCandidateView();updateBcStatus()" style="width:100%;background:linear-gradient(135deg,var(--teal),var(--tl));border:none;color:#fff;padding:12px;border-radius:10px;font-size:14px;font-weight:800">📺 Abrir Vista Candidato</button>
     </div>
 
   </div>
@@ -2182,6 +2278,57 @@ function openCandidateView(){
   if(!win){
     alert('Tu navegador bloqueó la ventana emergente.\n\n→ Permite las ventanas emergentes para este sitio\n→ O abre manualmente una nueva pestaña con el mismo archivo y agrega ?vista=candidato a la URL.');
   }
+  setTimeout(updateBcStatus,1200);
+}
+function showSalaModal(){
+  document.getElementById('sala-modal').classList.remove('hidden');
+  setSalaTab('remota');
+  setTimeout(updateBcStatus,400);
+}
+function closeSalaModal(){ document.getElementById('sala-modal').classList.add('hidden'); }
+function setSalaTab(tab){
+  const isRemota=tab==='remota';
+  document.getElementById('sala-tab-remota').style.background=isRemota?'rgba(13,115,115,.25)':'var(--s2)';
+  document.getElementById('sala-tab-remota').style.borderColor=isRemota?'var(--teal)':'var(--db)';
+  document.getElementById('sala-tab-presencial').style.background=!isRemota?'rgba(13,115,115,.25)':'var(--s2)';
+  document.getElementById('sala-tab-presencial').style.borderColor=!isRemota?'var(--teal)':'var(--db)';
+  document.getElementById('sala-content-remota').classList.toggle('hidden',!isRemota);
+  document.getElementById('sala-content-presencial').classList.toggle('hidden',isRemota);
+}
+function copyCandUrl(){
+  const url=window.location.href.split('?')[0]+'?vista=candidato';
+  navigator.clipboard.writeText(url).then(()=>{
+    const btn=event.target; btn.textContent='✅ Copiado'; setTimeout(()=>{ btn.textContent='📋 Copiar URL'; },2000);
+  }).catch(()=>{ prompt('Copia esta URL manualmente:',url); });
+}
+function updateBcStatus(){
+  if(!bc) return;
+  const dot=document.getElementById('bc-conn-dot'); const txt=document.getElementById('bc-conn-txt');
+  const dot2=document.getElementById('bc-conn-dot2'); const txt2=document.getElementById('bc-conn-txt2');
+  const waiting='Verificando… (abre Vista Candidato primero)';
+  if(dot) dot.style.background='#eab308';
+  if(txt) txt.textContent=waiting;
+  if(dot2) dot2.style.background='#eab308';
+  if(txt2) txt2.textContent=waiting;
+  bc.postMessage({type:'ping'});
+  const timeout=setTimeout(()=>{
+    if(dot) dot.style.background='#3a7272';
+    if(txt) txt.textContent='Vista Candidato: no abierta en este navegador';
+    if(dot2) dot2.style.background='#3a7272';
+    if(txt2) txt2.textContent='Vista Candidato: no abierta en este navegador';
+  },1500);
+  const prev=bc.onmessage;
+  bc.onmessage=(ev)=>{
+    if(ev.data.type==='pong'){
+      clearTimeout(timeout);
+      if(dot){ dot.style.background='#22c55e'; }
+      if(txt){ txt.textContent='✓ Vista Candidato conectada y sincronizada'; }
+      if(dot2){ dot2.style.background='#22c55e'; }
+      if(txt2){ txt2.textContent='✓ Vista Candidato conectada y sincronizada'; }
+    }
+    if(prev) prev(ev);
+    bc.onmessage=prev;
+  };
 }
 
 function showCandQuestion(q, num, profName){
