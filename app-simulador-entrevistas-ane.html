@@ -403,6 +403,64 @@ textarea{resize:vertical}
       <div style="margin-top:10px;background:rgba(234,179,8,.06);border:1px solid rgba(234,179,8,.2);border-radius:8px;padding:10px;font-size:11px;color:#92400e">
         ⚠️ <b>Nota de privacidad:</b> La Vista Candidato solo muestra el texto de la pregunta. No tiene acceso al panel del asesor, evaluaciones, transcripciones ni datos del sistema ANE. Es seguro compartirla por pantalla.
       </div>
+
+      <!-- EMAIL TEMPLATE -->
+      <div style="margin-top:16px;border-top:1px solid var(--db);padding-top:16px">
+        <div style="font-size:11px;font-weight:800;color:#7dd3d3;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">📧 Correo de convocatoria para el candidato</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div>
+            <label style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px">Nombre del candidato</label>
+            <input id="email-cand-name" placeholder="Ej. María González" style="width:100%;font-size:12px;padding:7px 10px">
+          </div>
+          <div>
+            <label style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px">Nombre del asesor ANE</label>
+            <input id="email-asesor-name" placeholder="Ej. Carlos Méndez" style="width:100%;font-size:12px;padding:7px 10px">
+          </div>
+          <div>
+            <label style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px">Fecha de la entrevista</label>
+            <input id="email-fecha" type="date" style="width:100%;font-size:12px;padding:7px 10px">
+          </div>
+          <div>
+            <label style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px">Hora</label>
+            <input id="email-hora" type="time" value="09:00" style="width:100%;font-size:12px;padding:7px 10px">
+          </div>
+          <div>
+            <label style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px">Plataforma</label>
+            <select id="email-plataforma" style="width:100%;font-size:12px;padding:7px 10px">
+              <option>Microsoft Teams</option>
+              <option>Google Meet</option>
+              <option>Zoom</option>
+              <option>WhatsApp Video</option>
+              <option>Llamada telefónica</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px">Enlace / teléfono (opcional)</label>
+            <input id="email-link" placeholder="https://... o teléfono" style="width:100%;font-size:12px;padding:7px 10px">
+          </div>
+          <div>
+            <label style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px">Puesto evaluado</label>
+            <input id="email-puesto" placeholder="Ej. Asesor de Ventas" style="width:100%;font-size:12px;padding:7px 10px">
+          </div>
+          <div>
+            <label style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px">Duración estimada</label>
+            <select id="email-duracion" style="width:100%;font-size:12px;padding:7px 10px">
+              <option>20 minutos</option>
+              <option>30 minutos</option>
+              <option>45 minutos</option>
+              <option>60 minutos</option>
+            </select>
+          </div>
+        </div>
+        <button onclick="generarCorreo()" style="width:100%;background:linear-gradient(135deg,var(--teal),var(--tl));border:none;color:#fff;padding:10px;border-radius:8px;font-size:13px;font-weight:800;margin-bottom:10px">✉️ Generar correo</button>
+        <div id="email-preview" class="hidden">
+          <div style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+            <span>Vista previa del correo</span>
+            <button onclick="copiarCorreo()" id="btn-copiar-correo" style="background:rgba(13,115,115,.3);border:1px solid var(--teal);color:var(--tl);padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700">📋 Copiar correo</button>
+          </div>
+          <div id="email-body" style="background:rgba(13,115,115,.05);border:1px solid rgba(13,115,115,.2);border-radius:8px;padding:14px;font-size:12px;line-height:1.75;color:#a8dede;white-space:pre-wrap;max-height:320px;overflow-y:auto;font-family:'IBM Plex Mono',monospace"></div>
+        </div>
+      </div>
     </div>
 
     <!-- CONTENIDO MODO PRESENCIAL -->
@@ -2300,6 +2358,82 @@ function copyCandUrl(){
   navigator.clipboard.writeText(url).then(()=>{
     const btn=event.target; btn.textContent='✅ Copiado'; setTimeout(()=>{ btn.textContent='📋 Copiar URL'; },2000);
   }).catch(()=>{ prompt('Copia esta URL manualmente:',url); });
+}
+function generarCorreo(){
+  const nombre=document.getElementById('email-cand-name').value.trim()||'Candidato/a';
+  const asesor=document.getElementById('email-asesor-name').value.trim()||'el equipo ANE';
+  const fechaRaw=document.getElementById('email-fecha').value;
+  const hora=document.getElementById('email-hora').value||'09:00';
+  const plataforma=document.getElementById('email-plataforma').value;
+  const link=document.getElementById('email-link').value.trim();
+  const puesto=document.getElementById('email-puesto').value.trim()||'el puesto indicado';
+  const duracion=document.getElementById('email-duracion').value;
+  let fecha='[fecha por confirmar]';
+  if(fechaRaw){
+    const d=new Date(fechaRaw+'T12:00:00');
+    fecha=d.toLocaleDateString('es-CR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  }
+  const horaFmt=hora.replace(':',':')+'hrs';
+  const linkLine=link?`\nEnlace / acceso: ${link}`:'';
+  const correo=`Asunto: Convocatoria a entrevista virtual — ${puesto} | ANE Costa Rica
+
+Estimado/a ${nombre},
+
+Por medio del presente correo, la Agencia Nacional de Empleo (ANE) del Ministerio de Trabajo y Seguridad Social de Costa Rica le convoca a una entrevista virtual por competencias para el proceso de orientación laboral en el que participa.
+
+DETALLES DE LA SESIÓN
+──────────────────────────────
+Fecha:       ${fecha}
+Hora:        ${horaFmt} (hora de Costa Rica, UTC-6)
+Plataforma:  ${plataforma}
+Duración:    ${duracion} aproximadamente
+Puesto:      ${puesto}${linkLine}
+Asesor/a:    ${asesor} — ANE Costa Rica
+
+QUÉ OCURRIRÁ DURANTE LA ENTREVISTA
+──────────────────────────────────────────────────────
+• El/la asesor/a compartirá su pantalla y usted verá las preguntas
+  directamente en su pantalla durante la videollamada.
+• Las preguntas siguen la metodología STAR (Situación, Tarea,
+  Acción, Resultado). No hay respuestas "correctas" o "incorrectas";
+  se busca conocer su experiencia real.
+• No necesita instalar ningún programa adicional.
+• Tendrá tiempo suficiente para pensar y responder cada pregunta.
+
+CÓMO PREPARARSE
+──────────────────────────────
+✔ Ingrese desde un lugar tranquilo, con buena iluminación y sin ruido.
+✔ Verifique que su cámara y micrófono funcionen correctamente.
+✔ Ingrese a la ${plataforma} con 5 minutos de anticipación.
+✔ Tenga a mano su CV o una nota con sus experiencias laborales más
+  recientes para referenciar durante la conversación.
+✔ Lleve una identificación oficial (cédula, DIMEX o pasaporte).
+
+Si necesita reprogramar la sesión o tiene alguna consulta, comuníquese
+con nosotros antes de la fecha indicada respondiendo este correo.
+
+Agradecemos su disposición y le deseamos mucho éxito en la sesión.
+
+Atentamente,
+
+${asesor}
+Agencia Nacional de Empleo (ANE)
+Ministerio de Trabajo y Seguridad Social — Costa Rica
+──────────────────────────────────────────────────────
+Este mensaje es de uso interno del proceso de orientación ANE.
+La información recopilada durante la entrevista se maneja conforme
+a la Ley de Protección de la Persona frente al tratamiento de sus
+datos personales (Ley 8968, Costa Rica).`;
+  document.getElementById('email-body').textContent=correo;
+  document.getElementById('email-preview').classList.remove('hidden');
+}
+function copiarCorreo(){
+  const txt=document.getElementById('email-body').textContent;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn=document.getElementById('btn-copiar-correo');
+    btn.textContent='✅ Copiado';
+    setTimeout(()=>{ btn.textContent='📋 Copiar correo'; },2500);
+  }).catch(()=>{ prompt('Copia el correo manualmente:',txt); });
 }
 function updateBcStatus(){
   if(!bc) return;
