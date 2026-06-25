@@ -534,7 +534,7 @@ textarea{resize:vertical}
           </div>
           <div id="api-key-ui" style="display:none;background:rgba(13,115,115,.1);border-radius:8px;padding:10px;margin-bottom:8px;border:1px solid rgba(13,115,115,.3)">
             <label style="color:var(--tl);font-size:11px;font-weight:700;display:block;margin-bottom:4px">API Key de Anthropic (Claude)</label>
-            <p style="color:#4a8a8a;font-size:10px;margin-bottom:6px">La clave se guarda solo en este navegador (localStorage). Obtén la tuya en console.anthropic.com</p>
+            <p style="color:#4a8a8a;font-size:10px;margin-bottom:6px">🔒 La clave se guarda solo en <b>sessionStorage</b> (se borra al cerrar el tab). No se envía a ningún servidor ANE. Obtén la tuya en console.anthropic.com</p>
             <div style="display:flex;gap:6px">
               <input id="api-key-input" type="password" placeholder="sk-ant-api03-..." style="flex:1;background:rgba(0,0,0,.3);border:1px solid rgba(13,115,115,.5);color:#e0f0f0;padding:6px 10px;border-radius:6px;font-size:12px;font-family:monospace">
               <button onclick="saveApiKey()" style="background:var(--teal);border:none;color:#fff;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:700">Guardar</button>
@@ -1684,7 +1684,7 @@ function toggleApiKeyUI(){
   if(!ui) return;
   ui.style.display = ui.style.display === 'none' ? 'block' : 'none';
   if(ui.style.display === 'block'){
-    const stored = localStorage.getItem('ane_anthropic_key');
+    const stored = sessionStorage.getItem('ane_anthropic_key');
     const inp = document.getElementById('api-key-input');
     const st = document.getElementById('api-key-status');
     if(stored && inp) inp.value = stored;
@@ -1700,17 +1700,17 @@ function saveApiKey(){
     if(st) st.textContent = '⚠️ Formato inválido. Debe comenzar con sk-';
     return;
   }
-  localStorage.setItem('ane_anthropic_key', val);
+  sessionStorage.setItem('ane_anthropic_key', val);
   if(st) st.textContent = '✅ Clave guardada correctamente';
 }
 function clearApiKey(){
-  localStorage.removeItem('ane_anthropic_key');
+  sessionStorage.removeItem('ane_anthropic_key');
   const inp = document.getElementById('api-key-input');
   const st = document.getElementById('api-key-status');
   if(inp) inp.value = '';
   if(st) st.textContent = 'Clave eliminada';
 }
-function getApiKey(){ return localStorage.getItem('ane_anthropic_key')||''; }
+function getApiKey(){ return sessionStorage.getItem('ane_anthropic_key')||''; }
 
 // ============================================================
 // AI STAR ANALYSIS (via Claude API in-artifact)
