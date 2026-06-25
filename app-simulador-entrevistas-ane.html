@@ -134,7 +134,10 @@ textarea{resize:vertical}
   <div class="home-grid"></div>
   <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px 20px">
 
-    <div style="position:absolute;top:14px;right:16px;background:rgba(13,115,115,.2);border:1px solid var(--teal);border-radius:6px;padding:3px 10px;font-size:10px;color:#7dd3d3">🔒 USO INTERNO · ANE</div>
+    <div style="position:absolute;top:14px;right:16px;display:flex;gap:8px;align-items:center">
+      <button onclick="showPerfilModal()" style="background:rgba(13,115,115,.15);border:1px solid rgba(13,115,115,.35);border-radius:6px;padding:4px 12px;font-size:11px;color:#7dd3d3;cursor:pointer;font-family:inherit;font-weight:700" id="btn-perfil-asesor">⚙️ Mi perfil</button>
+      <div style="background:rgba(13,115,115,.2);border:1px solid var(--teal);border-radius:6px;padding:3px 10px;font-size:10px;color:#7dd3d3">🔒 USO INTERNO · ANE</div>
+    </div>
 
     <!-- HERO CARD -->
     <div style="width:100%;max-width:620px;background:rgba(13,115,115,.07);border:1px solid rgba(13,115,115,.25);border-radius:20px;padding:32px 36px;display:flex;flex-direction:column;align-items:center;gap:20px">
@@ -339,6 +342,74 @@ textarea{resize:vertical}
   </div>
 </div>
 
+<!-- ===== MODAL PERFIL ASESOR ===== -->
+<div id="perfil-modal" class="modal-overlay hidden" onclick="if(event.target===this)closePerfilModal()">
+  <div class="modal-box" style="max-width:500px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div>
+        <div style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:1.5px;font-weight:700">Configuración</div>
+        <h2 style="font-size:18px;font-weight:900;margin:4px 0 0">Mi perfil institucional</h2>
+        <p style="font-size:11px;color:#4a8a8a;margin:4px 0 0">Se guarda en este navegador. Pre-llena el correo de convocatoria automáticamente.</p>
+      </div>
+      <button onclick="closePerfilModal()" style="background:var(--s2);border:1px solid var(--db);color:#7dd3d3;width:32px;height:32px;border-radius:8px;font-size:16px">✕</button>
+    </div>
+
+    <div style="display:grid;gap:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div>
+          <label style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px">Nombre completo</label>
+          <input id="perfil-nombre" placeholder="Ej. Carlos Méndez Rojas" style="width:100%;font-size:12px;padding:8px 10px">
+        </div>
+        <div>
+          <label style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px">Cargo</label>
+          <input id="perfil-cargo" placeholder="Ej. Orientador Laboral" style="width:100%;font-size:12px;padding:8px 10px">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div>
+          <label style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px">Oficina / Unidad ANE</label>
+          <input id="perfil-oficina" placeholder="Ej. Oficina Central — San José" style="width:100%;font-size:12px;padding:8px 10px">
+        </div>
+        <div>
+          <label style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px">Teléfono institucional</label>
+          <input id="perfil-telefono" placeholder="Ej. 2222-1234 ext. 5" style="width:100%;font-size:12px;padding:8px 10px">
+        </div>
+      </div>
+      <div>
+        <label style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px">Correo institucional</label>
+        <input id="perfil-email" type="email" placeholder="Ej. carlos.mendez@mtss.go.cr" style="width:100%;font-size:12px;padding:8px 10px">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div>
+          <label style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px">Plataforma preferida</label>
+          <select id="perfil-plataforma" style="width:100%;font-size:12px;padding:8px 10px">
+            <option>Microsoft Teams</option>
+            <option>Google Meet</option>
+            <option>Zoom</option>
+            <option>WhatsApp Video</option>
+            <option>Llamada telefónica</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px">Duración habitual</label>
+          <select id="perfil-duracion" style="width:100%;font-size:12px;padding:8px 10px">
+            <option>20 minutos</option>
+            <option>30 minutos</option>
+            <option>45 minutos</option>
+            <option>60 minutos</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:18px">
+      <button onclick="guardarPerfil()" style="background:linear-gradient(135deg,var(--teal),var(--tl));border:none;color:#fff;padding:11px;border-radius:10px;font-size:13px;font-weight:800">💾 Guardar perfil</button>
+      <button onclick="borrarPerfil()" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:11px 14px;border-radius:10px;font-size:12px;font-weight:700">Borrar</button>
+    </div>
+    <div id="perfil-status" style="text-align:center;font-size:11px;color:#4a8a8a;margin-top:8px;min-height:16px"></div>
+  </div>
+</div>
+
 <!-- ===== MODAL SALA VIRTUAL ===== -->
 <div id="sala-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeSalaModal()">
   <div class="modal-box" style="max-width:640px">
@@ -452,11 +523,20 @@ textarea{resize:vertical}
             </select>
           </div>
         </div>
+        <!-- Perfil guardado chip -->
+        <div id="perfil-chip" class="hidden" style="display:flex;align-items:center;gap:8px;background:rgba(13,115,115,.1);border:1px solid rgba(13,115,115,.3);border-radius:8px;padding:8px 12px;margin-bottom:8px">
+          <span style="font-size:16px">👤</span>
+          <div style="flex:1;font-size:12px;color:#7dd3d3" id="perfil-chip-txt"></div>
+          <button onclick="showPerfilModal()" style="background:none;border:1px solid var(--db);color:#4a8a8a;padding:3px 8px;border-radius:5px;font-size:10px;cursor:pointer;font-family:inherit">Editar</button>
+        </div>
         <button onclick="generarCorreo()" style="width:100%;background:linear-gradient(135deg,var(--teal),var(--tl));border:none;color:#fff;padding:10px;border-radius:8px;font-size:13px;font-weight:800;margin-bottom:10px">✉️ Generar correo</button>
         <div id="email-preview" class="hidden">
-          <div style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
             <span>Vista previa del correo</span>
-            <button onclick="copiarCorreo()" id="btn-copiar-correo" style="background:rgba(13,115,115,.3);border:1px solid var(--teal);color:var(--tl);padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700">📋 Copiar correo</button>
+            <div style="display:flex;gap:6px">
+              <button onclick="copiarCorreo()" id="btn-copiar-correo" style="background:rgba(13,115,115,.3);border:1px solid var(--teal);color:var(--tl);padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700">📋 Copiar</button>
+              <button onclick="abrirEnCorreo()" style="background:rgba(13,115,115,.15);border:1px solid var(--db);color:#7dd3d3;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700">📨 Abrir en correo</button>
+            </div>
           </div>
           <div id="email-body" style="background:rgba(13,115,115,.05);border:1px solid rgba(13,115,115,.2);border-radius:8px;padding:14px;font-size:12px;line-height:1.75;color:#a8dede;white-space:pre-wrap;max-height:320px;overflow-y:auto;font-family:'IBM Plex Mono',monospace"></div>
         </div>
@@ -2359,9 +2439,74 @@ function copyCandUrl(){
     const btn=event.target; btn.textContent='✅ Copiado'; setTimeout(()=>{ btn.textContent='📋 Copiar URL'; },2000);
   }).catch(()=>{ prompt('Copia esta URL manualmente:',url); });
 }
-function generarCorreo(){
+// ── PERFIL ASESOR ──────────────────────────────────────────
+const PERFIL_KEY='ane_asesor_perfil';
+function cargarPerfil(){ try{return JSON.parse(localStorage.getItem(PERFIL_KEY))||{};}catch(e){return{};} }
+function guardarPerfil(){
+  const p={
+    nombre:document.getElementById('perfil-nombre').value.trim(),
+    cargo:document.getElementById('perfil-cargo').value.trim(),
+    oficina:document.getElementById('perfil-oficina').value.trim(),
+    telefono:document.getElementById('perfil-telefono').value.trim(),
+    email:document.getElementById('perfil-email').value.trim(),
+    plataforma:document.getElementById('perfil-plataforma').value,
+    duracion:document.getElementById('perfil-duracion').value
+  };
+  localStorage.setItem(PERFIL_KEY,JSON.stringify(p));
+  document.getElementById('perfil-status').textContent='✅ Perfil guardado correctamente';
+  setTimeout(()=>{ document.getElementById('perfil-status').textContent=''; },2500);
+  actualizarPerfilChip(p);
+  precargarCamposEmail(p);
+}
+function borrarPerfil(){
+  if(!confirm('¿Borrar el perfil guardado?')) return;
+  localStorage.removeItem(PERFIL_KEY);
+  ['perfil-nombre','perfil-cargo','perfil-oficina','perfil-telefono','perfil-email'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('perfil-status').textContent='Perfil eliminado';
+  document.getElementById('perfil-chip').classList.add('hidden');
+}
+function showPerfilModal(){
+  const p=cargarPerfil();
+  const set=(id,val)=>{ const el=document.getElementById(id); if(el&&val) el.value=val; };
+  set('perfil-nombre',p.nombre); set('perfil-cargo',p.cargo); set('perfil-oficina',p.oficina);
+  set('perfil-telefono',p.telefono); set('perfil-email',p.email);
+  if(p.plataforma){ const s=document.getElementById('perfil-plataforma'); if(s) for(let o of s.options) if(o.value===p.plataforma){s.value=p.plataforma;break;} }
+  if(p.duracion){ const s=document.getElementById('perfil-duracion'); if(s) s.value=p.duracion; }
+  document.getElementById('perfil-modal').classList.remove('hidden');
+  document.getElementById('perfil-status').textContent='';
+}
+function closePerfilModal(){ document.getElementById('perfil-modal').classList.add('hidden'); }
+function actualizarPerfilChip(p){
+  const chip=document.getElementById('perfil-chip');
+  const txt=document.getElementById('perfil-chip-txt');
+  if(!chip||!txt) return;
+  if(p&&p.nombre){
+    txt.innerHTML=`<b>${p.nombre}</b>${p.cargo?' · '+p.cargo:''}${p.oficina?' · '+p.oficina:''}`;
+    chip.style.display='flex'; chip.classList.remove('hidden');
+  } else { chip.classList.add('hidden'); }
+}
+function precargarCamposEmail(p){
+  if(!p) return;
+  const set=(id,val)=>{ const el=document.getElementById(id); if(el&&val) el.value=val; };
+  set('email-asesor-name',p.nombre);
+  if(p.plataforma){ const s=document.getElementById('email-plataforma'); if(s) s.value=p.plataforma; }
+  if(p.duracion){ const s=document.getElementById('email-duracion'); if(s) s.value=p.duracion; }
+}
+// Inicializar al cargar
+(function initPerfil(){
+  const p=cargarPerfil();
+  if(p&&p.nombre){ actualizarPerfilChip(p); precargarCamposEmail(p); }
+})();
+
+// ── CORREO CONVOCATORIA ────────────────────────────────────
+function buildCorreoTxt(){
   const nombre=document.getElementById('email-cand-name').value.trim()||'Candidato/a';
-  const asesor=document.getElementById('email-asesor-name').value.trim()||'el equipo ANE';
+  const p=cargarPerfil();
+  const asesorNombre=document.getElementById('email-asesor-name').value.trim()||p.nombre||'el equipo ANE';
+  const cargo=p.cargo||'Orientador/a Laboral';
+  const oficina=p.oficina||'Agencia Nacional de Empleo (ANE)';
+  const telefono=p.telefono;
+  const emailAsesor=p.email;
   const fechaRaw=document.getElementById('email-fecha').value;
   const hora=document.getElementById('email-hora').value||'09:00';
   const plataforma=document.getElementById('email-plataforma').value;
@@ -2369,71 +2514,81 @@ function generarCorreo(){
   const puesto=document.getElementById('email-puesto').value.trim()||'el puesto indicado';
   const duracion=document.getElementById('email-duracion').value;
   let fecha='[fecha por confirmar]';
-  if(fechaRaw){
-    const d=new Date(fechaRaw+'T12:00:00');
-    fecha=d.toLocaleDateString('es-CR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  }
-  const horaFmt=hora.replace(':',':')+'hrs';
-  const linkLine=link?`\nEnlace / acceso: ${link}`:'';
-  const correo=`Asunto: Convocatoria a entrevista virtual — ${puesto} | ANE Costa Rica
-
-Estimado/a ${nombre},
+  if(fechaRaw){ const d=new Date(fechaRaw+'T12:00:00'); fecha=d.toLocaleDateString('es-CR',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); }
+  const linkLine=link?`\nEnlace / acceso:   ${link}`:'';
+  const telLine=telefono?`\nTeléfono:          ${telefono}`:'';
+  const emailLine=emailAsesor?`\nCorreo:            ${emailAsesor}`:'';
+  return {
+    asunto:`Convocatoria a entrevista virtual — ${puesto} | ANE Costa Rica`,
+    cuerpo:`Estimado/a ${nombre},
 
 Por medio del presente correo, la Agencia Nacional de Empleo (ANE) del Ministerio de Trabajo y Seguridad Social de Costa Rica le convoca a una entrevista virtual por competencias para el proceso de orientación laboral en el que participa.
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 DETALLES DE LA SESIÓN
-──────────────────────────────
-Fecha:       ${fecha}
-Hora:        ${horaFmt} (hora de Costa Rica, UTC-6)
-Plataforma:  ${plataforma}
-Duración:    ${duracion} aproximadamente
-Puesto:      ${puesto}${linkLine}
-Asesor/a:    ${asesor} — ANE Costa Rica
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Fecha:             ${fecha}
+Hora:              ${hora} hrs (Costa Rica, UTC-6)
+Plataforma:        ${plataforma}
+Duración estimada: ${duracion}
+Puesto evaluado:   ${puesto}${linkLine}
+Asesor/a:          ${asesorNombre} — ${cargo}
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 QUÉ OCURRIRÁ DURANTE LA ENTREVISTA
-──────────────────────────────────────────────────────
-• El/la asesor/a compartirá su pantalla y usted verá las preguntas
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• El/la asesor/a compartirá su pantalla. Usted verá las preguntas
   directamente en su pantalla durante la videollamada.
-• Las preguntas siguen la metodología STAR (Situación, Tarea,
-  Acción, Resultado). No hay respuestas "correctas" o "incorrectas";
-  se busca conocer su experiencia real.
+• Las preguntas siguen la metodología STAR (Situación, Tarea, Acción,
+  Resultado). No hay respuestas "correctas" o "incorrectas"; se busca
+  conocer su experiencia real.
 • No necesita instalar ningún programa adicional.
-• Tendrá tiempo suficiente para pensar y responder cada pregunta.
+• Tendrá tiempo suficiente para reflexionar y responder cada pregunta.
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CÓMO PREPARARSE
-──────────────────────────────
-✔ Ingrese desde un lugar tranquilo, con buena iluminación y sin ruido.
-✔ Verifique que su cámara y micrófono funcionen correctamente.
-✔ Ingrese a la ${plataforma} con 5 minutos de anticipación.
-✔ Tenga a mano su CV o una nota con sus experiencias laborales más
-  recientes para referenciar durante la conversación.
-✔ Lleve una identificación oficial (cédula, DIMEX o pasaporte).
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✔ Conéctese desde un lugar tranquilo, con buena iluminación y sin ruido.
+✔ Verifique que su cámara y micrófono funcionen antes de la sesión.
+✔ Ingrese a ${plataforma} con 5 minutos de anticipación.
+✔ Tenga a mano su CV o una nota con sus experiencias laborales recientes.
+✔ Cuente con una identificación oficial (cédula, DIMEX o pasaporte).
 
 Si necesita reprogramar la sesión o tiene alguna consulta, comuníquese
-con nosotros antes de la fecha indicada respondiendo este correo.
+con nosotros respondiendo este correo antes de la fecha indicada.
 
 Agradecemos su disposición y le deseamos mucho éxito en la sesión.
 
 Atentamente,
 
-${asesor}
-Agencia Nacional de Empleo (ANE)
-Ministerio de Trabajo y Seguridad Social — Costa Rica
-──────────────────────────────────────────────────────
-Este mensaje es de uso interno del proceso de orientación ANE.
-La información recopilada durante la entrevista se maneja conforme
-a la Ley de Protección de la Persona frente al tratamiento de sus
-datos personales (Ley 8968, Costa Rica).`;
-  document.getElementById('email-body').textContent=correo;
+${asesorNombre}
+${cargo}
+${oficina}
+Ministerio de Trabajo y Seguridad Social — Costa Rica${telLine}${emailLine}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Este mensaje forma parte del proceso de orientación laboral de la ANE.
+La información recopilada durante la entrevista se trata conforme a la
+Ley de Protección de la Persona frente al tratamiento de sus datos
+personales — Ley N° 8968, Costa Rica.`
+  };
+}
+function generarCorreo(){
+  const {asunto,cuerpo}=buildCorreoTxt();
+  document.getElementById('email-body').textContent=`Asunto: ${asunto}\n\n${cuerpo}`;
   document.getElementById('email-preview').classList.remove('hidden');
 }
 function copiarCorreo(){
   const txt=document.getElementById('email-body').textContent;
   navigator.clipboard.writeText(txt).then(()=>{
     const btn=document.getElementById('btn-copiar-correo');
-    btn.textContent='✅ Copiado';
-    setTimeout(()=>{ btn.textContent='📋 Copiar correo'; },2500);
+    btn.textContent='✅ Copiado'; setTimeout(()=>{ btn.textContent='📋 Copiar'; },2500);
   }).catch(()=>{ prompt('Copia el correo manualmente:',txt); });
+}
+function abrirEnCorreo(){
+  const {asunto,cuerpo}=buildCorreoTxt();
+  const mailto=`mailto:?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+  window.open(mailto,'_self');
 }
 function updateBcStatus(){
   if(!bc) return;
