@@ -156,6 +156,14 @@ textarea{resize:vertical}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .cand-q-num{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;background:var(--teal);border-radius:50%;font-weight:800;font-size:15px;margin-bottom:14px;color:#fff}
 .cand-q-text{font-size:20px;font-weight:700;line-height:1.5;color:#fff}
+.star-guide-cand{margin-top:18px;background:rgba(13,115,115,.12);border:1px solid rgba(125,211,211,.2);border-radius:12px;padding:14px 16px}
+.sgc-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7dd3d3;margin-bottom:10px}
+.sgc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:600px){.sgc-grid{grid-template-columns:1fr}}
+.sgc-item{display:flex;gap:10px;align-items:flex-start;background:rgba(0,0,0,.2);border:1px solid rgba(125,211,211,.15);border-radius:8px;padding:8px 10px}
+.sgc-letter{flex:0 0 auto;width:28px;height:28px;border-radius:6px;background:rgba(125,211,211,.1);color:var(--col);font-size:15px;font-weight:900;display:flex;align-items:center;justify-content:center;font-family:'Manrope',sans-serif}
+.sgc-name{font-size:12px;font-weight:700;color:var(--col);margin-bottom:2px}
+.sgc-hint{font-size:11px;color:#5a9898;line-height:1.4}
 .cand-video-wrap{width:100%;max-width:460px;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;position:relative;border:2px solid var(--db);margin:0 auto}
 .cand-video-wrap video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:none}
 .cand-ctrl-btn{background:var(--s2);border:2px solid var(--db);border-radius:10px;padding:10px 14px;color:#4a8a8a;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;cursor:pointer}
@@ -309,6 +317,40 @@ textarea{resize:vertical}
       </div>
       <p class="cand-q-text" id="cand-q-display"></p>
       <div style="margin-top:14px;height:2px;background:linear-gradient(90deg,var(--teal),transparent);border-radius:2px"></div>
+      <!-- Guía STAR para el candidato -->
+      <div class="star-guide-cand" id="cand-star-guide">
+        <div class="sgc-label">Estructura tu respuesta con <strong>STAR</strong></div>
+        <div class="sgc-grid">
+          <div class="sgc-item" style="--col:#3b82f6">
+            <span class="sgc-letter">S</span>
+            <div>
+              <div class="sgc-name">Situación</div>
+              <div class="sgc-hint">¿Cuál era el contexto? ¿Cuándo y dónde ocurrió?</div>
+            </div>
+          </div>
+          <div class="sgc-item" style="--col:#f59e0b">
+            <span class="sgc-letter">T</span>
+            <div>
+              <div class="sgc-name">Tarea</div>
+              <div class="sgc-hint">¿Cuál era tu rol y responsabilidad específica?</div>
+            </div>
+          </div>
+          <div class="sgc-item" style="--col:#10b981">
+            <span class="sgc-letter">A</span>
+            <div>
+              <div class="sgc-name">Acción</div>
+              <div class="sgc-hint">¿Qué hiciste exactamente? ¿Cómo lo hiciste?</div>
+            </div>
+          </div>
+          <div class="sgc-item" style="--col:#8b5cf6">
+            <span class="sgc-letter">R</span>
+            <div>
+              <div class="sgc-name">Resultado</div>
+              <div class="sgc-hint">¿Qué lograste? Usa datos o métricas si puedes.</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- FILA: CÁMARA + CONTROLES -->
@@ -1881,7 +1923,10 @@ function renderQuestions(){
     <div class="q-item${activeQ===q?' active-q':''}" id="qi-${i}">
       <div class="q-num">${i+1}</div>
       <div style="flex:1">
-        <p style="font-size:13px;line-height:1.5;margin:0 0 6px;font-weight:500">${q}</p>
+        <p style="font-size:13px;line-height:1.5;margin:0 0 8px;font-weight:500">${q}</p>
+        <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
+          ${[['S','Situación','#3b82f6'],['T','Tarea','#f59e0b'],['A','Acción','#10b981'],['R','Resultado','#8b5cf6']].map(([l,n,c])=>`<span style="display:inline-flex;align-items:center;gap:4px;background:${c}18;border:1px solid ${c}33;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700"><span style="color:${c};font-size:11px;font-weight:900">${l}</span><span style="color:#7a9a9a">${n}</span></span>`).join('')}
+        </div>
         <div style="display:flex;gap:6px">
           <button class="q-act-btn${activeQ===q?' is-active':''}" onclick="setActiveQ(${i})">
             ${activeQ===q?'✓ Activa':'▶ Activar'}
