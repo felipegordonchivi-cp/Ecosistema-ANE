@@ -102,6 +102,53 @@ textarea{resize:vertical}
 /* SCORE INDICATOR */
 .global-score{width:90px;height:90px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;font-weight:800;flex-shrink:0;border:3px solid;transition:all .3s}
 
+/* ── PANEL 2 PREMIUM ───────────────────────────────────── */
+.eval2-wrap{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px}
+.eval2-header{background:linear-gradient(135deg,rgba(13,115,115,.18),rgba(13,45,45,.4));border:1px solid rgba(125,211,211,.2);border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.eval2-header .q-pill{background:rgba(13,115,115,.25);border:1px solid rgba(125,211,211,.3);border-radius:10px;padding:10px 16px;flex:1;min-width:200px;font-size:13px;line-height:1.6;color:#c9ffff;font-weight:500}
+.eval2-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.eval2-card{background:rgba(8,32,32,.7);border:1px solid rgba(13,115,115,.25);border-radius:16px;padding:18px;backdrop-filter:blur(6px)}
+.eval2-card h4{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#5a9898;font-weight:800;margin:0 0 12px;display:flex;align-items:center;gap:7px}
+.star-comp-card{border-radius:14px;padding:16px;border:1px solid;position:relative;overflow:hidden;transition:all .25s}
+.star-comp-card:before{content:"";position:absolute;inset:0 auto 0 0;width:3px;border-radius:3px 0 0 3px;background:var(--sc-col)}
+.star-comp-card .sc-label{font-size:12px;font-weight:900;letter-spacing:.04em;margin-bottom:4px}
+.star-comp-card .sc-desc{font-size:11px;line-height:1.5;margin-bottom:10px;color:#5a8a8a}
+.pip-row{display:flex;gap:4px}
+.pip{flex:1;height:28px;border-radius:7px;border:1px solid var(--db);background:var(--bg);font-size:11px;font-weight:800;color:#4a7a7a;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.pip.on{color:#fff;border-color:transparent}
+.pip:hover:not(.on){border-color:var(--sc-col);color:var(--sc-col)}
+.sc-val{position:absolute;top:14px;right:14px;font-size:22px;font-weight:900;line-height:1}
+.sc-note{width:100%;margin-top:8px;background:rgba(0,0,0,.2);border:1px solid rgba(13,115,115,.2);border-radius:8px;padding:7px 10px;font-size:11px;color:#a8dede;resize:none;min-height:44px;font-family:inherit}
+
+/* Guide card */
+.guide-card{border-radius:16px;overflow:hidden;border:1px solid rgba(125,211,211,.15)}
+.guide-header{padding:14px 18px;background:linear-gradient(90deg,rgba(13,115,115,.35),rgba(13,45,45,.5));display:flex;align-items:center;gap:10px}
+.guide-header h4{font-size:13px;font-weight:900;color:#7dd3d3;margin:0}
+.guide-body{padding:16px 18px;background:rgba(4,22,22,.55);display:flex;flex-direction:column;gap:10px}
+.guide-row{display:grid;grid-template-columns:72px 1fr;gap:10px;align-items:flex-start}
+.guide-letter{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;flex-shrink:0}
+.guide-content b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.guide-content p{font-size:12px;line-height:1.6;color:#7dd3d3;margin:0}
+.guide-signal{font-size:11px;color:#5eead4;margin-top:3px;padding-left:10px;border-left:2px solid rgba(20,184,166,.35);line-height:1.5}
+.guide-competencia{display:inline-flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.guide-competencia span{background:rgba(13,115,115,.2);border:1px solid rgba(125,211,211,.2);border-radius:999px;padding:2px 9px;font-size:10px;color:#7dd3d3;font-weight:700}
+
+/* Score donut */
+.score-donut{width:110px;height:110px;border-radius:50%;background:conic-gradient(var(--sd-c,#22c55e) 0deg,var(--sd-c,#22c55e) var(--sd-deg,180deg),rgba(125,211,211,.1) var(--sd-deg,180deg));display:grid;place-items:center;position:relative;flex-shrink:0}
+.score-donut:after{content:"";position:absolute;inset:13px;border-radius:50%;background:var(--s1)}
+.score-donut-inner{position:relative;z-index:1;text-align:center}
+.score-donut-inner b{font-family:'IBM Plex Mono',monospace;font-size:30px;letter-spacing:-.05em;display:block;line-height:1}
+.score-donut-inner span{font-size:10px;color:#5a9898;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+
+/* Right sidebar panel 2 */
+.eval2-sidebar{width:280px;flex-shrink:0;border-left:1px solid var(--db);background:var(--s1);display:flex;flex-direction:column;gap:0;overflow-y:auto}
+.eval2-sidebar-inner{padding:16px;display:flex;flex-direction:column;gap:12px}
+.star-mini-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(13,115,115,.12)}
+.star-mini-bar{flex:1;height:6px;border-radius:3px;background:rgba(125,211,211,.1);overflow:hidden}
+.star-mini-fill{height:100%;border-radius:3px;transition:width .4s}
+
+@media(max-width:1100px){.eval2-grid{grid-template-columns:1fr}}
+
 /* ── VISTA CANDIDATO ─────────────────────────────────── */
 #v-candidato{min-height:100vh;display:none;flex-direction:column;background:#020e0e}
 #v-candidato.active{display:flex}
@@ -740,118 +787,150 @@ textarea{resize:vertical}
       </div>
     </div>
 
-    <!-- ===== PANEL 2: STAR EVALUATOR ===== -->
-    <div class="panel" id="panel2">
-      <div style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px">
-        
-        <!-- Context bar -->
-        <div style="background:var(--s2);border:1px solid var(--db);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <div id="eval-ctx-icon" style="font-size:20px"></div>
-          <div>
-            <div style="font-size:12px;font-weight:700" id="eval-ctx-name">[sin candidato]</div>
-            <div style="font-size:11px;color:#7dd3d3" id="eval-ctx-prof"></div>
-          </div>
-          <div style="flex:1;font-size:11px;color:#9dc8c8;font-style:italic" id="eval-ctx-q"></div>
-          <span id="eval-comp-badge" style="background:rgba(13,115,115,.3);border:1px solid var(--teal);border-radius:12px;padding:2px 10px;font-size:10px;color:var(--tl);display:none"></span>
-        </div>
+    <!-- ===== PANEL 2: STAR EVALUATOR (PREMIUM) ===== -->
+    <div class="panel" id="panel2" style="overflow:hidden">
+      <div class="eval2-wrap">
 
-        <!-- Transcript box -->
-        <div style="background:var(--s1);border:1px solid var(--db);border-radius:10px;padding:14px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-            <label style="color:var(--tl);font-size:11px;text-transform:uppercase;letter-spacing:1px">📝 Respuesta del Candidato</label>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span id="word-count" style="font-size:10px;color:#3a7272">0 palabras</span>
-              <button onclick="clearResponse()" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:3px 8px;border-radius:4px;font-size:10px">Limpiar</button>
-            </div>
-          </div>
-          <textarea id="cand-resp" placeholder="La transcripción de audio aparecerá aquí automáticamente, o puedes escribir/pegar la respuesta…" style="width:100%;min-height:100px;font-size:13px;line-height:1.6" oninput="updateWordCount()"></textarea>
-        </div>
-
-        <!-- STAR Grid -->
-        <div style="background:var(--s1);border:1px solid var(--db);border-radius:10px;padding:14px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <label style="color:var(--tl);font-size:11px;text-transform:uppercase;letter-spacing:1px">⭐ Puntajes STAR (1-5 por componente)</label>
-            <div id="star-pct-badge" style="background:#22c55e;border-radius:8px;padding:4px 14px;font-size:18px;font-weight:800">0%</div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="star-grid"></div>
-          <div class="progress-bar"><div id="star-pb" class="progress-fill" style="width:0%;background:#22c55e"></div></div>
-        </div>
-
-        <!-- Global Score 1-10 -->
-        <div style="background:var(--s1);border:1px solid var(--db);border-radius:10px;padding:14px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-            <label style="color:var(--tl);font-size:11px;text-transform:uppercase;letter-spacing:1px">🎯 Puntaje Global (1-10)</label>
-            <div id="global-score-display" style="font-size:28px;font-weight:800;color:#22c55e">5</div>
-          </div>
-          <input type="range" id="global-score" min="1" max="10" value="5" oninput="updateGlobalScore(this.value)" style="width:100%;background:var(--db);height:6px;border:none;outline:none;cursor:pointer;border-radius:3px">
-          <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:#3a7272">
-            <span>1 — Muy deficiente</span><span>5 — Aceptable</span><span>10 — Excepcional</span>
-          </div>
-        </div>
-
-        <!-- Notes -->
-        <div style="background:var(--s1);border:1px solid var(--db);border-radius:10px;padding:14px">
-          <label style="display:block;color:var(--tl);font-size:11px;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">📝 Notas del Entrevistador</label>
-          <textarea id="eval-notes" placeholder="Observaciones, contexto adicional, señales no verbales…" style="width:100%;min-height:70px;font-size:13px"></textarea>
-        </div>
-
-        <!-- AI STAR Analysis -->
-        <div style="background:var(--s1);border:1px solid var(--db);border-radius:10px;padding:14px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <!-- ── HEADER: Candidato + Pregunta activa ── -->
+        <div class="eval2-header">
+          <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+            <div id="eval-ctx-icon" style="font-size:28px"></div>
             <div>
-              <label style="color:var(--tl);font-size:11px;text-transform:uppercase;letter-spacing:1px">🤖 Análisis STAR con IA</label>
-              <p style="color:#4a8a8a;font-size:11px;margin-top:2px">Claude evalúa la respuesta por componentes STAR y genera retroalimentación</p>
-            </div>
-            <div style="display:flex;gap:6px">
-              <button id="ai-btn" onclick="analyzeWithAI()" style="background:var(--teal);border:none;color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700">🔍 Analizar</button>
-              <button onclick="analyzeAndSave()" style="background:rgba(13,115,115,.2);border:1px solid var(--teal);color:var(--tl);padding:8px 10px;border-radius:8px;font-size:11px" title="Analizar y guardar">💾</button>
-              <button onclick="toggleApiKeyUI()" style="background:rgba(13,115,115,.15);border:1px solid rgba(13,115,115,.4);color:var(--tl);padding:8px 10px;border-radius:8px;font-size:11px" title="Configurar API key">🔑</button>
+              <div style="font-size:13px;font-weight:800;color:#fff" id="eval-ctx-name">Sin candidato</div>
+              <div style="font-size:11px;color:#7dd3d3;margin-top:2px" id="eval-ctx-prof">Selecciona ocupación en Panel 1</div>
             </div>
           </div>
-          <div id="api-key-ui" style="display:none;background:rgba(13,115,115,.1);border-radius:8px;padding:10px;margin-bottom:8px;border:1px solid rgba(13,115,115,.3)">
-            <label style="color:var(--tl);font-size:11px;font-weight:700;display:block;margin-bottom:4px">API Key de Anthropic (Claude)</label>
-            <p style="color:#4a8a8a;font-size:10px;margin-bottom:6px">🔒 La clave se guarda solo en <b>sessionStorage</b> (se borra al cerrar el tab). No se envía a ningún servidor ANE. Obtén la tuya en console.anthropic.com</p>
-            <div style="display:flex;gap:6px">
-              <input id="api-key-input" type="password" placeholder="sk-ant-api03-..." style="flex:1;background:rgba(0,0,0,.3);border:1px solid rgba(13,115,115,.5);color:#e0f0f0;padding:6px 10px;border-radius:6px;font-size:12px;font-family:monospace">
-              <button onclick="saveApiKey()" style="background:var(--teal);border:none;color:#fff;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:700">Guardar</button>
-              <button onclick="clearApiKey()" style="background:rgba(200,50,50,.2);border:1px solid rgba(200,50,50,.4);color:#ff8888;padding:6px 10px;border-radius:6px;font-size:11px">🗑</button>
-            </div>
-            <p id="api-key-status" style="color:#4a8a8a;font-size:10px;margin-top:4px"></p>
-          </div>
-          <div id="ai-loading" style="display:none;text-align:center;padding:20px;color:var(--tl)">
-            <div style="font-size:24px;margin-bottom:8px;animation:blink 1s infinite">⏳</div>
-            Analizando con IA…
-          </div>
-          <div id="ai-result" style="background:var(--s2);border-radius:8px;padding:14px;font-size:12px;color:#c8e8e8;line-height:1.8;white-space:pre-wrap;max-height:350px;overflow-y:auto;display:none;border-left:3px solid var(--teal)"></div>
-          <p id="ai-hint" style="color:#4a8a8a;font-size:12px;margin-top:4px">Importa la respuesta de audio o escribe manualmente, luego presiona <strong style="color:var(--tl)">🔍 Analizar</strong>.</p>
+          <div class="q-pill" id="eval-ctx-q">Sin pregunta activa — activa una desde el Panel de Perfiles</div>
+          <span id="eval-comp-badge" style="background:rgba(13,115,115,.3);border:1px solid var(--teal);border-radius:12px;padding:3px 12px;font-size:11px;color:var(--tl);white-space:nowrap;display:none"></span>
         </div>
+
+        <!-- ── FILA 1: Respuesta + STAR ── -->
+        <div class="eval2-grid">
+
+          <!-- Respuesta del candidato -->
+          <div class="eval2-card">
+            <h4>📝 Respuesta del candidato</h4>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <span id="word-count" style="font-size:11px;color:#4a8a8a;background:rgba(13,115,115,.15);border-radius:999px;padding:2px 10px">0 palabras</span>
+              <button onclick="clearResponse()" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#fca5a5;padding:3px 10px;border-radius:6px;font-size:10px;font-weight:700">Limpiar</button>
+            </div>
+            <textarea id="cand-resp" placeholder="La transcripción de audio aparecerá aquí automáticamente, o escribe / pega la respuesta…" style="width:100%;min-height:160px;font-size:13px;line-height:1.7;background:rgba(0,0,0,.25);border:1px solid rgba(13,115,115,.25);border-radius:10px;padding:12px;color:#e0f4f4;resize:vertical" oninput="updateWordCount()"></textarea>
+
+            <!-- Notas -->
+            <div style="margin-top:12px">
+              <label style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:.08em;font-weight:700;display:block;margin-bottom:6px">Observaciones del asesor</label>
+              <textarea id="eval-notes" placeholder="Señales no verbales, contexto adicional, actitud durante la entrevista…" style="width:100%;min-height:66px;font-size:12px;background:rgba(0,0,0,.2);border:1px solid rgba(13,115,115,.2);border-radius:8px;padding:10px;color:#9dc8c8;resize:vertical"></textarea>
+            </div>
+          </div>
+
+          <!-- STAR Components -->
+          <div class="eval2-card">
+            <h4>⭐ Evaluación STAR
+              <span id="star-pct-badge" style="margin-left:auto;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);border-radius:999px;padding:2px 10px;font-size:12px;color:#86efac;font-weight:900">0%</span>
+            </h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="star-grid"></div>
+          </div>
+        </div>
+
+        <!-- ── FILA 2: Guía de respuesta + IA ── -->
+        <div class="eval2-grid">
+
+          <!-- Guía de respuesta orientativa -->
+          <div class="guide-card" id="guide-card">
+            <div class="guide-header">
+              <div style="width:32px;height:32px;border-radius:8px;background:rgba(13,115,115,.4);display:grid;place-items:center;font-size:16px;flex-shrink:0">🧭</div>
+              <div>
+                <h4>Guía de respuesta orientativa</h4>
+                <div style="font-size:11px;color:#4a8a8a;margin-top:2px" id="guide-tipo">Activa una pregunta para ver la guía</div>
+              </div>
+              <div id="guide-competencia" class="guide-competencia" style="margin-left:auto"></div>
+            </div>
+            <div class="guide-body" id="guide-body">
+              <div style="text-align:center;padding:20px;color:#3a7272;font-size:13px">
+                <div style="font-size:32px;margin-bottom:10px">🧭</div>
+                La guía aparece al activar una pregunta en el Panel de Perfiles.<br>
+                <span style="font-size:11px;color:#2a5050">Analiza el tipo de pregunta y sugiere qué buscar en cada componente STAR.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- IA + Puntaje global -->
+          <div class="eval2-card">
+            <h4>🤖 Análisis con IA · Claude</h4>
+
+            <!-- API Key UI -->
+            <div id="api-key-ui" style="display:none;background:rgba(13,115,115,.1);border-radius:8px;padding:10px;margin-bottom:10px;border:1px solid rgba(13,115,115,.3)">
+              <label style="color:var(--tl);font-size:11px;font-weight:700;display:block;margin-bottom:4px">API Key de Anthropic</label>
+              <p style="color:#4a8a8a;font-size:10px;margin-bottom:6px">🔒 Solo en <b>sessionStorage</b> — se borra al cerrar el tab</p>
+              <div style="display:flex;gap:6px">
+                <input id="api-key-input" type="password" placeholder="sk-ant-api03-..." style="flex:1;background:rgba(0,0,0,.3);border:1px solid rgba(13,115,115,.5);color:#e0f0f0;padding:6px 10px;border-radius:6px;font-size:12px;font-family:monospace">
+                <button onclick="saveApiKey()" style="background:var(--teal);border:none;color:#fff;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:700">Guardar</button>
+                <button onclick="clearApiKey()" style="background:rgba(200,50,50,.2);border:1px solid rgba(200,50,50,.4);color:#ff8888;padding:6px 10px;border-radius:6px;font-size:11px">🗑</button>
+              </div>
+              <p id="api-key-status" style="color:#4a8a8a;font-size:10px;margin-top:4px"></p>
+            </div>
+
+            <div style="display:flex;gap:6px;margin-bottom:10px">
+              <button id="ai-btn" onclick="analyzeWithAI()" style="flex:1;background:linear-gradient(135deg,var(--teal),var(--tl));border:none;color:#fff;padding:9px;border-radius:9px;font-size:12px;font-weight:800">🔍 Analizar respuesta</button>
+              <button onclick="analyzeAndSave()" style="background:rgba(13,115,115,.2);border:1px solid var(--teal);color:var(--tl);padding:9px 10px;border-radius:9px;font-size:12px" title="Analizar y guardar">💾</button>
+              <button onclick="toggleApiKeyUI()" style="background:rgba(13,115,115,.15);border:1px solid rgba(13,115,115,.4);color:var(--tl);padding:9px 10px;border-radius:9px;font-size:12px" title="API Key">🔑</button>
+            </div>
+
+            <div id="ai-loading" style="display:none;text-align:center;padding:20px;color:var(--tl)">
+              <div style="font-size:24px;margin-bottom:8px;animation:blink 1s infinite">⏳</div>Analizando con IA…
+            </div>
+            <div id="ai-result" style="background:rgba(13,115,115,.08);border:1px solid rgba(13,115,115,.25);border-radius:10px;padding:14px;font-size:12px;color:#c8e8e8;line-height:1.8;white-space:pre-wrap;max-height:280px;overflow-y:auto;display:none;border-left:3px solid var(--teal)"></div>
+            <p id="ai-hint" style="color:#4a8a8a;font-size:11px;margin-top:6px">Importa la transcripción de audio o escribe la respuesta, luego presiona <b style="color:var(--tl)">Analizar</b>.</p>
+
+            <!-- Puntaje global -->
+            <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(13,115,115,.2)">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <label style="font-size:11px;color:#5a9898;text-transform:uppercase;letter-spacing:.08em;font-weight:700">🎯 Puntaje global</label>
+                <div id="global-score-display" style="font-size:26px;font-weight:900;color:#22c55e;font-family:'IBM Plex Mono',monospace">5</div>
+              </div>
+              <input type="range" id="global-score" min="1" max="10" value="5" oninput="updateGlobalScore(this.value)" style="width:100%;height:6px;border:none;outline:none;cursor:pointer;border-radius:3px;accent-color:var(--teal)">
+              <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:10px;color:#3a7272">
+                <span>1 — Muy deficiente</span><span>5 — Aceptable</span><span>10 — Excepcional</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      <!-- RIGHT: Summary + actions -->
-      <div style="width:260px;background:var(--s1);border-left:1px solid var(--db);padding:16px;display:flex;flex-direction:column;gap:12px;flex-shrink:0;overflow-y:auto">
-        
-        <!-- Global score display -->
-        <div style="text-align:center">
-          <div class="global-score" id="global-score-circle" style="margin:0 auto 8px;font-size:28px;border-color:#22c55e;color:#22c55e;background:rgba(34,197,94,.1);width:80px;height:80px">
-            <span id="gsc-num">5</span>
-            <span style="font-size:11px;font-weight:500">/10</span>
+      <!-- ── SIDEBAR DERECHO ── -->
+      <div class="eval2-sidebar">
+        <div class="eval2-sidebar-inner">
+
+          <!-- Score donut -->
+          <div style="display:flex;flex-direction:column;align-items:center;padding:8px 0 4px">
+            <div class="score-donut" id="score-donut" style="--sd-c:#22c55e;--sd-deg:180deg">
+              <div class="score-donut-inner">
+                <b id="gsc-num">5</b>
+                <span>/10</span>
+              </div>
+            </div>
+            <div id="gsc-label" style="font-size:13px;color:#7dd3d3;font-weight:700;margin-top:8px">Aceptable</div>
+            <div style="font-size:10px;color:#3a7272;margin-top:2px">Puntaje global de la respuesta</div>
           </div>
-          <div id="gsc-label" style="font-size:12px;color:#7dd3d3;font-weight:600">Aceptable</div>
+
+          <!-- STAR mini breakdown -->
+          <div style="background:rgba(8,32,32,.5);border:1px solid rgba(13,115,115,.2);border-radius:12px;padding:12px" id="star-summary">
+            <div style="font-size:10px;color:#3a7272;text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:8px">Desglose STAR</div>
+          </div>
+
+          <!-- Recomendación -->
+          <div id="rec-badge" style="background:rgba(13,115,115,.15);border:1px solid rgba(13,115,115,.3);border-radius:12px;padding:12px;font-size:12px;color:var(--tl);text-align:center;font-weight:700;line-height:1.5">
+            📋 Sin evaluación aún
+          </div>
+
+          <!-- Acciones -->
+          <button onclick="saveEval()" style="background:linear-gradient(135deg,var(--teal),var(--tl));border:none;color:#fff;padding:11px;border-radius:10px;font-size:13px;font-weight:800;width:100%">💾 Guardar evaluación</button>
+          <div id="save-flash" class="hidden" style="background:rgba(34,197,94,.2);border:1px solid rgba(34,197,94,.4);color:#86efac;border-radius:8px;padding:7px;text-align:center;font-size:12px;font-weight:700">✓ Guardado correctamente</div>
+          <button onclick="resetEval()" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:#fca5a5;padding:9px;border-radius:10px;font-size:12px;font-weight:700;width:100%">🗑 Limpiar evaluación</button>
+          <button onclick="generatePDF()" class="pdf-btn" style="width:100%;justify-content:center">📄 Informe PDF · ANE</button>
+
         </div>
-
-        <!-- STAR breakdown -->
-        <div style="background:var(--s2);border-radius:8px;padding:10px" id="star-summary"></div>
-
-        <!-- Recommendation badge -->
-        <div id="rec-badge" style="background:rgba(13,115,115,.2);border:1px solid rgba(13,115,115,.4);border-radius:8px;padding:10px;text-align:center;font-size:12px;font-weight:700;color:var(--tl)">
-          📋 Sin evaluación aún
-        </div>
-
-        <!-- Save / Reset / PDF -->
-        <button onclick="saveEval()" style="background:var(--teal);border:none;color:#fff;padding:10px;border-radius:8px;font-size:13px;font-weight:700">💾 Guardar Evaluación</button>
-        <div id="save-flash" class="hidden" style="background:#22c55e;border-radius:6px;padding:6px;text-align:center;font-size:12px;font-weight:700">✓ Guardado</div>
-        <button onclick="resetEval()" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:8px;border-radius:8px;font-size:12px">🗑 Limpiar Evaluación</button>
-        <button onclick="generatePDF()" class="pdf-btn">📄 Informe PDF · ANE</button>
       </div>
     </div>
 
@@ -1523,11 +1602,156 @@ qs:Q10([
 
 // STAR Components
 const STAR_C = [
-  {k:'S',l:'Situación',d:'Contexto claro: empresa, equipo, momento, desafío',col:'#3b82f6'},
+  {k:'S',l:'Situación',d:'Contexto: empresa, equipo, momento, desafío',col:'#3b82f6'},
   {k:'T',l:'Tarea',d:'Responsabilidad específica y rol en la situación',col:'#f59e0b'},
   {k:'A',l:'Acción',d:'Pasos concretos que tomó el candidato',col:'#10b981'},
   {k:'R',l:'Resultado',d:'Impacto medible, aprendizaje o logro obtenido',col:'#8b5cf6'},
 ];
+
+// ── STAR GUIDE ENGINE ────────────────────────────────────────
+const STAR_GUIDES = {
+  conflicto:{
+    tipo:'Manejo de conflictos y relaciones interpersonales',
+    comp:['Inteligencia emocional','Comunicación asertiva','Resolución de conflictos'],
+    S:{g:'¿Con quién fue el conflicto? ¿En qué contexto laboral ocurrió?',s:'Describe la situación sin culpar directamente a la otra persona'},
+    T:{g:'¿Cuál era su responsabilidad específica frente a ese conflicto?',s:'Asumió un rol activo, no solo fue testigo o víctima'},
+    A:{g:'¿Qué pasos concretos tomó? ¿Buscó mediación, tuvo una conversación directa, escaló?',s:'Describe acciones reales: "hice", "hablé", "propuse" — no intenciones'},
+    R:{g:'¿Cómo quedó la relación? ¿Se resolvió el problema? ¿Qué aprendió?',s:'Resultado positivo o aprendizaje claro, aunque la situación haya sido difícil'},
+    ideal:'Una buena respuesta describe un conflicto real con una persona específica, explica las acciones diplomáticas tomadas sin atacar a terceros, y cierra con una resolución o aprendizaje que muestra madurez emocional.'
+  },
+  error:{
+    tipo:'Manejo de errores y responsabilidad personal',
+    comp:['Autocrítica','Responsabilidad','Aprendizaje continuo'],
+    S:{g:'¿Cuál era la tarea o proceso en el que ocurrió el error? ¿Cuál era el contexto?',s:'Describe el error con honestidad — no lo minimice ni exagere'},
+    T:{g:'¿Cuál era su responsabilidad en esa tarea? ¿Era su error directo o compartido?',s:'Asume responsabilidad sin cargarla completamente en factores externos'},
+    A:{g:'¿Qué hizo para corregir el error? ¿Cómo lo comunicó? ¿A quién informó?',s:'Tomó acción rápida, comunicó proactivamente y propuso solución'},
+    R:{g:'¿Qué pasó al final? ¿Qué cambió en su forma de trabajar? ¿Qué aprendió?',s:'Muestra un cambio de comportamiento concreto tras el error'},
+    ideal:'La respuesta ideal reconoce un error real (no uno trivial), explica las acciones inmediatas de corrección, y demuestra que hubo un aprendizaje específico que cambió su forma de trabajar.'
+  },
+  presion:{
+    tipo:'Gestión de carga de trabajo y priorización bajo presión',
+    comp:['Organización','Priorización','Resiliencia'],
+    S:{g:'¿Cuál era la situación de alta carga o urgencia? ¿Cuántas tareas simultáneas tenía?',s:'Describe la magnitud real del desafío para contextualizar sus acciones'},
+    T:{g:'¿Cuál era su rol y qué dependía de usted en ese momento?',s:'Claridad sobre su responsabilidad individual vs. la del equipo'},
+    A:{g:'¿Cómo organizó las tareas? ¿Usó alguna herramienta, método o criterio de prioridad?',s:'Menciona un método concreto: urgente/importante, cronograma, comunicación de plazos'},
+    R:{g:'¿Logró cumplir? ¿Qué sacrificó? ¿Cómo quedaron los resultados y las personas involucradas?',s:'Honestidad sobre lo que se logró y lo que no — con aprendizaje'},
+    ideal:'Una respuesta sólida muestra un método claro de priorización (no solo "trabajé más horas"), comunica los riesgos a su jefe, y entrega resultados concretos aunque haya habido sacrificios.'
+  },
+  liderazgo:{
+    tipo:'Liderazgo y coordinación de equipos',
+    comp:['Liderazgo situacional','Comunicación','Delegación'],
+    S:{g:'¿Cuál era el equipo o proyecto? ¿Cuántas personas? ¿Cuál era el desafío de liderazgo?',s:'Describe el equipo y el reto específico de coordinación'},
+    T:{g:'¿Era su rol formal como líder o fue liderazgo informal? ¿Qué debía lograr?',s:'Distingue entre autoridad formal y liderazgo por influencia'},
+    A:{g:'¿Cómo motivó, coordinó o resolvió tensiones dentro del equipo?',s:'Menciona acciones específicas con personas específicas — "hablé con Juan", "reorganicé las tareas"'},
+    R:{g:'¿Cómo terminó el proyecto? ¿Cómo quedó el equipo? ¿Qué aprendió sobre su estilo de liderazgo?',s:'Resultado del equipo y aprendizaje sobre sí mismo como líder'},
+    ideal:'La mejor respuesta muestra liderazgo real con personas reales: cómo resolvió diferencias, cómo motivó sin autoridad, y qué resultado concreto produjo el equipo bajo su coordinación.'
+  },
+  aprendizaje:{
+    tipo:'Aprendizaje rápido y adaptabilidad',
+    comp:['Aprendizaje autónomo','Adaptabilidad','Proactividad'],
+    S:{g:'¿Cuál era el sistema, herramienta o conocimiento nuevo? ¿Por qué era urgente aprenderlo?',s:'Describe el contexto que hizo necesario el aprendizaje rápido'},
+    T:{g:'¿Cuál era su responsabilidad de aprendizaje? ¿Tenía apoyo o debía hacerlo solo?',s:'Qué se esperaba de usted y en qué plazo'},
+    A:{g:'¿Qué recursos usó? ¿Preguntó, buscó tutoriales, practicó fuera de horario?',s:'Describe acciones concretas de aprendizaje — autonomía y creatividad'},
+    R:{g:'¿Cuánto tardó en ser funcional? ¿Enseñó a alguien más? ¿Qué nivel alcanzó?',s:'Velocidad de adopción y si usó ese conocimiento para agregar valor adicional'},
+    ideal:'Una excelente respuesta muestra iniciativa en el aprendizaje (no esperó que le enseñaran), describe los recursos que buscó activamente, y muestra que el aprendizaje tuvo impacto medible en su trabajo o en el equipo.'
+  },
+  mejora:{
+    tipo:'Iniciativa y mejora de procesos',
+    comp:['Iniciativa','Pensamiento analítico','Impacto organizacional'],
+    S:{g:'¿Cuál era el proceso con problemas? ¿Cómo lo detectó? ¿Quién se veía afectado?',s:'Describe un problema real que observó — no algo que le asignaron mejorar'},
+    T:{g:'¿Era su responsabilidad formalmente o tomó la iniciativa por cuenta propia?',s:'La mejora por iniciativa propia pesa más que la asignada'},
+    A:{g:'¿Cómo diseñó la mejora? ¿La propuso, la implementó, la documentó? ¿Cómo convenció a otros?',s:'Pasos concretos: análisis, propuesta, implementación, seguimiento'},
+    R:{g:'¿Cuál fue el impacto medible? ¿Tiempo ahorrado, errores reducidos, personas beneficiadas?',s:'Resultado cuantificable o cualitativo claro y atribuible a su acción'},
+    ideal:'La respuesta ideal describe una mejora identificada de forma autónoma, con un proceso de implementación claro y un resultado medible (ej.: "redujimos el tiempo de proceso de 3 días a 1 día").'
+  },
+  cliente:{
+    tipo:'Orientación al cliente y manejo de quejas',
+    comp:['Empatía','Resolución de problemas','Orientación al servicio'],
+    S:{g:'¿Qué tipo de cliente? ¿Cuál era la queja o necesidad específica? ¿Cuál era el contexto?',s:'Describe la situación del cliente con detalle — sin culpar al cliente'},
+    T:{g:'¿Era su responsabilidad directa resolverlo o debía involucrar a otros?',s:'Claridad sobre los límites de su autoridad y cuándo escalar'},
+    A:{g:'¿Cómo escuchó, qué propuso, cómo coordinó internamente para resolver?',s:'Muestra empatía activa y pasos concretos de resolución'},
+    R:{g:'¿Quedó el cliente satisfecho? ¿Qué aprendió para casos futuros? ¿Se generó algún cambio interno?',s:'Resolución exitosa del caso y aprendizaje sistémico'},
+    ideal:'Una respuesta destacada muestra empatía genuina (no guiones), describe acciones concretas más allá del "escuchar y disculparse", y muestra que el incidente generó un aprendizaje que previno problemas futuros.'
+  },
+  logro:{
+    tipo:'Logros y orientación a resultados',
+    comp:['Orientación a resultados','Automotivación','Impacto medible'],
+    S:{g:'¿Cuál era la meta o reto? ¿Qué condiciones hacían el logro desafiante?',s:'Contextualiza la dificultad del reto — no todos los logros son iguales'},
+    T:{g:'¿Cuál era su responsabilidad específica en ese resultado?',s:'Distingue su contribución individual de la del equipo'},
+    A:{g:'¿Qué hizo de forma diferente o por encima de lo esperado para lograrlo?',s:'Describe comportamientos específicos que explican el logro'},
+    R:{g:'¿Cuál fue el resultado medible? ¿Fue reconocido? ¿Qué impacto tuvo en la organización?',s:'Número, porcentaje, comparativo o reconocimiento específico'},
+    ideal:'La mejor respuesta usa cifras o comparativos concretos ("logré X% más que la meta", "fui el único en el equipo que..."), explica qué hizo diferente, y conecta el logro con el impacto para la organización.'
+  },
+  comunicacion:{
+    tipo:'Comunicación y presentación de ideas',
+    comp:['Comunicación efectiva','Adaptación al receptor','Persuasión'],
+    S:{g:'¿A quién debía comunicar? ¿Cuál era el mensaje difícil o complejo? ¿Cuál era el riesgo si fallaba?',s:'Describe la audiencia y la dificultad específica de la comunicación'},
+    T:{g:'¿Era su responsabilidad comunicar esto o lo hizo por iniciativa?',s:'La comunicación proactiva pesa más que la reactiva'},
+    A:{g:'¿Cómo adaptó el mensaje según la audiencia? ¿Qué canales usó? ¿Cómo se preparó?',s:'Describe la adaptación del mensaje: lenguaje, formato, timing'},
+    R:{g:'¿Fue comprendido el mensaje? ¿Qué reacción tuvo la audiencia? ¿Logró su objetivo?',s:'Resultado concreto de la comunicación — decisión tomada, conflicto evitado, etc.'},
+    ideal:'Una respuesta excelente muestra que adapta el mensaje según la audiencia (no usa el mismo lenguaje con todos), describe cómo se preparó, y tiene un resultado concreto de comunicación exitosa.'
+  },
+  decision:{
+    tipo:'Toma de decisiones bajo incertidumbre',
+    comp:['Juicio crítico','Tolerancia a la ambigüedad','Responsabilidad'],
+    S:{g:'¿Cuál era la decisión? ¿Por qué era difícil o ambigua? ¿Quiénes se veían afectados?',s:'Describe la complejidad real de la decisión — no algo trivial'},
+    T:{g:'¿Tenía autoridad para decidir o debía consultar? ¿Cuál era su responsabilidad?',s:'Claridad sobre si tomó la decisión solo, en consenso o después de consultar'},
+    A:{g:'¿Qué información buscó? ¿A quién consultó? ¿Qué criterios usó para decidir?',s:'Proceso de decisión estructurado — no solo "decidí por intuición"'},
+    R:{g:'¿Cuál fue el resultado? ¿Fue la decisión correcta? Si no, ¿qué aprendió?',s:'Honestidad sobre el resultado, incluso si la decisión fue equivocada'},
+    ideal:'Una respuesta sólida describe una decisión real con consecuencias reales, explica el proceso de razonamiento (qué información buscó, qué opciones evaluó), y concluye con el resultado y la lección — incluso si se equivocó.'
+  },
+  general:{
+    tipo:'Competencias generales por situación',
+    comp:['Competencia comportamental','Método STAR'],
+    S:{g:'¿Cuándo ocurrió? ¿En qué empresa o contexto? ¿Cuál era el desafío?',s:'Contexto claro y específico — no respuestas genéricas como "siempre hago..."'},
+    T:{g:'¿Cuál era su rol y responsabilidad específica en esa situación?',s:'Define claramente su responsabilidad individual'},
+    A:{g:'¿Qué pasos concretos tomó? ¿Qué hizo usted específicamente?',s:'Acciones en primera persona: "yo hice", "yo propuse" — no "nosotros"'},
+    R:{g:'¿Cuál fue el resultado? ¿Fue medible? ¿Qué aprendió?',s:'Resultado concreto o aprendizaje claro — no terminar sin conclusión'},
+    ideal:'En una respuesta STAR de calidad, el candidato describe una situación real específica (no genérica), usa verbos en primera persona para las acciones, y cierra con un resultado o aprendizaje verificable.'
+  }
+};
+
+function detectQType(q){
+  if(!q) return 'general';
+  const t=q.toLowerCase();
+  if(/conflicto|difícil.*compañero|difícil.*jefe|difícil.*colega|problema con.*persona|desacuerdo/i.test(q)) return 'conflicto';
+  if(/error|equivoc|fallo|incorrecto|me equivoqué|salió mal|problema que caus/i.test(q)) return 'error';
+  if(/aprender|aprend|nuevo sistema|nuevo software|nueva herramienta|no sabías|no conocías/i.test(q)) return 'aprendizaje';
+  if(/presión|urgente|simultáne|múltiples.*tareas|carga.*excesiva|plazo|deadline/i.test(q)) return 'presion';
+  if(/lider|coordin|dirigir|equipo|motivar|delegar/i.test(q)) return 'liderazgo';
+  if(/mejor|propu|innov|cambio|implement|proceso.*mejorar|eficien/i.test(q)) return 'mejora';
+  if(/cliente|servicio|queja|atención.*cliente|satisf/i.test(q)) return 'cliente';
+  if(/logro|meta|resultado|superas|éxito|alcanzas|objetivo.*cumpl/i.test(q)) return 'logro';
+  if(/comunica|present|explic|conven|persuad/i.test(q)) return 'comunicacion';
+  if(/decis|decidir|alternativa|elegir|opciones/i.test(q)) return 'decision';
+  return 'general';
+}
+
+function renderStarGuide(question){
+  const type=detectQType(question);
+  const g=STAR_GUIDES[type];
+  document.getElementById('guide-tipo').textContent=g.tipo;
+  document.getElementById('guide-competencia').innerHTML=g.comp.map(c=>`<span>${c}</span>`).join('');
+  const COLORS={S:'#3b82f6',T:'#f59e0b',A:'#10b981',R:'#8b5cf6'};
+  const LABELS={S:'Situación',T:'Tarea',A:'Acción',R:'Resultado'};
+  document.getElementById('guide-body').innerHTML=
+    ['S','T','A','R'].map(k=>`
+      <div class="guide-row">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <div class="guide-letter" style="background:${COLORS[k]}22;color:${COLORS[k]};border:1px solid ${COLORS[k]}44">${k}</div>
+          <span style="font-size:9px;color:#4a8a8a;font-weight:700;text-transform:uppercase;letter-spacing:.06em">${LABELS[k]}</span>
+        </div>
+        <div class="guide-content">
+          <b style="color:${COLORS[k]}">${g[k].g}</b>
+          <div class="guide-signal">✓ ${g[k].s}</div>
+        </div>
+      </div>
+    `).join('')+
+    `<div style="margin-top:4px;padding:12px;background:rgba(13,115,115,.1);border-radius:10px;border:1px solid rgba(125,211,211,.15)">
+      <div style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:5px">💡 Respuesta ideal para esta pregunta</div>
+      <p style="font-size:12px;color:#7dd3d3;line-height:1.7;margin:0">${g.ideal}</p>
+    </div>`;
+}
 
 // ============================================================
 // UI SETUP
@@ -1550,7 +1774,7 @@ function switchPanel(n){
     document.getElementById('tab'+i)?.classList.toggle('active',i===n);
     document.getElementById('panel'+i)?.classList.toggle('active',i===n);
   });
-  if(n===2) updateEvalCtx();
+  if(n===2){ updateEvalCtx(); if(activeQ) renderStarGuide(activeQ); }
   if(n===3) renderHistList();
 }
 
@@ -1808,6 +2032,7 @@ function sendToEval(){
   const el = document.getElementById('cand-resp');
   if(el){ el.value = text.trim(); updateWordCount(); }
   switchPanel(2);
+  if(activeQ) renderStarGuide(activeQ);
 }
 
 function clearResponse(){
@@ -1827,18 +2052,26 @@ function clearResponse(){
 function renderStarGrid(){
   const c = document.getElementById('star-grid');
   if(!c) return;
-  c.innerHTML = STAR_C.map(({k,l,d,col})=>`
-    <div class="star-box">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-        <span><span style="color:${col};font-weight:800;font-size:16px">${k}:</span><span style="font-size:13px;margin-left:6px;font-weight:600">${l}</span></span>
-        <span id="ss-${k}-val" style="font-weight:800;font-size:16px;color:#22c55e">${starScores[k]}/5</span>
+  const ICONS={S:'🗺',T:'🎯',A:'⚡',R:'🏆'};
+  c.innerHTML = STAR_C.map(({k,l,d,col})=>{
+    const v=starScores[k];
+    const pct=v/5*100;
+    const bg=v===0?'rgba(8,32,32,.6)':v<=2?'rgba(239,68,68,.08)':v<=3?'rgba(245,158,11,.08)':'rgba(13,115,115,.12)';
+    const border=v===0?'rgba(13,115,115,.2)':v<=2?'rgba(239,68,68,.25)':v<=3?'rgba(245,158,11,.25)':'rgba(13,115,115,.35)';
+    return `<div class="star-comp-card" style="--sc-col:${col};background:${bg};border-color:${border}">
+      <div class="sc-val" style="color:${col};opacity:${v?1:.3}">${v>0?v:'-'}<span style="font-size:13px">/5</span></div>
+      <div class="sc-label" style="color:${col}">${ICONS[k]} ${l}</div>
+      <div class="sc-desc">${d}</div>
+      <div class="pip-row">
+        ${[1,2,3,4,5].map(n=>`<button class="pip${v>=n?' on':''}" onclick="setStarScore('${k}',${n})" style="${v>=n?'--sc-col:'+col+';background:'+col:''};">${n}</button>`).join('')}
       </div>
-      <p style="color:#4a8a8a;font-size:10px;margin:0 0 8px;line-height:1.4">${d}</p>
-      <div style="display:flex;gap:3px">
-        ${[1,2,3,4,5].map(n=>`<button class="score-pip${starScores[k]>=n?' filled':''}" onclick="setStarScore('${k}',${n})" style="${starScores[k]>=n?'background:'+col+';border-color:'+col:''}">${n}</button>`).join('')}
-      </div>
-    </div>
-  `).join('');
+      <textarea class="sc-note" id="sc-note-${k}" placeholder="Nota ${l.toLowerCase()}…" rows="1" style="display:${v>0?'block':'none'}">${document.getElementById('sc-note-'+k)?.value||''}</textarea>
+    </div>`;
+  }).join('');
+  STAR_C.forEach(({k})=>{
+    const ta=document.getElementById('sc-note-'+k);
+    if(ta) ta.addEventListener('input',()=>{ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';});
+  });
 }
 
 function setStarScore(k,v){
@@ -1852,9 +2085,7 @@ function updateStarDisplay(){
   const pct = Math.round((total/20)*100);
   const col = scoreColor(pct);
   const badge = document.getElementById('star-pct-badge');
-  if(badge){ badge.textContent=pct+'%'; badge.style.background=col; }
-  const pb = document.getElementById('star-pb');
-  if(pb){ pb.style.width=pct+'%'; pb.style.background=col; }
+  if(badge){ badge.textContent=pct+'%'; badge.style.color=col; badge.style.borderColor=col+'55'; badge.style.background=col+'18'; }
   updateStarSummary(pct);
   updateRecBadge();
 }
@@ -1863,18 +2094,18 @@ function updateStarSummary(pct){
   const c = document.getElementById('star-summary');
   if(!c) return;
   c.innerHTML = `
-    <div style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Desglose STAR</div>
+    <div style="font-size:10px;color:#3a7272;text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:10px">Desglose STAR</div>
     ${STAR_C.map(({k,l,col})=>`
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
-        <span style="color:${col};font-weight:700;font-size:13px;width:14px">${k}</span>
-        <span style="font-size:11px;color:#9dc8c8;flex:1">${l}</span>
-        <span style="font-weight:700;font-size:13px;color:${scoreColor((starScores[k]/5)*100)}">${starScores[k]}/5</span>
+      <div class="star-mini-row">
+        <span style="color:${col};font-weight:900;font-size:12px;width:14px;flex-shrink:0">${k}</span>
+        <span style="font-size:11px;color:#7dd3d3;width:68px;flex-shrink:0">${l}</span>
+        <div class="star-mini-bar"><div class="star-mini-fill" style="width:${starScores[k]/5*100}%;background:${col}"></div></div>
+        <span style="font-weight:800;font-size:12px;color:${col};width:28px;text-align:right">${starScores[k]}/5</span>
       </div>
     `).join('')}
-    <div style="height:1px;background:var(--db);margin:8px 0"></div>
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <span style="font-size:11px;color:#7dd3d3">Total STAR:</span>
-      <span style="font-weight:800;font-size:14px;color:${scoreColor(pct)}">${pct}%</span>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid rgba(13,115,115,.2)">
+      <span style="font-size:11px;color:#5a9898;font-weight:700">Total STAR</span>
+      <span style="font-weight:900;font-size:15px;color:${scoreColor(pct)};font-family:'IBM Plex Mono',monospace">${pct}%</span>
     </div>
   `;
 }
@@ -1884,14 +2115,16 @@ function updateStarSummary(pct){
 // ============================================================
 function updateGlobalScore(v){
   globalScore = parseInt(v);
-  document.getElementById('global-score-display').textContent = v;
-  document.getElementById('global-score-display').style.color = scoreColorNum(globalScore);
-  const circle = document.getElementById('global-score-circle');
+  const col = scoreColorNum(globalScore);
+  const disp = document.getElementById('global-score-display');
+  if(disp){ disp.textContent=v; disp.style.color=col; }
   const numEl = document.getElementById('gsc-num');
   const lblEl = document.getElementById('gsc-label');
-  if(circle){ circle.style.borderColor=scoreColorNum(globalScore); circle.style.color=scoreColorNum(globalScore); circle.style.background=scoreColorNum(globalScore)+'18'; }
   if(numEl) numEl.textContent = v;
-  if(lblEl) lblEl.textContent = scoreLabelNum(globalScore);
+  if(lblEl){ lblEl.textContent = scoreLabelNum(globalScore); lblEl.style.color=col; }
+  // Update donut
+  const donut = document.getElementById('score-donut');
+  if(donut){ donut.style.setProperty('--sd-c',col); donut.style.setProperty('--sd-deg',(globalScore/10*360)+'deg'); }
   updateRecBadge();
 }
 
