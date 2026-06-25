@@ -1319,6 +1319,43 @@ function navigateFromHash() {
 }
 window.addEventListener('hashchange', navigateFromHash);
 navigateFromHash();
+
+// ============================================================
+// BRIDGE inter-módulo via localStorage (namespace ANE_BRIDGE)
+// Permite que ATS pase candidatos al Simulador y al Dashboard
+// ============================================================
+window.ANE = window.ANE || {};
+ANE.bridge = {
+  set: function(key, data) {
+    try { localStorage.setItem('ane_bridge_' + key, JSON.stringify({ts: Date.now(), data: data})); } catch(e){}
+  },
+  get: function(key) {
+    try {
+      const raw = localStorage.getItem('ane_bridge_' + key);
+      return raw ? JSON.parse(raw).data : null;
+    } catch(e){ return null; }
+  },
+  clear: function(key) {
+    if(key) localStorage.removeItem('ane_bridge_' + key);
+    else Object.keys(localStorage).filter(k=>k.startsWith('ane_bridge_')).forEach(k=>localStorage.removeItem(k));
+  },
+  notify: function(key, data) {
+    this.set(key, data);
+    // Broadcast to loaded iframes
+    ['frame-ats','frame-sim','frame-dash','frame-lab'].forEach(function(id){
+      const f = document.getElementById(id);
+      if(f && f.contentWindow) {
+        try { f.contentWindow.postMessage({type:'ane_bridge', key:key, data:data}, '*'); } catch(e){}
+      }
+    });
+  }
+};
+// Listen for bridge messages from modules
+window.addEventListener('message', function(e) {
+  if(e.data && e.data.type === 'ane_bridge_request') {
+    ANE.bridge.notify(e.data.key, e.data.data);
+  }
+});
 </script>
 </body>
 </html>
