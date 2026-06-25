@@ -131,57 +131,83 @@ textarea{resize:vertical}
 <div id="v-home" class="active">
   <div class="home-bg"></div>
   <div class="home-grid"></div>
-  <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:32px 24px;gap:32px">
-    
-    <div style="position:absolute;top:16px;right:20px;background:rgba(13,115,115,.2);border:1px solid var(--teal);border-radius:6px;padding:4px 12px;font-size:11px;color:#7dd3d3">🔒 USO INTERNO · ANE COSTA RICA</div>
+  <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px 20px">
 
-    <!-- LOGO + BRAND -->
-    <div style="text-align:center">
-      <div style="display:flex;align-items:center;gap:10px">
-          <div style="background:var(--teal);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px">
-            <svg width="28" height="24" viewBox="0 0 32 28" fill="none">
-              <circle cx="4" cy="4" r="4" fill="#fff"/><circle cx="28" cy="4" r="4" fill="#fff"/>
-              <circle cx="4" cy="14" r="4" fill="#fff"/><circle cx="28" cy="14" r="4" fill="#fff"/>
-              <circle cx="4" cy="24" r="4" fill="#fff"/><circle cx="28" cy="24" r="4" fill="#fff"/>
-              <line x1="8" y1="4" x2="24" y2="4" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
-              <line x1="8" y1="14" x2="24" y2="14" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
-              <line x1="8" y1="24" x2="24" y2="24" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
-              <line x1="4" y1="8" x2="4" y2="10" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
-              <line x1="28" y1="8" x2="28" y2="10" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
-              <line x1="4" y1="18" x2="4" y2="20" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
-              <line x1="28" y1="18" x2="28" y2="20" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
-            </svg>
-            <div>
-              <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-0.5px;line-height:1">ANE</div>
-              <div style="font-size:9px;font-weight:600;letter-spacing:2px;color:rgba(255,255,255,.8);text-transform:uppercase">Costa Rica</div>
-            </div>
-          </div>
+    <div style="position:absolute;top:14px;right:16px;background:rgba(13,115,115,.2);border:1px solid var(--teal);border-radius:6px;padding:3px 10px;font-size:10px;color:#7dd3d3">🔒 USO INTERNO · ANE</div>
+
+    <!-- HERO CARD -->
+    <div style="width:100%;max-width:620px;background:rgba(13,115,115,.07);border:1px solid rgba(13,115,115,.25);border-radius:20px;padding:32px 36px;display:flex;flex-direction:column;align-items:center;gap:20px">
+
+      <!-- LOGO + BRAND -->
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="background:var(--teal);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0">
+          <svg width="28" height="24" viewBox="0 0 32 28" fill="none">
+            <circle cx="4" cy="4" r="4" fill="#fff"/><circle cx="28" cy="4" r="4" fill="#fff"/>
+            <circle cx="4" cy="14" r="4" fill="#fff"/><circle cx="28" cy="14" r="4" fill="#fff"/>
+            <circle cx="4" cy="24" r="4" fill="#fff"/><circle cx="28" cy="24" r="4" fill="#fff"/>
+            <line x1="8" y1="4" x2="24" y2="4" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="8" y1="14" x2="24" y2="14" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="8" y1="24" x2="24" y2="24" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="4" y1="8" x2="4" y2="10" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="28" y1="8" x2="28" y2="10" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="4" y1="18" x2="4" y2="20" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="28" y1="18" x2="28" y2="20" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
           <div>
-            <div style="font-size:26px;font-weight:800;letter-spacing:-1px">Simulador de Entrevistas</div>
-            <div style="font-size:12px;color:#7dd3d3;letter-spacing:2px;text-transform:uppercase;font-weight:600;margin-top:2px">Virtuales por Competencias</div>
+            <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-0.5px;line-height:1">ANE</div>
+            <div style="font-size:9px;font-weight:600;letter-spacing:2px;color:rgba(255,255,255,.8);text-transform:uppercase">Costa Rica</div>
           </div>
         </div>
+        <div>
+          <div style="font-size:24px;font-weight:800;letter-spacing:-0.5px;line-height:1.1">Simulador de Entrevistas</div>
+          <div style="font-size:11px;color:#7dd3d3;letter-spacing:2px;text-transform:uppercase;font-weight:600;margin-top:3px">Virtuales por Competencias</div>
+        </div>
       </div>
-      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;font-size:12px;color:#5a9898">
-        <span style="background:rgba(13,115,115,.2);border:1px solid rgba(13,115,115,.3);border-radius:20px;padding:4px 12px">📊 100 Ocupaciones · 8 Sectores</span>
-        <span style="background:rgba(13,115,115,.2);border:1px solid rgba(13,115,115,.3);border-radius:20px;padding:4px 12px">⭐ Metodología STAR</span>
-        <span style="background:rgba(13,115,115,.2);border:1px solid rgba(13,115,115,.3);border-radius:20px;padding:4px 12px">🎙 Audio + Transcripción</span>
-        <span style="background:rgba(13,115,115,.2);border:1px solid rgba(13,115,115,.3);border-radius:20px;padding:4px 12px">📄 Informe PDF · Branding ANE</span>
+
+      <!-- CHIPS -->
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;font-size:11px;color:#5a9898">
+        <span style="background:rgba(13,115,115,.2);border:1px solid rgba(13,115,115,.3);border-radius:20px;padding:3px 10px">📊 100 Ocupaciones · 8 Sectores</span>
+        <span style="background:rgba(13,115,115,.2);border:1px solid rgba(13,115,115,.3);border-radius:20px;padding:3px 10px">⭐ Metodología STAR</span>
+        <span style="background:rgba(13,115,115,.2);border:1px solid rgba(13,115,115,.3);border-radius:20px;padding:3px 10px">🎙 Audio + Transcripción</span>
+        <span style="background:rgba(13,115,115,.2);border:1px solid rgba(13,115,115,.3);border-radius:20px;padding:3px 10px">📄 Informe PDF</span>
       </div>
-    </div>
 
-    <!-- MAIN CTA -->
-    <div style="display:flex;gap:20px;flex-wrap:wrap;justify-content:center">
-      <button onclick="showApp()" style="background:linear-gradient(135deg,var(--teal),var(--tl));border:none;color:#fff;padding:18px 34px;border-radius:14px;font-size:17px;font-weight:800;cursor:pointer;box-shadow:0 8px 40px rgba(13,115,115,.4)">
-        🎙 Panel Entrevistador
-      </button>
-      <button onclick="openCandidateView()" style="background:var(--s2);border:2px solid var(--teal);color:var(--tl);padding:18px 34px;border-radius:14px;font-size:17px;font-weight:800;cursor:pointer">
-        📺 Vista Candidato
-      </button>
-    </div>
+      <!-- FLUJO DE USO -->
+      <div style="width:100%;display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:4px">
+        <div style="background:rgba(13,115,115,.12);border:1px solid rgba(13,115,115,.2);border-radius:12px;padding:12px 10px;text-align:center">
+          <div style="font-size:18px;margin-bottom:4px">⚙️</div>
+          <div style="font-size:11px;font-weight:700;color:#7dd3d3">Configurar</div>
+          <div style="font-size:10px;color:#3a7070;margin-top:2px">Perfil y sector</div>
+        </div>
+        <div style="color:#1a4a4a;font-size:18px;font-weight:300;text-align:center">›</div>
+        <div style="background:rgba(13,115,115,.12);border:1px solid rgba(13,115,115,.2);border-radius:12px;padding:12px 10px;text-align:center">
+          <div style="font-size:18px;margin-bottom:4px">🎙</div>
+          <div style="font-size:11px;font-weight:700;color:#7dd3d3">Entrevistar</div>
+          <div style="font-size:10px;color:#3a7070;margin-top:2px">Preguntas STAR</div>
+        </div>
+        <div style="color:#1a4a4a;font-size:18px;font-weight:300;text-align:center">›</div>
+        <div style="background:rgba(13,115,115,.12);border:1px solid rgba(13,115,115,.2);border-radius:12px;padding:12px 10px;text-align:center">
+          <div style="font-size:18px;margin-bottom:4px">📋</div>
+          <div style="font-size:11px;font-weight:700;color:#7dd3d3">Evaluar</div>
+          <div style="font-size:10px;color:#3a7070;margin-top:2px">Informe PDF</div>
+        </div>
+      </div>
 
-    <div style="color:#3a6060;font-size:11px;text-align:center;max-width:480px;line-height:1.7;background:rgba(13,115,115,.05);border:1px solid rgba(13,115,115,.15);border-radius:8px;padding:10px 16px">
-      ⚠️ Herramienta de uso interno exclusivo de la ANE Costa Rica. Regulada por las políticas del MTSS.<br>Datos protegidos conforme a la <strong style="color:#5a9898">Ley 8968 de Protección de la Persona frente al Tratamiento de sus Datos Personales</strong>.
+      <!-- MAIN CTA -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%">
+        <button onclick="showApp()" style="background:linear-gradient(135deg,var(--teal),var(--tl));border:none;color:#fff;padding:14px 20px;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 6px 24px rgba(13,115,115,.4);display:flex;align-items:center;justify-content:center;gap:8px">
+          🎙 Panel Entrevistador
+        </button>
+        <button onclick="openCandidateView()" style="background:rgba(13,115,115,.15);border:2px solid var(--teal);color:var(--tl);padding:14px 20px;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+          📺 Vista Candidato
+        </button>
+      </div>
+
+      <!-- DISCLAIMER -->
+      <div style="color:#3a6060;font-size:10px;text-align:center;line-height:1.6;background:rgba(13,115,115,.05);border:1px solid rgba(13,115,115,.12);border-radius:8px;padding:8px 14px;width:100%">
+        ⚠️ Uso interno exclusivo ANE Costa Rica · Regulado por las políticas del MTSS · <strong style="color:#5a9898">Ley 8968</strong>
+      </div>
+
     </div>
   </div>
 </div>
