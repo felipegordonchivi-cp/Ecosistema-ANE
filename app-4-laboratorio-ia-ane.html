@@ -51,9 +51,26 @@
 .profile-score{font-size:12px;font-weight:900;color:#c9ffff;background:rgba(20,184,166,.14);border:1px solid rgba(125,211,211,.22);border-radius:999px;padding:6px 9px;display:inline-flex}
 :root[data-theme=light] .profile-score{color:#0d7373;background:#e3f7f3}
 @media(max-width:920px){.profile-tools{grid-template-columns:1fr}}
+.demo-dropdown{position:relative;display:inline-block}
+.demo-menu{position:absolute;top:calc(100% + 6px);right:0;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.35);z-index:999;min-width:210px;overflow:hidden}
+.demo-menu button{display:block;width:100%;padding:10px 16px;text-align:left;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer;font-family:Manrope,sans-serif;font-weight:600}
+.demo-menu button:hover{background:var(--hover)}
+.informe-header{display:flex;align-items:center;gap:14px;padding:18px 22px;background:var(--accent-bg);border-radius:12px;margin-bottom:18px;border:1px solid var(--line)}
+.informe-block{margin:16px 0}.informe-block h4{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800;margin:0 0 8px}
+.informe-chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.informe-table{width:100%;border-collapse:collapse;font-size:13px}
+.informe-table th{text-align:left;padding:7px 10px;background:var(--hover);font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.informe-table td{padding:7px 10px;border-top:1px solid var(--line)}
+.informe-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:800}
+.informe-badge.good{background:rgba(20,184,166,.14);color:#0d9488;border:1px solid rgba(20,184,166,.3)}
+.informe-badge.warn{background:rgba(245,158,11,.12);color:#b45309;border:1px solid rgba(245,158,11,.3)}
+.informe-badge.bad{background:rgba(239,68,68,.12);color:#dc2626;border:1px solid rgba(239,68,68,.3)}
+.informe-divider{height:1px;background:var(--line);margin:18px 0}
+.informe-section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+.informe-note{font-size:12px;color:var(--muted);line-height:1.6;padding:10px 14px;background:var(--hover);border-radius:8px;margin-top:10px}
 
 </style>
-</head><body><div class="shell"><aside class="sidebar"><div class="brand"><div class="mark">ANE</div><div><b>Laboratorio IA ESCO-CR</b><span>500 competencias priorizadas</span></div></div><div class="navlabel">Módulos</div><nav class="nav"><button class="active" data-go="#diagnostico"><span class="ico">🧭</span>Diagnóstico ESCO</button><button data-go="#comparar"><span class="ico">🔍</span>Comparar Oferta</button><button data-go="#banco"><span class="ico">🧬</span>Banco 500</button><button data-go="#ruta"><span class="ico">🗺️</span>Ruta 30/60/90</button><button data-go="#academica"><span class="ico">🎓</span>Oferta Académica CR</button><button data-go="#perfiles"><span class="ico">👥</span>Perfiles CR 2000</button><button data-go="#recomendador"><span class="ico">🎯</span>Recomendador</button><button data-go="#resumen-cv"><span class="ico">✍️</span>Resumen CV</button><button data-go="#informe"><span class="ico">📄</span>Informe</button><button data-go="#gobernanza"><span class="ico">🛡️</span>Uso seguro</button></nav><div class="sidecard"><b>Enfoque</b><p>Diccionario ESCO-compatible adaptado a Costa Rica. Priorizado por ocupaciones frecuentes de ANE/Brete y sectores con mayor contratación.</p></div></aside><main class="main"><header class="topbar"><div class="crumb"><b>Copiloto ANE V15 · Recomendación responsable</b><span>2,000 competencias, 100 rutas académicas, confianza, trazabilidad y revisión humana</span></div><button class="utility" id="themeBtn">◐</button><button class="utility primary" id="btnDemo">Cargar ejemplo</button></header><div class="content"><section class="hero"><span class="eyebrow">🤖 ESCO-compatible · Uso interno ANE</span><h1>Diagnóstico basado en <span>2,000 competencias y 100 rutas académicas priorizadas para Costa Rica.</span></h1><p class="lead">El laboratorio usa una matriz ESCO-CR ampliada a 2,000 competencias y una base de 100 rutas académicas CR. Detecta brechas y orienta al candidato hacia cursos, carreras, certificaciones e instituciones verificables.</p><div class="hero-actions"><a href="#diagnostico" class="btn primary">🧭 Iniciar diagnóstico</a><a href="#banco" class="btn">🧬 Ver banco 500</a><a href="#academica" class="btn">🎓 Oferta académica CR</a><a href="#perfiles" class="btn">👥 Perfiles CR 2000</a></div></section><section class="section"><div class="grid g4"><div class="card"><small>Base ESCO-CR</small><h3><span id="totalSkills">2000</span> competencias</h3><p>Skill/competence + knowledge aplicado a empleabilidad.</p></div><div class="card"><small>Prioridad CR</small><h3>2,000 microfamilias</h3><p>Vinculadas a 80 macrofamilias CR para análisis granular.</p></div><div class="card"><small>Perfiles individuales</small><h3>2,000 perfiles</h3><p>Ranking ocupacional específico por perfil, nivel y brecha.</p></div><div class="card"><small>Resultado</small><h3 id="detectedCount">0 detectadas</h3><p>Competencias reconocidas en CV/resumen.</p></div><div class="card"><small>Brechas</small><h3 id="gapCount">0 sugeridas</h3><p>Competencias faltantes por familia ocupacional.</p></div></div></section><section class="section" id="diagnostico"><div class="section-head"><div><h2>Diagnóstico inteligente ESCO</h2><p>Ingrese información del candidato. El prototipo funciona localmente con reglas explicables.</p></div><button class="btn primary" id="analyzeBtn">Generar diagnóstico</button></div><div class="grid g2"><div class="card"><small>Entrada del candidato</small><h3>Perfil base</h3><div class="inline"><div class="field"><label>Nombre</label><input id="name" placeholder="Nombre del candidato"></div><div class="field"><label>Puesto objetivo</label><input id="target" placeholder="Ej. Asesor de ventas"></div></div><div class="inline"><div class="field"><label>Zona</label><input id="zone" placeholder="Ej. Limón, GAM, Puntarenas"></div><div class="field"><label>Disponibilidad</label><select id="availability"><option>Inmediata</option><option>15 días</option><option>30 días</option><option>Parcial / fines de semana</option></select></div></div><div class="field"><label>Experiencia laboral</label><textarea id="experience" placeholder="Puestos, funciones, logros, años de experiencia..."></textarea></div><div class="field"><label>Educación y cursos</label><textarea id="education" placeholder="Cursos INA, Excel, inglés, manipulación, seguridad, etc."></textarea></div><div class="field"><label>Habilidades</label><textarea id="skills" placeholder="Comunicación, ventas, Excel, inventario, caja, CRM, etc."></textarea></div><div class="field"><label>Texto del CV o resumen completo</label><textarea id="cvtext" placeholder="Pegue el texto del CV o resumen del perfil..."></textarea></div></div><div class="card"><small>Resultado IA explicable</small><h3>Nivel de empleabilidad</h3><div class="score-wrap"><div class="score" id="scoreCircle"><div class="score-inner"><b id="scoreValue">0</b><span>sobre 100</span></div></div></div><div class="chips" id="profileChips"><span class="chip">Sin diagnóstico</span></div>
+</head><body><div class="shell"><aside class="sidebar"><div class="brand"><div class="mark">ANE</div><div><b>Laboratorio IA ESCO-CR</b><span>500 competencias priorizadas</span></div></div><div class="navlabel">Módulos</div><nav class="nav"><button class="active" data-go="#diagnostico"><span class="ico">🧭</span>Diagnóstico ESCO</button><button data-go="#comparar"><span class="ico">🔍</span>Comparar Oferta</button><button data-go="#banco"><span class="ico">🧬</span>Banco 500</button><button data-go="#ruta"><span class="ico">🗺️</span>Ruta 30/60/90</button><button data-go="#academica"><span class="ico">🎓</span>Oferta Académica CR</button><button data-go="#perfiles"><span class="ico">👥</span>Perfiles CR 2000</button><button data-go="#recomendador"><span class="ico">🎯</span>Recomendador</button><button data-go="#resumen-cv"><span class="ico">✍️</span>Resumen CV</button><button data-go="#informe"><span class="ico">📄</span>Informe</button><button data-go="#gobernanza"><span class="ico">🛡️</span>Uso seguro</button></nav><div class="sidecard"><b>Enfoque</b><p>Diccionario ESCO-compatible adaptado a Costa Rica. Priorizado por ocupaciones frecuentes de ANE/Brete y sectores con mayor contratación.</p></div></aside><main class="main"><header class="topbar"><div class="crumb"><b>Copiloto ANE V15 · Recomendación responsable</b><span>2,000 competencias, 100 rutas académicas, confianza, trazabilidad y revisión humana</span></div><button class="utility" id="themeBtn">◐</button><div class="demo-dropdown" id="demoDropdown"><button class="utility primary" onclick="toggleDemoMenu(event)">Cargar ejemplo ▾</button><div class="demo-menu" id="demoMenu" style="display:none"><button onclick="demo('admin')">👩‍💼 Asistente Administrativa</button><button onclick="demo('ingeniero')">🏗️ Ingeniero Civil</button><button onclick="demo('ventas')">📊 Asesor de Ventas</button><button onclick="demo('logistica')">📦 Bodega / Logística</button></div></div></header><div class="content"><section class="hero"><span class="eyebrow">🤖 ESCO-compatible · Uso interno ANE</span><h1>Diagnóstico basado en <span>2,000 competencias y 100 rutas académicas priorizadas para Costa Rica.</span></h1><p class="lead">El laboratorio usa una matriz ESCO-CR ampliada a 2,000 competencias y una base de 100 rutas académicas CR. Detecta brechas y orienta al candidato hacia cursos, carreras, certificaciones e instituciones verificables.</p><div class="hero-actions"><a href="#diagnostico" class="btn primary">🧭 Iniciar diagnóstico</a><a href="#banco" class="btn">🧬 Ver banco 500</a><a href="#academica" class="btn">🎓 Oferta académica CR</a><a href="#perfiles" class="btn">👥 Perfiles CR 2000</a></div></section><section class="section"><div class="grid g4"><div class="card"><small>Base ESCO-CR</small><h3><span id="totalSkills">2000</span> competencias</h3><p>Skill/competence + knowledge aplicado a empleabilidad.</p></div><div class="card"><small>Prioridad CR</small><h3>2,000 microfamilias</h3><p>Vinculadas a 80 macrofamilias CR para análisis granular.</p></div><div class="card"><small>Perfiles individuales</small><h3>2,000 perfiles</h3><p>Ranking ocupacional específico por perfil, nivel y brecha.</p></div><div class="card"><small>Resultado</small><h3 id="detectedCount">0 detectadas</h3><p>Competencias reconocidas en CV/resumen.</p></div><div class="card"><small>Brechas</small><h3 id="gapCount">0 sugeridas</h3><p>Competencias faltantes por familia ocupacional.</p></div></div></section><section class="section" id="diagnostico"><div class="section-head"><div><h2>Diagnóstico inteligente ESCO</h2><p>Ingrese información del candidato. El prototipo funciona localmente con reglas explicables.</p></div><button class="btn primary" id="analyzeBtn">Generar diagnóstico</button></div><div class="grid g2"><div class="card"><small>Entrada del candidato</small><h3>Perfil base</h3><div class="inline"><div class="field"><label>Nombre</label><input id="name" placeholder="Nombre del candidato"></div><div class="field"><label>Puesto objetivo</label><input id="target" placeholder="Ej. Asesor de ventas"></div></div><div class="inline"><div class="field"><label>Zona</label><input id="zone" placeholder="Ej. Limón, GAM, Puntarenas"></div><div class="field"><label>Disponibilidad</label><select id="availability"><option>Inmediata</option><option>15 días</option><option>30 días</option><option>Parcial / fines de semana</option></select></div></div><div class="field"><label>Experiencia laboral</label><textarea id="experience" placeholder="Puestos, funciones, logros, años de experiencia..."></textarea></div><div class="field"><label>Educación y cursos</label><textarea id="education" placeholder="Cursos INA, Excel, inglés, manipulación, seguridad, etc."></textarea></div><div class="field"><label>Habilidades</label><textarea id="skills" placeholder="Comunicación, ventas, Excel, inventario, caja, CRM, etc."></textarea></div><div class="field"><label>Texto del CV o resumen completo</label><textarea id="cvtext" placeholder="Pegue el texto del CV o resumen del perfil..."></textarea></div></div><div class="card"><small>Resultado IA explicable</small><h3>Nivel de empleabilidad</h3><div class="score-wrap"><div class="score" id="scoreCircle"><div class="score-inner"><b id="scoreValue">0</b><span>sobre 100</span></div></div></div><div class="chips" id="profileChips"><span class="chip">Sin diagnóstico</span></div>
 <div class="trust-panel">
   <div class="trust-card"><b id="trustLevel">Confianza: sin análisis</b><p id="trustReason">La confianza aparecerá al generar el diagnóstico.</p></div>
   <div class="trust-card"><b>Uso permitido</b><p>Orientación preliminar asistida. No decide contratación, admisión ni elegibilidad.</p></div>
@@ -130,7 +147,7 @@
     <div class="grid g3" id="profileGrid"></div>
   </div>
 </section>
-<section class="section" id="recomendador"><div class="section-head"><div><h2>Recomendador ocupacional</h2><p>Ajuste orientativo por familia ocupacional. No representa decisión final de contratación.</p></div></div><div class="grid g3" id="vacancyGrid"></div></section><section class="section" id="resumen-cv"><div class="section-head"><div><h2>✍️ Generador de Resumen Profesional</h2><p>Genera un párrafo de perfil listo para CV, LinkedIn o presentación ante empleadores.</p></div><button class="btn primary" onclick="generateSummary()">Generar resumen</button></div><div class="grid g2"><div class="card"><small>Opciones de estilo</small><h3>Personalizar resumen</h3><div class="inline"><div class="field"><label>Tono</label><select id="summaryTone"><option value="formal">Formal (CV tradicional)</option><option value="moderno">Moderno (LinkedIn)</option><option value="breve">Breve (2 líneas)</option></select></div><div class="field"><label>Énfasis</label><select id="summaryFocus"><option value="auto">Automático</option><option value="logros">Logros y resultados</option><option value="habilidades">Competencias técnicas</option><option value="potencial">Potencial y aprendizaje</option></select></div></div><div class="field"><label>Años de experiencia estimados (opcional)</label><input id="summaryYears" placeholder="Ej. 3 años, recién graduado, 10+ años..."></div><div class="academic-note" style="margin-top:8px">💡 Genere el diagnóstico primero para obtener el mejor resultado. El resumen usa el nombre, puesto objetivo y competencias detectadas.</div></div><div class="card" id="summaryResult"><small>Resumen generado</small><h3>Su perfil profesional</h3><p style="color:var(--muted)">Presione "Generar resumen" para crear el párrafo de perfil.</p></div></div></section><section class="section" id="informe"><div class="section-head"><div><h2>Informe para asesor</h2><p>Resumen ejecutivo listo para copiar, guardar o imprimir.</p></div><div><button class="btn" id="copyReport">Copiar informe</button> <button class="btn primary" onclick="window.print()">Imprimir / PDF</button></div></div><div class="card"><small>Salida institucional</small><h3>Resumen ejecutivo</h3><div class="report" id="report">Genere un diagnóstico para crear el informe del candidato.</div></div></section><section class="section" id="alertas"><div class="section-head"><div><h2>Alertas inteligentes</h2><p>Señales de seguimiento para asesores, orientadores y coordinación.</p></div></div><div id="alerts"><div class="alert"><div class="aico">⏳</div><div><b>Sin alertas todavía</b><p>Complete el diagnóstico para generar alertas accionables.</p></div></div></div></section>
+<section class="section" id="recomendador"><div class="section-head"><div><h2>Recomendador ocupacional</h2><p>Ajuste orientativo por familia ocupacional. No representa decisión final de contratación.</p></div></div><div class="grid g3" id="vacancyGrid"></div></section><section class="section" id="resumen-cv"><div class="section-head"><div><h2>✍️ Generador de Resumen Profesional</h2><p>Genera un párrafo de perfil listo para CV, LinkedIn o presentación ante empleadores.</p></div><button class="btn primary" onclick="generateSummary()">Generar resumen</button></div><div class="grid g2"><div class="card"><small>Opciones de estilo</small><h3>Personalizar resumen</h3><div class="inline"><div class="field"><label>Tono</label><select id="summaryTone"><option value="formal">Formal (CV tradicional)</option><option value="moderno">Moderno (LinkedIn)</option><option value="breve">Breve (2 líneas)</option></select></div><div class="field"><label>Énfasis</label><select id="summaryFocus"><option value="auto">Automático</option><option value="logros">Logros y resultados</option><option value="habilidades">Competencias técnicas</option><option value="potencial">Potencial y aprendizaje</option></select></div></div><div class="field"><label>Años de experiencia estimados (opcional)</label><input id="summaryYears" placeholder="Ej. 3 años, recién graduado, 10+ años..."></div><div class="academic-note" style="margin-top:8px">💡 Genere el diagnóstico primero para obtener el mejor resultado. El resumen usa el nombre, puesto objetivo y competencias detectadas.</div></div><div class="card" id="summaryResult"><small>Resumen generado</small><h3>Su perfil profesional</h3><p style="color:var(--muted)">Presione "Generar resumen" para crear el párrafo de perfil.</p></div></div></section><section class="section" id="informe"><div class="section-head"><div><h2>Informe para asesor</h2><p>Resumen ejecutivo estructurado listo para revisar, copiar o imprimir.</p></div><div style="display:flex;gap:8px"><button class="btn" id="copyReport">Copiar texto</button><button class="btn primary" onclick="window.print()">Imprimir / PDF</button></div></div><div class="card" id="reportCard"><small>Salida institucional</small><h3>Resumen ejecutivo</h3><div id="reportHtml" style="margin-top:14px"><p style="color:var(--muted)">Genere un diagnóstico para crear el informe del candidato.</p></div><div class="report" id="report" style="display:none"></div></div></section><section class="section" id="alertas"><div class="section-head"><div><h2>Alertas inteligentes</h2><p>Señales de seguimiento para asesores, orientadores y coordinación.</p></div></div><div id="alerts"><div class="alert"><div class="aico">⏳</div><div><b>Sin alertas todavía</b><p>Complete el diagnóstico para generar alertas accionables.</p></div></div></div></section>
 <section class="section" id="gobernanza">
   <div class="section-head">
     <div>
@@ -2019,56 +2036,148 @@ ${extra.length?`<h4 style="margin:14px 0 8px;font-family:Manrope">➕ Competenci
 function timeline(score,main,gaps){let g=gaps.slice(0,5).map(s=>s.skill).join(', ')||'mantener competencias actuales';$('timeline').innerHTML=`<div class="phase"><div class="num">30</div><h4>Primeros 30 días</h4><ul>${li(['Actualizar CV usando competencias ESCO detectadas.',`Orientar postulaciones hacia ${main.name}.`,'Practicar entrevista STAR con 3 ejemplos de logros.','Postular a 5–8 vacantes compatibles por semana.'])}</ul></div><div class="phase"><div class="num">60</div><h4>Días 31 a 60</h4><ul>${li([`Fortalecer brechas prioritarias: ${g}.`,'Revisar Oferta Académica CR para ubicar curso, institución y fuente de verificación.','Registrar resultados de postulaciones y ajustar palabras clave.','Revisar avances con asesor u orientador.'])}</ul></div><div class="phase"><div class="num">90</div><h4>Días 61 a 90</h4><ul>${li([score<65?'Activar ruta puente: talleres + ocupaciones de entrada.':'Aplicar a vacantes de mayor ajuste o mejor condición.','Reevaluar competencias ESCO-CR y actualizar diagnóstico.','Documentar evidencia: certificados, logros y referencias.','Cerrar ciclo con nuevo plan de empleabilidad.'])}</ul></div>`}
 function vacancies(sorted,detected){$('vacancyGrid').innerHTML=sorted.slice(0,9).map(v=>{let status=v.score>=82?'Alto ajuste orientativo':v.score>=65?'Ajuste orientativo medio':'Requiere fortalecimiento',c=v.score>=82?'good':v.score>=65?'warn':'bad';let gaps=topSkillsForFamily(v,detected,3).map(s=>s.skill).join(', ');const mv=CR_MARKET[v.id]||{d:2,t:'estable',s:[350,900]};return `<div class="card"><small>${v.icon} Familia ocupacional</small><h3>${v.name}</h3><div class="score-wrap" style="padding:8px"><div class="score" style="width:112px;height:112px;--deg:${v.score*3.6}deg"><div class="score-inner"><b style="font-size:30px">${v.score}</b><span>ajuste orientativo</span></div></div></div><div class="chips"><span class="chip ${c}">${status}</span><span class="chip">${DEMANDA_ICON[mv.d]} ${DEMANDA_LABEL[mv.d]}</span><span class="chip">₡${mv.s[0]}K–${mv.s[1]}K/mes</span><span class="chip">${TENDENCIA_ICON[mv.t]} ${TENDENCIA_LABEL[mv.t]}</span><span class="chip">Brecha: ${esc(gaps||'validar requisitos específicos')}</span></div></div>`}).join('')}
 function alerts(score,main,gaps,detected){let a=[];if(score>=80)a.push(['🚀','Alto potencial de colocación',`Priorizar seguimiento y postulación a vacantes de ${main.name}.`]);if(gaps.length>8)a.push(['🧩','Brechas ESCO relevantes','Recomendar capacitación corta antes de ampliar postulaciones.']);if(!detected.some(s=>s.group==='comunicacion'))a.push(['🎙️','Preparación de entrevista requerida','Enviar al simulador de entrevistas ANE para evidenciar competencias.']);if(!detected.some(s=>s.group==='digital_basico'))a.push(['💻','Competencias digitales no evidenciadas','Validar ofimática, correo, plataformas y registro digital.']);if(!a.length)a.push(['✅','Ruta saludable','Mantener seguimiento quincenal y medición de resultados.']);$('alerts').innerHTML=a.map(x=>`<div class="alert"><div class="aico">${x[0]}</div><div><b>${x[1]}</b><p>${x[2]}</p></div></div>`).join('')}
-function report(o){let name=$('name').value.trim()||'Candidato',target=$('target').value.trim()||'No definido',top=o.sorted.slice(0,3).map(x=>`${x.name} (${x.score}% ajuste orientativo)`).join(', '),det=o.detected.slice(0,20).map(s=>s.skill).join(', ')||'No se detectaron competencias explícitas',g=o.gaps.slice(0,10).map(s=>s.skill).join(', ')||'Validar requisitos específicos';$('report').textContent=`INFORME EJECUTIVO · LABORATORIO IA ANE V15
+function report(o){
+  const name=$('name').value.trim()||'Candidato';
+  const target=$('target').value.trim()||'No definido';
+  const zone=$('zone').value.trim()||'No indicada';
+  const avail=$('availability').value;
+  const scoreCls=o.score>=75?'good':o.score>=50?'warn':'bad';
+  const confCls=o.confidence.value>=70?'good':o.confidence.value>=45?'warn':'bad';
+  const mv=CR_MARKET[o.main.id]||{d:2,t:'estable',s:[350,900]};
+  const top3=o.sorted.slice(0,3);
+  const detChips=o.detected.slice(0,24).map(s=>`<span class="chip">${esc(s.skill)}</span>`).join('');
+  const gapChips=o.gaps.slice(0,12).map(s=>`<span class="chip warn">${esc(s.skill)}</span>`).join('');
+  const acadRows=academicTop(o.main,o.gaps,o.detected,5).map(r=>`<tr><td>${esc(r.curso_programa)}</td><td>${esc(r.institucion)}</td><td>${esc(r.modalidad||'-')}</td><td>${esc(academicVerificationLabel(r))}</td></tr>`).join('')||`<tr><td colspan="4" style="color:var(--muted)">Verificar oferta formativa según brecha detectada.</td></tr>`;
+  const profRows=topProfiles(o.main,o.detected,o.gaps,5).map(p=>`<tr><td>${esc(p.nombre)}</td><td><span class="chip ${p._score>=75?'good':p._score>=50?'warn':'bad'}" style="font-size:11px">${p._score}%</span></td><td style="color:var(--muted);font-size:12px">${esc(profileWhy(p,o.main,o.detected))}</td></tr>`).join('');
+  const familyRows=top3.map(f=>{const fm=CR_MARKET[f.id]||{d:2,t:'estable',s:[350,900]};return `<tr><td>${esc(f.icon)} ${esc(f.name)}</td><td><span class="informe-badge ${f.score>=75?'good':f.score>=50?'warn':'bad'}">${f.score}/100</span></td><td>₡${fm.s[0]}K–${fm.s[1]}K/mes</td><td>${DEMANDA_ICON[fm.d]} ${DEMANDA_LABEL[fm.d]}</td><td>${TENDENCIA_ICON[fm.t]} ${TENDENCIA_LABEL[fm.t]}</td></tr>`;}).join('');
+  const justif=explainFamily(o.main,o.detected).map(x=>`<li style="margin:4px 0">${esc(x)}</li>`).join('');
+  const today=new Date().toLocaleDateString('es-CR',{year:'numeric',month:'long',day:'numeric'});
+  $('reportHtml').innerHTML=`
+<div class="informe-section" style="border-left:4px solid var(--accent)">
+  <div class="informe-header" style="background:none;padding:0;border:none;margin-bottom:12px">
+    <div style="flex:1">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800;margin-bottom:4px">Informe Ejecutivo · Laboratorio IA ANE V15</div>
+      <h3 style="margin:0 0 2px">${esc(name)}</h3>
+      <div style="color:var(--muted);font-size:13px">${esc(target)} · ${esc(zone)} · ${avail} · ${today}</div>
+    </div>
+    <div style="text-align:center">
+      <div class="score" style="width:90px;height:90px;--deg:${o.score*3.6}deg;flex:0 0 auto"><div class="score-inner"><b style="font-size:26px">${o.score}</b><span>/ 100</span></div></div>
+      <div style="margin-top:6px"><span class="informe-badge ${scoreCls}">${esc(o.label)}</span></div>
+    </div>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
+    <span class="chip">🏷️ ${esc(o.main.name)}</span>
+    <span class="chip ${confCls}">Confianza: ${esc(o.confidence.label)} (${o.confidence.value}/100)</span>
+    <span class="chip">${DEMANDA_ICON[mv.d]} ${DEMANDA_LABEL[mv.d]}</span>
+    <span class="chip">₡${mv.s[0]}K–${mv.s[1]}K/mes</span>
+    <span class="chip">${TENDENCIA_ICON[mv.t]} ${TENDENCIA_LABEL[mv.t]}</span>
+  </div>
+</div>
 
-Candidato: ${name}
-Puesto objetivo: ${target}
-Zona: ${$('zone').value || 'No indicada'}
-Disponibilidad: ${$('availability').value}
+<div class="informe-section">
+  <div class="informe-block"><h4>Justificación del perfil sugerido</h4><ul style="margin:0;padding-left:18px;font-size:13px;color:var(--muted)">${justif}</ul></div>
+</div>
 
-Resultado general:
-Nivel de empleabilidad orientativo: ${o.score}/100 · ${o.label}
-Nivel de confianza del diagnóstico: ${o.confidence.label} (${o.confidence.value}/100)
-Perfil ocupacional sugerido: ${o.main.name}
+<div class="informe-section">
+  <div class="informe-block"><h4>Familias ocupacionales recomendadas</h4>
+  <table class="informe-table"><thead><tr><th>Familia</th><th>Ajuste</th><th>Salario orientativo</th><th>Demanda</th><th>Tendencia</th></tr></thead><tbody>${familyRows}</tbody></table></div>
+</div>
 
-Interpretación institucional:
-El resultado es una guía preliminar de orientación. No representa decisión de contratación, admisión académica, elegibilidad, aprobación ni rechazo. Debe revisarse por una persona asesora.
+<div class="informe-section">
+  <div class="informe-block"><h4>Competencias ESCO-CR detectadas (${o.detected.length})</h4><div class="informe-chips">${detChips||'<span class="chip">Sin competencias explícitas detectadas</span>'}</div></div>
+  <div class="informe-divider"></div>
+  <div class="informe-block"><h4>Brechas recomendadas (${o.gaps.length})</h4><div class="informe-chips">${gapChips||'<span class="chip good">Sin brechas significativas</span>'}</div></div>
+</div>
 
-Base de análisis:
-Se utilizó una matriz ESCO-CR de ${ESCO_CR_500.length} competencias operativas, ${PROFILES_CR_2000.length} perfiles individuales, ${MICROFAMILIES_CR_2000.length} microfamilias y ${ACADEMIC_CR.length} rutas académicas CR.
+<div class="informe-section">
+  <div class="informe-block"><h4>Rutas académicas CR sugeridas</h4>
+  <table class="informe-table"><thead><tr><th>Curso / Programa</th><th>Institución</th><th>Modalidad</th><th>Verificación</th></tr></thead><tbody>${acadRows}</tbody></table></div>
+</div>
 
-Justificación del perfil sugerido:
-${explainFamily(o.main,o.detected).map(x=>'- '+x).join('\n')}
+${profRows?`<div class="informe-section"><div class="informe-block"><h4>Perfiles individuales de referencia</h4>
+  <table class="informe-table"><thead><tr><th>Nombre</th><th>Ajuste</th><th>Razón orientativa</th></tr></thead><tbody>${profRows}</tbody></table></div></div>`:''}
 
-Competencias detectadas:
-${det}
+<div class="informe-section">
+  <div class="informe-block"><h4>Próximos pasos sugeridos para el asesor</h4>
+  <ol style="font-size:13px;padding-left:18px;margin:0;line-height:1.8">
+    <li>Revisar el CV y confirmar funciones, logros, educación, cursos y disponibilidad.</li>
+    <li>Validar manualmente los perfiles individuales antes de orientar postulaciones.</li>
+    <li>Verificar oferta académica en fuente oficial antes de recomendar matrícula.</li>
+    <li>Enviar al simulador de entrevista ANE para evidenciar competencias blandas.</li>
+    <li>Registrar seguimiento y actualizar diagnóstico con nueva evidencia.</li>
+  </ol></div>
+</div>
 
-Brechas recomendadas:
-${g}
+<div class="informe-note">⚠️ <b>Nota institucional:</b> Este informe es apoyo para el asesor u orientador. No sustituye criterio humano, entrevista, revisión documental, requisitos del empleador ni fuentes oficiales. Uso interno ANE · Ley 8968 CR.</div>`;
 
-Familias ocupacionales recomendadas:
-${top}
-
-Rutas académicas CR sugeridas:
-${academicTop(o.main,o.gaps,o.detected,6).map(r=>'- '+r.curso_programa+' · '+r.institucion+' · '+academicVerificationLabel(r)).join('\n') || 'Verificar oferta formativa según brecha detectada.'}
-
-Perfiles individuales recomendados:
-${topProfiles(o.main,o.detected,o.gaps,8).map(p=>'- '+p.nombre+' · '+p._score+'% ajuste orientativo · '+profileWhy(p,o.main,o.detected)).join('\n')}
-
-Lectura ejecutiva:
-El perfil presenta señales de cercanía con ${o.main.name}. Se recomienda orientar la conversación hacia vacantes relacionadas, validar requisitos específicos con el empleador, revisar evidencia documental y acompañar al candidato con acciones de fortalecimiento.
-
-Próximos pasos sugeridos:
-1. Revisar el CV y confirmar funciones, logros, educación, cursos y disponibilidad.
-2. Validar manualmente los perfiles individuales antes de orientar postulaciones.
-3. Verificar oferta académica en fuente oficial antes de recomendar matrícula.
-4. Enviar al simulador de entrevista ANE para evidenciar competencias.
-5. Registrar seguimiento y actualizar diagnóstico con nueva evidencia.
-
-Nota:
-Este informe es apoyo para el asesor u orientador. No sustituye criterio humano, entrevista, revisión documental, requisitos del empleador ni fuentes oficiales.`}
-function demo(){$('name').value='Pablo Solís';$('target').value='Ingeniero';$('zone').value='San José';$('availability').value='30 días';$('experience').value='Desarrollo de proyectos, construcción de condominios, coordinación de contratistas, planificación de obra, control de avance y supervisión de trabajos constructivos.';$('education').value='Licenciatura en Ingeniería. Formación universitaria con énfasis en gestión de proyectos y construcción.';$('skills').value='Organizado, planificación, orientado a resultados, pensamiento crítico, lectura de planos, presupuesto de obra y coordinación de equipos técnicos.';$('cvtext').value='Perfil profesional de ingeniería con experiencia en desarrollo de proyectos constructivos, condominios, seguimiento de cronogramas, coordinación de proveedores, control de calidad y cumplimiento de objetivos de obra.';analyze()}
-document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>document.querySelector(b.dataset.go).scrollIntoView({behavior:'smooth'}));$('analyzeBtn').onclick=analyze;$('btnDemo').onclick=demo;$('copyReport').onclick=async()=>{try{await navigator.clipboard.writeText($('report').textContent);toast('Informe copiado')}catch(e){toast('No se pudo copiar automáticamente')}};$('themeBtn').onclick=()=>{let r=document.documentElement;r.dataset.theme=r.dataset.theme==='light'?'dark':'light';toast(r.dataset.theme==='light'?'Tema claro activo':'Tema oscuro activo')};$('skillSearch').oninput=renderSkillList;$('groupFilter').onchange=renderSkillList;setupFilters();setupAcademicFilters();setupProfileFilters();['academicSearch','academicSource','academicLevel','academicModality'].forEach(id=>$(id)&&($(id).oninput=renderAcademicSearch,$(id).onchange=renderAcademicSearch));['profileSearch','profileFamily','profileLevel','profileZone'].forEach(id=>$(id)&&($(id).oninput=renderProfileSearch,$(id).onchange=renderProfileSearch));vacancies(FAMILIES.map(f=>({...f,score:f.base})).sort((a,b)=>b.score-a.score),[]);
+  // also populate plain-text version for copy
+  const top=top3.map(x=>`${x.name} (${x.score}/100)`).join(', ');
+  const det=o.detected.slice(0,20).map(s=>s.skill).join(', ')||'No se detectaron';
+  const g=o.gaps.slice(0,10).map(s=>s.skill).join(', ')||'Validar con empleador';
+  $('report').textContent=`INFORME EJECUTIVO · LABORATORIO IA ANE V15\n\nCandidato: ${name}\nPuesto objetivo: ${target}\nZona: ${zone}\nDisponibilidad: ${avail}\nFecha: ${today}\n\nEmpleabilidad: ${o.score}/100 · ${o.label}\nConfianza: ${o.confidence.label} (${o.confidence.value}/100)\nPerfil sugerido: ${o.main.name}\nSalario orientativo: ₡${mv.s[0]}K–${mv.s[1]}K/mes\n\nJustificación:\n${explainFamily(o.main,o.detected).map(x=>'- '+x).join('\n')}\n\nCompetencias detectadas:\n${det}\n\nBrechas:\n${g}\n\nFamilias recomendadas:\n${top}\n\nRutas académicas:\n${academicTop(o.main,o.gaps,o.detected,6).map(r=>'- '+r.curso_programa+' · '+r.institucion).join('\n')||'Verificar oferta formativa.'}\n\nNota: Orientación preliminar. No decide contratación. Uso interno ANE · Ley 8968 CR.`;
+}
+const DEMOS={
+  admin:{
+    name:'María González Mora',
+    target:'Asistente Administrativa',
+    zone:'San José',
+    availability:'Inmediata',
+    experience:'5 años como asistente administrativa en empresa comercial. Manejo de agenda ejecutiva, coordinación de reuniones, elaboración de minutas, control de correspondencia, tramitología ante instituciones públicas, atención de visitantes y clientes, gestión documental, control de caja chica, apoyo a gerencia y recepción. Elaboración de reportes mensuales de gestión. Archivo de documentos físicos y digitales.',
+    education:'Técnico en Secretariado Ejecutivo, INA. Curso de Excel intermedio, INA. Curso de servicio al cliente, CEFOF. Inglés conversacional, Centro Cultural Costarricense Norteamericano (nivel B1).',
+    skills:'Microsoft Office (Word, Excel, PowerPoint), Google Workspace, correo electrónico, organización del trabajo, comunicación efectiva, trabajo en equipo, atención al cliente, gestión del tiempo, manejo de archivo, digitación administrativa, orientación al cliente, resolución de problemas.',
+    cvtext:'Asistente administrativa con 5 años de experiencia en apoyo a gerencia y coordinación de actividades de oficina. Dominio de tramitología, gestión documental, agenda ejecutiva y manejo de correspondencia. Elaboración de minutas y reportes. Control de caja chica y seguimiento de solicitudes administrativas. Habilidades en comunicación efectiva, trabajo en equipo, organización del trabajo y resolución de problemas. Técnico en Secretariado Ejecutivo del INA. Inglés conversacional. Excel, Word, PowerPoint, Google Workspace, correo electrónico.'
+  },
+  ingeniero:{
+    name:'Pablo Solís Ramírez',
+    target:'Ingeniero Civil',
+    zone:'San José',
+    availability:'30 días',
+    experience:'Desarrollo de proyectos constructivos, construcción de condominios, coordinación de contratistas, planificación de obra, control de avance, supervisión de trabajos constructivos. Lectura de planos, presupuesto de obra y gestión de proyectos.',
+    education:'Licenciatura en Ingeniería Civil, UCR. Posgrado en gestión de proyectos. Registro CFIA.',
+    skills:'Organizado, planificación, orientado a resultados, pensamiento crítico, lectura de planos, presupuesto de obra, coordinación de equipos técnicos, AutoCAD, Microsoft Project.',
+    cvtext:'Ingeniero civil con experiencia en desarrollo de proyectos constructivos, condominios, seguimiento de cronogramas, coordinación de proveedores, control de calidad y cumplimiento de objetivos de obra. Registro CFIA activo.'
+  },
+  ventas:{
+    name:'Andrés Vargas Jiménez',
+    target:'Asesor de Ventas',
+    zone:'Heredia',
+    availability:'Inmediata',
+    experience:'4 años en ventas consultivas, prospección de clientes, cierre de ventas, seguimiento comercial y manejo de cartera. Venta cruzada de productos financieros y seguros. Negociación y atención al cliente. Cumplimiento de metas comerciales.',
+    education:'Bachillerato en Administración de Empresas. Curso de técnicas de ventas y CRM.',
+    skills:'Ventas consultivas, prospección, cierre de ventas, manejo de CRM, comunicación efectiva, negociación, orientación al cliente, trabajo bajo presión, manejo de cartera, seguimiento.',
+    cvtext:'Asesor comercial con 4 años en ventas de servicios, prospección activa, cumplimiento de metas y manejo de cartera. Experiencia en CRM, negociación, atención personalizada y trabajo bajo presión. Habilidades de comunicación, orientación al cliente y servicio al cliente.'
+  },
+  logistica:{
+    name:'Laura Quesada Brenes',
+    target:'Asistente de Bodega y Logística',
+    zone:'Alajuela',
+    availability:'Inmediata',
+    experience:'3 años en bodega: recepción de mercancía, despacho, control de inventario, manejo de montacargas, registro de entradas y salidas en WMS. Logística de distribución, coordinación de transporte y entrega. Carga y descarga de mercancía.',
+    education:'Operador de montacargas, certificado. Curso de control de inventario, INA. Bachillerato diversificado.',
+    skills:'Control de inventario, manejo de bodega, despacho, montacargas, WMS, picking y packing, trabajo en equipo, organización, orientado a resultados, carga y descarga.',
+    cvtext:'Asistente de bodega con experiencia en control de inventario, recepción y despacho de mercancía, manejo de montacargas y sistemas WMS. Coordinación de logística de distribución y transporte. Habilidades en organización, trabajo en equipo y orientación a resultados.'
+  }
+};
+function demo(type){
+  const d=DEMOS[type||'admin'];
+  $('name').value=d.name;
+  $('target').value=d.target;
+  $('zone').value=d.zone;
+  // set availability select
+  const avSel=$('availability');
+  for(let i=0;i<avSel.options.length;i++){if(avSel.options[i].text===d.availability){avSel.selectedIndex=i;break;}}
+  $('experience').value=d.experience;
+  $('education').value=d.education;
+  $('skills').value=d.skills;
+  $('cvtext').value=d.cvtext;
+  $('demoMenu').style.display='none';
+  document.querySelector('#diagnostico').scrollIntoView({behavior:'smooth'});
+  analyze();
+  toast('Ejemplo cargado: '+d.name+' · '+d.target+' — Modifique campos y presione "Generar diagnóstico" para re-evaluar');
+}
+function toggleDemoMenu(e){e&&e.stopPropagation();const m=$('demoMenu');m.style.display=m.style.display==='none'?'block':'none';}
+document.addEventListener('click',()=>{const m=$('demoMenu');if(m)m.style.display='none';});
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>document.querySelector(b.dataset.go).scrollIntoView({behavior:'smooth'}));$('analyzeBtn').onclick=analyze;$('copyReport').onclick=async()=>{try{await navigator.clipboard.writeText($('report').textContent);toast('Informe copiado')}catch(e){toast('No se pudo copiar automáticamente')}};$('themeBtn').onclick=()=>{let r=document.documentElement;r.dataset.theme=r.dataset.theme==='light'?'dark':'light';toast(r.dataset.theme==='light'?'Tema claro activo':'Tema oscuro activo')};$('skillSearch').oninput=renderSkillList;$('groupFilter').onchange=renderSkillList;setupFilters();setupAcademicFilters();setupProfileFilters();['academicSearch','academicSource','academicLevel','academicModality'].forEach(id=>$(id)&&($(id).oninput=renderAcademicSearch,$(id).onchange=renderAcademicSearch));['profileSearch','profileFamily','profileLevel','profileZone'].forEach(id=>$(id)&&($(id).oninput=renderProfileSearch,$(id).onchange=renderProfileSearch));vacancies(FAMILIES.map(f=>({...f,score:f.base})).sort((a,b)=>b.score-a.score),[]);
 </script>
 
 <a class="ane-help-btn" href="manual-laboratorio-ia-ane.html" target="_blank" rel="noopener">❔ Manual y FAQ</a>
