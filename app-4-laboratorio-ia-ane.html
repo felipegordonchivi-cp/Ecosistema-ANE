@@ -1749,14 +1749,16 @@ const TENDENCIA_LABEL={crece:'Creciendo',estable:'Estable',baja:'En declive'};
 const TENDENCIA_ICON={crece:'↑',estable:'→',baja:'↓'};
 
 function detectSkills(t){
-  const tWords=t.split(/\s+/).filter(w=>w.length>3);
   return ESCO_CR_500.filter(s=>s.aliases.some(a=>{
     const n=norm(a);
     if(!n) return false;
-    if(t.includes(n)) return true; // exact phrase match
-    // tokenized: all significant words present anywhere in text
+    if(t.includes(n)) return true;
     const tokens=n.split(/\s+/).filter(w=>w.length>3);
-    return tokens.length>=2 && tokens.every(w=>t.includes(w));
+    if(tokens.length<2) return false;
+    const idx=t.indexOf(tokens[0]);
+    if(idx<0) return false;
+    const chunk=t.slice(Math.max(0,idx-60),idx+n.length+60);
+    return tokens.slice(1).every(w=>chunk.includes(w));
   }));
 }
 function skillWeight(s){return s.priority*8+(s.reuse==='transversal'?3:0)}
