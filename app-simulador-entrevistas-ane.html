@@ -262,10 +262,7 @@ textarea{resize:vertical}
             +'<span style="font-size:9px;color:#4a8a8a;margin-top:2px">'+(mine?'Tú':val.nombre||'Candidato')+'</span>';
           container.appendChild(div);
           container.scrollTop=container.scrollHeight;
-          // badge si el chat está cerrado
-          var badge = document.getElementById('iv-chat-badge');
-          var body  = document.getElementById('iv-chat-body');
-          if(badge && body && body.style.display==='none' && !mine) badge.style.display='inline';
+          if(!mine){ var badge=document.getElementById('iv-chat-badge'); if(badge) badge.style.display='inline'; }
         });
         // Recibir transcripción del candidato en tiempo real
         window._fbOn('salas/'+id+'/transcript', function(val){
@@ -312,13 +309,12 @@ textarea{resize:vertical}
         ivPC.ontrack = function(e){
           var vid = document.getElementById('iv-remote-video');
           var ph  = document.getElementById('iv-video-ph');
-          if(vid){
+          if(vid && e.streams && e.streams[0]){
             vid.srcObject = e.streams[0];
             if(ph) ph.style.display='none';
             vid.play().catch(function(){
-              // Autoplay bloqueado — mostrar botón para activar audio
               vid.muted = true;
-              vid.play();
+              vid.play().catch(function(){});
               var btn = document.getElementById('iv-unmute-btn');
               if(btn) btn.style.display='block';
             });
@@ -377,13 +373,22 @@ textarea{resize:vertical}
         candPC.onicecandidate = function(e){
           if(e.candidate) db.ref('salas/'+salaId+'/ice-cand').push(e.candidate.toJSON());
         };
-        // Recibir audio del entrevistador cuando renegocia
+        // Recibir video+audio del entrevistador cuando renegocia
         candPC.ontrack = function(e){
+          var stream = e.streams && e.streams[0];
+          if(!stream) return;
+          // Si trae video, mostrarlo en cand-iv-video
+          var vid = document.getElementById('cand-iv-video');
+          var ph  = document.getElementById('cand-iv-ph');
           var aud = document.getElementById('iv-audio-out');
-          if(aud){
-            if(!aud.srcObject) aud.srcObject = e.streams[0];
-            else e.streams[0].getTracks().forEach(function(t){ aud.srcObject.addTrack(t); });
-            aud.play().catch(function(){ aud.muted=false; aud.play(); });
+          if(e.track.kind === 'video' && vid){
+            vid.srcObject = stream;
+            if(ph) ph.style.display='none';
+            vid.play().catch(function(){ vid.muted=true; vid.play().catch(function(){}); });
+          }
+          if(e.track.kind === 'audio' && aud){
+            if(!aud.srcObject) aud.srcObject = stream;
+            aud.play().catch(function(){});
           }
         };
         // Escuchar answer del entrevistador
@@ -616,21 +621,29 @@ textarea{resize:vertical}
     <!-- FILA: CÁMARA + CONTROLES -->
     <div style="display:flex;gap:16px;max-width:800px;width:100%;margin:0 auto;flex-wrap:wrap">
 
-      <!-- CÁMARA -->
+      <!-- CÁMARA: entrevistador (grande) + yo (PIP) -->
       <div style="flex:1;min-width:260px">
-        <div style="font-size:11px;color:#4a8a8a;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;font-weight:600">Tu cámara</div>
-        <div class="cand-video-wrap">
-          <video id="cand-video" autoplay muted playsinline></video>
-          <div id="cand-video-ph" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:#3a7272">
-            <span style="font-size:40px">📷</span>
-            <span style="font-size:12px">Cámara apagada</span>
+        <div style="font-size:11px;color:#4a8a8a;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;font-weight:600">Video</div>
+        <!-- Video principal: entrevistador -->
+        <div style="position:relative;width:100%;max-width:460px;aspect-ratio:16/9;background:#060d0d;border-radius:12px;overflow:hidden;border:2px solid var(--db);margin:0 auto">
+          <audio id="iv-audio-out" autoplay playsinline style="display:none"></audio>
+          <video id="cand-iv-video" autoplay playsinline style="width:100%;height:100%;object-fit:cover;display:block"></video>
+          <div id="cand-iv-ph" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#2a5050;background:#060d0d">
+            <div style="width:52px;height:52px;border-radius:50%;background:#0d2d2d;display:flex;align-items:center;justify-content:center;font-size:26px">👔</div>
+            <span style="font-size:11px">Entrevistador conectando…</span>
           </div>
-          <div style="position:absolute;bottom:8px;left:10px;background:rgba(0,0,0,.7);border-radius:4px;padding:2px 8px;font-size:11px;color:#fff" id="cand-name-overlay">Candidato</div>
-          <!-- Mic indicator en video -->
-          <div id="cand-mic-overlay" class="hidden" style="position:absolute;top:8px;right:8px;background:rgba(13,115,115,.8);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:#fff">🎙 ON</div>
+          <div style="position:absolute;bottom:8px;left:10px;background:rgba(0,0,0,.7);border-radius:4px;padding:2px 8px;font-size:10px;color:#7dd3d3;font-weight:700">ENTREVISTADOR</div>
+          <!-- PIP: mi cámara -->
+          <div style="position:absolute;top:8px;right:8px;width:80px;aspect-ratio:4/3;background:#0a1616;border-radius:6px;overflow:hidden;border:2px solid rgba(13,115,115,.5)">
+            <video id="cand-video" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:none"></video>
+            <div id="cand-video-ph" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#2a5050;font-size:16px">📷</div>
+            <div id="cand-mic-overlay" class="hidden" style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);background:rgba(13,115,115,.85);border-radius:8px;padding:1px 5px;font-size:7px;font-weight:700;color:#fff;white-space:nowrap">🎙 ON</div>
+          </div>
+          <!-- Label yo -->
+          <div style="position:absolute;bottom:8px;right:10px;background:rgba(0,0,0,.7);border-radius:4px;padding:2px 8px;font-size:9px;color:#7dd3d3;font-weight:700">YO</div>
         </div>
         <!-- BOTONES AV -->
-        <div style="display:flex;gap:8px;margin-top:10px">
+        <div style="display:flex;gap:8px;margin-top:10px;max-width:460px;margin-left:auto;margin-right:auto">
           <button id="btn-cand-cam" onclick="toggleCandCam()" class="cand-ctrl-btn" style="flex:1">
             📷 <span id="cand-cam-lbl">Activar Cámara</span>
           </button>
@@ -639,7 +652,7 @@ textarea{resize:vertical}
           </button>
         </div>
         <!-- Selector cámara -->
-        <select id="cam-select" onchange="switchCamera(this.value)" style="width:100%;font-size:11px;padding:5px 8px;margin-top:8px">
+        <select id="cam-select" onchange="switchCamera(this.value)" style="width:100%;max-width:460px;display:block;margin:8px auto 0;font-size:11px;padding:5px 8px">
           <option value="">Seleccionar cámara…</option>
         </select>
       </div>
@@ -702,7 +715,6 @@ textarea{resize:vertical}
     </div>
 
   </div><!-- end sala-entrevista-body -->
-<audio id="iv-audio-out" autoplay playsinline style="display:none"></audio>
 </div><!-- end v-candidato -->
 
 <!-- NOTIFICACIÓN DE LLAMADO (panel entrevistador) -->
@@ -986,6 +998,7 @@ textarea{resize:vertical}
 </div>
 
 <!-- ===== MAIN APP ===== -->
+<input type="hidden" id="_sala-id-store" value="">
 <div id="v-app">
   <!-- HEADER -->
   <div class="hdr">
@@ -1049,52 +1062,68 @@ textarea{resize:vertical}
         </div>
       </div>
 
-      <!-- RIGHT: Active Q + audio panel -->
-      <div style="width:320px;background:var(--s1);border-left:1px solid var(--db);padding:16px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;flex-shrink:0">
+      <!-- RIGHT: Video + Active Q + audio panel -->
+      <div style="width:420px;background:var(--s1);border-left:1px solid var(--db);padding:12px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex-shrink:0">
 
-        <!-- PANEL DE VIDEO (entrevistador + candidato) -->
-        <div id="webrtc-panel" style="background:var(--s2);border:1px solid var(--db);border-radius:10px;overflow:hidden">
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:rgba(13,115,115,.15);border-bottom:1px solid var(--db)">
-            <span style="font-size:10px;color:#7dd3d3;font-weight:700;text-transform:uppercase;letter-spacing:1px">📹 Sala de video</span>
-            <div style="display:flex;gap:6px;align-items:center">
-              <span id="webrtc-status-dot" style="width:8px;height:8px;border-radius:50%;background:#eab308;display:inline-block"></span>
-              <span id="webrtc-status-txt" style="font-size:10px;color:#7dd3d3">Sin candidato</span>
-              <button onclick="toggleIvCam()" id="iv-cam-btn" style="background:rgba(13,115,115,.2);border:1px solid var(--teal);color:#7dd3d3;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer">📷 Cámara ON</button>
+        <!-- SALA DE VIDEO — Teams-like -->
+        <div id="webrtc-panel" style="background:#0a1616;border:1px solid var(--db);border-radius:12px;overflow:hidden">
+
+          <!-- Header bar -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:rgba(0,0,0,.4)">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span id="webrtc-status-dot" style="width:7px;height:7px;border-radius:50%;background:#eab308;flex-shrink:0;display:inline-block"></span>
+              <span id="webrtc-status-txt" style="font-size:10px;color:#7dd3d3;font-weight:600">Sin candidato</span>
+            </div>
+            <span style="font-size:10px;color:#3a7272;font-weight:700;letter-spacing:1px">SALA VIRTUAL</span>
+          </div>
+
+          <!-- Candidato: video grande (16:9) con PIP del entrevistador -->
+          <div style="position:relative;width:100%;aspect-ratio:16/9;background:#060d0d">
+            <!-- Video candidato (full size) -->
+            <video id="iv-remote-video" autoplay playsinline style="width:100%;height:100%;object-fit:cover;display:block"></video>
+            <!-- Placeholder cuando no hay candidato -->
+            <div id="iv-video-ph" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#2a5050;background:#060d0d">
+              <div style="width:56px;height:56px;border-radius:50%;background:#0d2d2d;display:flex;align-items:center;justify-content:center;font-size:28px">👤</div>
+              <span style="font-size:11px;color:#2a5050">Esperando al candidato…</span>
+            </div>
+            <!-- Label candidato -->
+            <div style="position:absolute;bottom:8px;left:10px;background:rgba(0,0,0,.7);border-radius:4px;padding:2px 8px;font-size:10px;color:#7dd3d3;font-weight:700;pointer-events:none">CANDIDATO</div>
+            <!-- Botón unmute candidato -->
+            <button id="iv-unmute-btn" onclick="(function(){var v=document.getElementById('iv-remote-video');v.muted=false;v.play();this.style.display='none';}).call(this)" style="display:none;position:absolute;bottom:8px;right:10px;background:rgba(0,0,0,.8);border:1px solid #7dd3d3;color:#7dd3d3;padding:3px 10px;border-radius:10px;font-size:10px;font-weight:700;cursor:pointer">🔊 Activar audio</button>
+            <!-- PIP: mi cámara (esquina superior derecha) -->
+            <div style="position:absolute;top:8px;right:8px;width:96px;aspect-ratio:4/3;background:#0a1616;border-radius:8px;overflow:hidden;border:2px solid rgba(13,115,115,.5);box-shadow:0 2px 12px rgba(0,0,0,.5)">
+              <video id="iv-local-video" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;display:none;transform:scaleX(-1)"></video>
+              <div id="iv-local-ph" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#2a5050">
+                <span style="font-size:16px">🎙</span><span style="font-size:8px">Yo</span>
+              </div>
+              <div style="position:absolute;bottom:2px;left:4px;background:rgba(0,0,0,.7);border-radius:2px;padding:1px 5px;font-size:8px;color:#7dd3d3;font-weight:700">YO</div>
             </div>
           </div>
-          <!-- Videos lado a lado -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;background:#111">
-            <!-- Mi cámara -->
-            <div style="position:relative;background:#0a1a1a;aspect-ratio:4/3">
-              <video id="iv-local-video" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;display:none"></video>
-              <div id="iv-local-ph" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#3a7272">
-                <span style="font-size:20px">🎙</span><span style="font-size:10px">Mi cámara</span>
-              </div>
-              <div style="position:absolute;bottom:4px;left:6px;background:rgba(0,0,0,.6);border-radius:3px;padding:1px 6px;font-size:9px;color:#7dd3d3;font-weight:700">YO</div>
-            </div>
-            <!-- Candidato -->
-            <div style="position:relative;background:#0a1a1a;aspect-ratio:4/3">
-              <video id="iv-remote-video" autoplay playsinline style="width:100%;height:100%;object-fit:cover;display:none"></video>
-              <div id="iv-video-ph" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#3a7272">
-                <span style="font-size:20px">👤</span><span style="font-size:10px">Candidato</span>
-              </div>
-              <div style="position:absolute;bottom:4px;left:6px;background:rgba(0,0,0,.6);border-radius:3px;padding:1px 6px;font-size:9px;color:#7dd3d3;font-weight:700">CANDIDATO</div>
-              <button id="iv-unmute-btn" onclick="(function(){var v=document.getElementById('iv-remote-video');v.muted=false;v.play();document.getElementById('iv-unmute-btn').style.display='none';})()" style="display:none;position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,.75);border:1px solid #7dd3d3;color:#7dd3d3;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;cursor:pointer">🔊</button>
+
+          <!-- Barra de controles Teams-like -->
+          <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:8px 12px;background:rgba(0,0,0,.5);border-top:1px solid rgba(13,115,115,.2)">
+            <button id="iv-mic-btn" onclick="toggleIvMic()" style="display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(13,115,115,.2);border:1px solid var(--teal);color:#7dd3d3;padding:6px 12px;border-radius:8px;font-size:9px;font-weight:700;cursor:pointer;min-width:54px">
+              <span style="font-size:16px">🎙</span>Mic ON
+            </button>
+            <button onclick="toggleIvCam()" id="iv-cam-btn" style="display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(13,115,115,.2);border:1px solid var(--teal);color:#7dd3d3;padding:6px 12px;border-radius:8px;font-size:9px;font-weight:700;cursor:pointer;min-width:54px">
+              <span style="font-size:16px">📹</span>Cámara
+            </button>
+            <div style="flex:1"></div>
+            <div id="iv-speaking-dot" style="display:none;align-items:center;gap:4px;font-size:10px;color:#22c55e">
+              <span style="width:6px;height:6px;border-radius:50%;background:#22c55e;animation:pulse-teal 1s infinite"></span>Hablando
             </div>
           </div>
-          <!-- Chat en tiempo real -->
-          <div style="border-top:1px solid var(--db)">
-            <div style="padding:5px 10px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="toggleIvChat()">
+
+          <!-- Chat siempre visible -->
+          <div style="border-top:1px solid rgba(13,115,115,.25);display:flex;flex-direction:column">
+            <div style="padding:5px 10px;display:flex;align-items:center;gap:6px;background:rgba(13,115,115,.08)">
               <span style="font-size:10px;color:#7dd3d3;font-weight:700;text-transform:uppercase;letter-spacing:1px">💬 Chat</span>
-              <span id="iv-chat-badge" style="display:none;background:#ef4444;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700">!</span>
-              <span id="iv-chat-toggle" style="font-size:10px;color:#4a8a8a">▾</span>
+              <span id="iv-chat-badge" onclick="this.style.display='none'" style="display:none;background:#ef4444;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;cursor:pointer">!</span>
             </div>
-            <div id="iv-chat-body" style="display:none;flex-direction:column">
-              <div id="iv-chat-msgs" style="max-height:140px;overflow-y:auto;padding:8px 10px;display:flex;flex-direction:column;gap:6px;font-size:11px"></div>
-              <div style="display:flex;gap:6px;padding:6px 8px;border-top:1px solid var(--db)">
-                <input id="iv-chat-input" placeholder="Escribe un mensaje…" style="flex:1;background:rgba(13,115,115,.1);border:1px solid var(--db);border-radius:6px;padding:5px 8px;color:#e0f2f2;font-size:11px" onkeydown="if(event.key==='Enter')sendIvChat()">
-                <button onclick="sendIvChat()" style="background:var(--teal);border:none;color:#fff;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">➤</button>
-              </div>
+            <div id="iv-chat-msgs" style="height:100px;overflow-y:auto;padding:6px 10px;display:flex;flex-direction:column;gap:5px;font-size:11px;background:rgba(0,0,0,.15)"></div>
+            <div style="display:flex;gap:5px;padding:6px 8px;border-top:1px solid rgba(13,115,115,.2)">
+              <input id="iv-chat-input" placeholder="Escribe un mensaje…" style="flex:1;background:rgba(13,115,115,.1);border:1px solid var(--db);border-radius:6px;padding:5px 8px;color:#e0f2f2;font-size:11px" onkeydown="if(event.key==='Enter')sendIvChat()">
+              <button onclick="sendIvChat()" style="background:var(--teal);border:none;color:#fff;padding:5px 12px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:700">➤</button>
             </div>
           </div>
         </div>
@@ -3128,6 +3157,7 @@ function openCandidateView(){
   // Generar código de sala único
   const salaId = Math.random().toString(36).slice(2,8).toUpperCase();
   window._activeSalaId = salaId;
+  const s = document.getElementById('_sala-id-store'); if(s) s.value = salaId;
   const base = window.location.href.split('?')[0];
   const url = base + '?vista=candidato&sala=' + salaId;
   // Escuchar knock via Firebase para esta sala
@@ -3731,22 +3761,25 @@ function solicitarEntrada(){
   if(bc) bc.postMessage({type:'knock', nombre});
 }
 
-// ── CÁMARA DEL ENTREVISTADOR ───────────────────
+// ── CÁMARA + MIC DEL ENTREVISTADOR ─────────────
 let ivCamStream = null;
+let ivMicMuted  = false;
+
 async function toggleIvCam(){
   const btn = document.getElementById('iv-cam-btn');
   const vid = document.getElementById('iv-local-video');
   const ph  = document.getElementById('iv-local-ph');
   if(ivCamStream){
     ivCamStream.getTracks().forEach(t=>t.stop());
-    ivCamStream=null; if(vid){vid.srcObject=null;vid.style.display='none';} if(ph) ph.style.display='';
-    if(btn) btn.textContent='📷 Cámara ON';
+    ivCamStream=null;
+    if(vid){vid.srcObject=null;vid.style.display='none';} if(ph) ph.style.display='';
+    if(btn) btn.innerHTML='<span style="font-size:16px">📹</span>Cámara';
   } else {
     try{
       ivCamStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:true});
       if(vid){vid.srcObject=ivCamStream;vid.style.display='block';} if(ph) ph.style.display='none';
-      if(btn) btn.textContent='📷 Cámara OFF';
-      // Renegociar WebRTC para enviar audio al candidato
+      if(btn) btn.innerHTML='<span style="font-size:16px">📹</span>Cámara OFF';
+      // Renegociar WebRTC para enviar audio+video al candidato
       var ivPC = window._ivPC;
       var sid  = window._activeSalaId;
       if(ivPC && sid && typeof firebase !== 'undefined'){
@@ -3757,42 +3790,34 @@ async function toggleIvCam(){
           firebase.database().ref('salas/'+sid+'/webrtc-reoffer').set(ivPC.localDescription.toJSON());
         }).catch(function(e){ console.warn('WebRTC reoffer error:', e); });
       }
-    }catch(e){ alert('No se pudo acceder a la cámara: '+e.message); }
+    }catch(e){ showToast('No se pudo acceder a la cámara: '+e.message,'#ef4444'); }
+  }
+}
+
+function toggleIvMic(){
+  const btn = document.getElementById('iv-mic-btn');
+  ivMicMuted = !ivMicMuted;
+  if(ivCamStream){
+    ivCamStream.getAudioTracks().forEach(t=>{ t.enabled = !ivMicMuted; });
+  }
+  if(btn){
+    btn.style.background = ivMicMuted ? 'rgba(239,68,68,.3)' : 'rgba(13,115,115,.2)';
+    btn.style.borderColor = ivMicMuted ? '#ef4444' : 'var(--teal)';
+    btn.style.color = ivMicMuted ? '#fca5a5' : '#7dd3d3';
+    btn.innerHTML = ivMicMuted
+      ? '<span style="font-size:16px">🔇</span>Mic OFF'
+      : '<span style="font-size:16px">🎙</span>Mic ON';
   }
 }
 
 // ── CHAT EN TIEMPO REAL ─────────────────────────
-function toggleIvChat(){
-  const body = document.getElementById('iv-chat-body');
-  const tog  = document.getElementById('iv-chat-toggle');
-  const badge= document.getElementById('iv-chat-badge');
-  const open = body.style.display==='flex';
-  body.style.display = open ? 'none' : 'flex';
-  body.style.flexDirection = 'column';
-  if(tog) tog.textContent = open ? '▾' : '▴';
-  if(!open && badge) badge.style.display='none';
-}
-
-function renderChatMsg(msgs, container, myRole){
-  if(!container) return;
-  container.innerHTML='';
-  if(!msgs) return;
-  Object.values(msgs).sort((a,b)=>a.ts-b.ts).forEach(m=>{
-    const mine = m.role===myRole;
-    const div=document.createElement('div');
-    div.style.cssText=`display:flex;flex-direction:column;align-items:${mine?'flex-end':'flex-start'}`;
-    div.innerHTML=`<div style="max-width:85%;background:${mine?'rgba(13,115,115,.35)':'rgba(255,255,255,.07)'};border-radius:10px;padding:5px 10px;font-size:11px;color:#e0f2f2;line-height:1.4">${m.text}</div>`
-      +`<span style="font-size:9px;color:#4a8a8a;margin-top:2px">${mine?'Tú':m.nombre||'Candidato'}</span>`;
-    container.appendChild(div);
-  });
-  container.scrollTop=container.scrollHeight;
-}
-
 function sendIvChat(){
   const inp=document.getElementById('iv-chat-input');
   const text=(inp?.value||'').trim(); if(!text) return;
-  const salaId=window._activeSalaId; if(!salaId||typeof window._fbSet!=='function') return;
-  window._fbSet('salas/'+salaId+'/chat/'+Date.now(), {text, role:'iv', nombre:'Entrevistador', ts:Date.now()});
+  const salaId=window._activeSalaId || document.getElementById('_sala-id-store')?.value;
+  if(!salaId){ showToast('Sin sala activa — abre la vista candidato primero','#ef4444'); return; }
+  if(typeof firebase==='undefined'){ showToast('Firebase no disponible','#ef4444'); return; }
+  firebase.database().ref('salas/'+salaId+'/chat').push({text, role:'iv', nombre:'Entrevistador', ts:Date.now()});
   inp.value='';
 }
 
@@ -3800,10 +3825,13 @@ function sendCandChat(){
   const inp=document.getElementById('cand-chat-input');
   const text=(inp?.value||'').trim(); if(!text) return;
   const params=new URLSearchParams(window.location.search);
-  const sid=params.get('sala'); if(!sid||typeof window._fbSet!=='function') return;
+  const sid=params.get('sala');
+  if(!sid){ showToast('Sin código de sala en URL','#ef4444'); return; }
+  if(typeof firebase==='undefined'){ showToast('Firebase no disponible','#ef4444'); return; }
   const nombre=document.getElementById('sala-espera-nombre')?.value||'Candidato';
-  window._fbSet('salas/'+sid+'/chat/'+Date.now(), {text, role:'cand', nombre, ts:Date.now()});
+  firebase.database().ref('salas/'+sid+'/chat').push({text, role:'cand', nombre, ts:Date.now()});
   inp.value='';
+  document.getElementById('cand-chat-badge').style.display='none';
 }
 
 function activarBtnAprobar(nombre){
