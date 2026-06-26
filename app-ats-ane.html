@@ -874,147 +874,147 @@
 <a class="ane-help-btn" href="manual-ats-ane.html" target="_blank" rel="noopener">❔ Manual y FAQ</a>
 
 <script>
-// ── Interceptor de botón PDF via event delegation ─────────────────────────
-// El JS ofuscado puede usar una closure/referencia directa a la función
-// original, haciendo que window.generateCandidatePDF no pueda sobreescribirse.
-// Capturamos el clic en el botón .btn-pdf directamente y generamos el informe.
+// ── Informe PDF desde DOM ─────────────────────────────────────────────────
+// Lee los datos directamente de la tarjeta del candidato en pantalla.
+// No depende de window.lastResults ni de funciones internas del JS ofuscado.
 (function(){
-  function generarInformePDF(idx){
-      var results = window.lastResults;
-      if(!results || !results[idx]){
-        alert('No hay datos del candidato para generar el informe.');
-        return;
-      }
-      var r = results[idx];
-      var cfg = window.lastCfg || {};
+  function txt(el){ return el ? el.textContent.trim() : ''; }
 
-      // Extraer nombre — intentar distintas claves conocidas
-      // ── Nombre del candidato ──────────────────────────────────────────────
-      // El campo de nombre en sec2 (#pasteName) se guarda dentro del objeto cand.
-      // Probar múltiples claves; si se obtiene el texto completo del CV, tomar
-      // solo la primera línea y truncar a 60 caracteres.
-      var cand = r.cand || r.candidato || r.candidate || {};
-      var _rawName = cand.nombre || cand.completo || cand.name || cand.id ||
-                     cand.tag   || cand.label    || cand.ref  || cand.alias ||
-                     r.nombre   || r.name        || r.label   || '';
-      if(!_rawName && cand.text) _rawName = cand.text.split(/[\n\r]/)[0].trim();
-      // Limpiar: quitar teléfonos, emails y truncar
-      var nombre = _rawName.replace(/\(?\d{3,4}\)?[\s\-]?\d{4}[\s\-]?\d{4}/g,'').replace(/[\w.]+@[\w.]+/g,'').replace(/\s{2,}/g,' ').trim().substring(0,60) || ('Candidato #' + (idx+1));
+  function generarDesdeDOM(card){
+    var fecha = new Date().toLocaleDateString('es-CR',{year:'numeric',month:'long',day:'numeric'});
 
-      var puesto = cfg.titulo || cfg.puesto || cfg.title || 'Puesto no especificado';
-      var area   = cfg.area || '';
-      var total  = r.total || 0;
-      var status = r.status || r.estado || '';
-      var obs    = r.obs || r.observacion || r.observation || '';
+    // ── Nombre y score del header de la tarjeta ───────────────────────────
+    var nombre = txt(card.querySelector('h3, .cand-name, [class*="name"]'));
+    if(!nombre) nombre = txt(card.querySelector('b, strong'));
+    var scoreEl = card.querySelector('[class*="score"],[class*="total"]');
+    var scoreText = scoreEl ? scoreEl.textContent.match(/\d+/) : null;
+    var total = scoreText ? parseInt(scoreText[0]) : 0;
 
-      var statusLabel = {ok:'CUMPLE PERFECTAMENTE', mid:'CUMPLE CON RESERVAS', low:'CUMPLE PARCIALMENTE', ko:'NO CUMPLE (FILTRO)'}[status] || status.toUpperCase();
-      var statusColor = {ok:'#00525a', mid:'#7a5c00', low:'#5a3000', ko:'#1a1a1a'}[status] || '#333';
-      var scoreColor  = total >= 70 ? '#00525a' : '#8a4a00';
+    // Status badge
+    var badge = card.querySelector('[class*="badge"],[class*="status"],[class*="chip"]');
+    var statusText = badge ? badge.textContent.trim() : '';
 
-      // ── Desglose por categoría ────────────────────────────────────────────
-      var breakdown = r.breakdown || r.desglose || r.categories || r.cats || [];
-      var breakdownHTML = '';
-      if(breakdown.length){
-        breakdownHTML = '<table style="width:100%;border-collapse:collapse;margin-bottom:16px">' +
-          '<tr><th style="text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#7a7a7a;padding:5px 8px;border-bottom:1.5px solid #333">Categoría</th>' +
-          '<th style="text-align:right;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#7a7a7a;padding:5px 8px;border-bottom:1.5px solid #333">Puntaje</th>' +
-          '<th style="text-align:right;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#7a7a7a;padding:5px 8px;border-bottom:1.5px solid #333">Peso</th></tr>';
-        breakdown.forEach(function(cat){
-          var catName  = cat.nombre || cat.name || cat.cat || cat.label || '';
-          var catScore = (cat.score != null ? cat.score : cat.puntaje != null ? cat.puntaje : cat.value) || 0;
-          var catW     = cat.w != null ? cat.w : (cat.peso || cat.weight || '');
-          breakdownHTML += '<tr>' +
-            '<td style="padding:6px 8px;font-size:11px;border-bottom:1px solid #eee">' + catName + '</td>' +
-            '<td style="padding:6px 8px;font-size:11px;font-weight:700;text-align:right;border-bottom:1px solid #eee">' + catScore + '/100</td>' +
-            '<td style="padding:6px 8px;font-size:10px;color:#777;text-align:right;border-bottom:1px solid #eee">' + catW + '%</td></tr>';
+    // Meta (puesto)
+    var metaEl = card.querySelector('[class*="meta"],[class*="sub"],[class*="role"]');
+    var meta = metaEl ? metaEl.textContent.trim() : '';
+
+    // ── Observation ───────────────────────────────────────────────────────
+    var obsEl = card.querySelector('[class*="obs"],[class*="note"],[class*="main"]');
+    var obs = obsEl ? obsEl.textContent.trim() : '';
+
+    // ── Desglose por categoría (barras de progreso con etiquetas) ─────────
+    var breakdownHTML = '';
+    var catRows = card.querySelectorAll('[class*="row"],[class*="cat"],[class*="wrow"]');
+    var cats = [];
+    catRows.forEach(function(row){
+      var label = row.querySelector('b, strong, [class*="label"]');
+      var scoreSpan = row.querySelector('[class*="score"], span');
+      var scoreMatch = row.textContent.match(/(\d+)\s*\/\s*100/);
+      var weightMatch = row.textContent.match(/Peso\s+(\d+)%/i);
+      if(label && scoreMatch){
+        cats.push({
+          name: txt(label),
+          score: scoreMatch[1],
+          w: weightMatch ? weightMatch[1] : ''
         });
-        breakdownHTML += '</table>';
       }
+    });
+    if(cats.length){
+      breakdownHTML = '<table style="width:100%;border-collapse:collapse;margin-bottom:16px">' +
+        '<tr><th style="text-align:left;font-size:9px;text-transform:uppercase;color:#7a7a7a;padding:5px 8px;border-bottom:1.5px solid #333">Categoría</th>' +
+        '<th style="text-align:right;font-size:9px;text-transform:uppercase;color:#7a7a7a;padding:5px 8px;border-bottom:1.5px solid #333">Puntaje</th>' +
+        '<th style="text-align:right;font-size:9px;text-transform:uppercase;color:#7a7a7a;padding:5px 8px;border-bottom:1.5px solid #333">Peso</th></tr>';
+      cats.forEach(function(c){
+        breakdownHTML += '<tr><td style="padding:6px 8px;font-size:11px;border-bottom:1px solid #eee">' + c.name + '</td>' +
+          '<td style="padding:6px 8px;font-size:11px;font-weight:700;text-align:right;border-bottom:1px solid #eee">' + c.score + '/100</td>' +
+          '<td style="padding:6px 8px;font-size:10px;color:#777;text-align:right;border-bottom:1px solid #eee">' + (c.w ? c.w + '%' : '') + '</td></tr>';
+      });
+      breakdownHTML += '</table>';
+    }
 
-      // ── Fortalezas y brechas ──────────────────────────────────────────────
-      var good = [], bad = [];
-      try {
-        var _recs = (typeof window.buildRecs === 'function') ? (window.buildRecs(r, cfg) || {}) : {};
-        good = _recs.good || r.good || r.fortalezas || r.strengths || [];
-        bad  = _recs.bad  || r.bad  || r.brechas    || r.gaps      || [];
-      } catch(e) { /* buildRecs falló — arrays vacíos */ }
-      var goodHTML = good.length ? good.map(function(g){ return '<li style="color:#00525a;font-size:11px;margin-bottom:4px">✓ ' + g + '</li>'; }).join('') : '<li style="font-size:11px;color:#999">Sin datos</li>';
-      var badHTML  = bad.length  ? bad.map(function(b){  return '<li style="color:#8a0000;font-size:11px;margin-bottom:4px">✗ ' + b + '</li>'; }).join('') : '<li style="font-size:11px;color:#00525a">✓ Sin brechas relevantes</li>';
+    // ── Fortalezas y brechas (listas del card) ────────────────────────────
+    var lists = card.querySelectorAll('ul, ol, [class*="list"]');
+    var goodItems = [], badItems = [];
+    lists.forEach(function(ul){
+      ul.querySelectorAll('li').forEach(function(li){
+        var t = li.textContent.trim();
+        if(!t) return;
+        if(li.textContent.includes('✓') || li.classList.contains('ok') || li.style.color === 'green') goodItems.push(t.replace(/^[✓✗⊗○●]\s*/,''));
+        else if(li.textContent.includes('✗') || li.textContent.includes('⊗') || li.textContent.includes('⨂')) badItems.push(t.replace(/^[✓✗⊗○●⊗]\s*/,''));
+      });
+    });
 
-      var fecha = new Date().toLocaleDateString('es-CR',{year:'numeric',month:'long',day:'numeric'});
-
-      var html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">' +
-        '<title>Informe ATS — ' + nombre + '</title>' +
-        '<style>' +
-        'body{font-family:system-ui,sans-serif;color:#1a1a1a;margin:0;padding:0;background:#f5f5f5}' +
-        '.page{max-width:760px;margin:0 auto;background:#fff;padding:40px 48px}' +
-        '.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #041616}' +
-        '.agency{font-size:18px;font-weight:800;color:#041616;letter-spacing:.06em}' +
-        '.sub{font-size:11px;color:#555;margin-top:2px}' +
-        '.report-label{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#777;text-align:right}' +
-        '.report-date{font-size:11px;color:#333;text-align:right;margin-top:3px}' +
-        '.candidate-name{font-size:22px;font-weight:800;margin-bottom:4px}' +
-        '.candidate-meta{font-size:12px;color:#555;margin-bottom:20px}' +
-        '.score-row{display:flex;align-items:center;gap:20px;margin-bottom:24px;padding:16px 20px;background:#f8fafa;border-radius:8px;border:1px solid #e0eeee}' +
-        '.score-big{font-size:48px;font-weight:900;color:' + scoreColor + ';line-height:1}' +
-        '.score-denom{font-size:14px;font-weight:400;color:#777}' +
-        '.status-badge{display:inline-block;padding:6px 14px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.08em;background:' + statusColor + ';color:#fff}' +
-        '.obs{font-size:11px;color:#555;margin-top:6px}' +
-        '.section-title{font-size:9px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:#00525a;margin:20px 0 10px;padding-bottom:5px;border-bottom:1px solid #e2eeef}' +
-        '.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:4px}' +
-        'ul{list-style:none;padding:0;margin:0}' +
-        '.footer{margin-top:32px;padding-top:12px;border-top:1px solid #eee;display:flex;justify-content:space-between;font-size:9px;color:#aaa}' +
-        '@media print{body{background:#fff}.page{padding:20px 24px}}' +
-        '@page{margin:12mm;size:A4}' +
-        '</style></head><body><div class="page">' +
-        '<div class="header"><div><div class="agency">ANE <span style="font-weight:400">· Brete.cr</span></div><div class="sub">Agencia Nacional del Empleo — ATS ANE</div></div>' +
-        '<div><div class="report-label">Informe de evaluación</div><div class="report-date">' + fecha + '</div></div></div>' +
-        '<div class="candidate-name">' + nombre + '</div>' +
-        '<div class="candidate-meta">' + puesto + (area ? ' — ' + area : '') + '</div>' +
-        '<div class="score-row"><div><div class="score-big">' + total + '<span class="score-denom">/100</span></div></div>' +
-        '<div><div class="status-badge">' + statusLabel + '</div>' + (obs ? '<div class="obs">' + obs + '</div>' : '') + '</div></div>' +
-        '<div class="section-title">Desglose por categoría</div>' +
-        (breakdownHTML || '<p style="font-size:11px;color:#999">Sin desglose disponible.</p>') +
-        '<div class="two-col"><div><div class="section-title">Fortalezas</div><ul>' + goodHTML + '</ul></div>' +
-        '<div><div class="section-title">Brechas y recomendaciones</div><ul>' + badHTML + '</ul></div></div>' +
-        '<div class="footer"><span>ANE · ATS ANE</span><span>Generado: ' + fecha + '</span></div>' +
-        '</div></body></html>';
-
-      try {
-        var win = window.open('', '_blank');
-        if(win){
-          win.document.open();
-          win.document.write(html);
-          win.document.close();
-        } else {
-          // Fallback: blob URL download
-          var blob = new Blob([html], {type:'text/html;charset=utf-8'});
-          var url  = URL.createObjectURL(blob);
-          var a = document.createElement('a');
-          a.href = url;
-          a.download = 'informe-ats-' + (idx+1) + '.html';
-          document.body.appendChild(a); a.click(); document.body.removeChild(a);
-          setTimeout(function(){ URL.revokeObjectURL(url); }, 30000);
-        }
-      } catch(e){
-        alert('Error al generar el informe: ' + e.message);
+    // Alternativamente buscar secciones con título Fortalezas / Brechas
+    card.querySelectorAll('[class*="title"],[class*="head"],h4,h5').forEach(function(h){
+      var ht = h.textContent.toLowerCase();
+      var sibling = h.nextElementSibling;
+      if(!sibling) return;
+      if(ht.includes('fortalez')){
+        sibling.querySelectorAll('li, p').forEach(function(el){ var t=el.textContent.trim().replace(/^[✓✗⊗○●]\s*/,''); if(t) goodItems.push(t); });
+      } else if(ht.includes('brecha') || ht.includes('recom')){
+        sibling.querySelectorAll('li, p').forEach(function(el){ var t=el.textContent.trim().replace(/^[✓✗⊗○●]\s*/,''); if(t) badItems.push(t); });
       }
+    });
+
+    var goodHTML = goodItems.length ? goodItems.map(function(g){ return '<li style="color:#00525a;font-size:11px;margin-bottom:5px">✓ '+g+'</li>'; }).join('') : '<li style="font-size:11px;color:#999">—</li>';
+    var badHTML  = badItems.length  ? badItems.map(function(b){  return '<li style="color:#8a0000;font-size:11px;margin-bottom:5px">✗ '+b+'</li>'; }).join('') : '<li style="font-size:11px;color:#555">—</li>';
+
+    var scoreColor = total >= 70 ? '#00525a' : '#8a4a00';
+
+    var html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">' +
+      '<title>Informe ATS — '+nombre+'</title><style>' +
+      'body{font-family:system-ui,sans-serif;color:#1a1a1a;margin:0;background:#f5f5f5}' +
+      '.page{max-width:760px;margin:0 auto;background:#fff;padding:40px 48px}' +
+      '.hdr{display:flex;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #041616}' +
+      '.agency{font-size:18px;font-weight:800;color:#041616}' +
+      '.sub{font-size:11px;color:#555;margin-top:2px}' +
+      '.rl{font-size:9px;text-transform:uppercase;color:#777;text-align:right}' +
+      '.rd{font-size:11px;color:#333;text-align:right;margin-top:3px}' +
+      '.cname{font-size:22px;font-weight:800;margin:0 0 4px}' +
+      '.cmeta{font-size:12px;color:#555;margin-bottom:20px}' +
+      '.srow{display:flex;align-items:center;gap:20px;margin-bottom:24px;padding:16px 20px;background:#f8fafa;border-radius:8px;border:1px solid #e0eeee}' +
+      '.sbig{font-size:48px;font-weight:900;color:'+scoreColor+';line-height:1}' +
+      '.stxt{font-size:14px;color:#777}' +
+      '.badge{display:inline-block;padding:6px 14px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.08em;background:#1a1a1a;color:#fff}' +
+      '.st{font-size:9px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:#00525a;margin:20px 0 10px;padding-bottom:5px;border-bottom:1px solid #e2eeef}' +
+      '.tcol{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:4px}' +
+      'ul{list-style:none;padding:0;margin:0}' +
+      '.ft{margin-top:32px;padding-top:12px;border-top:1px solid #eee;display:flex;justify-content:space-between;font-size:9px;color:#aaa}' +
+      '@media print{body{background:#fff}.page{padding:20px 24px}}@page{margin:12mm;size:A4}' +
+      '</style></head><body><div class="page">' +
+      '<div class="hdr"><div><div class="agency">ANE <span style="font-weight:400">· Brete.cr</span></div><div class="sub">Agencia Nacional del Empleo — ATS ANE</div></div>' +
+      '<div><div class="rl">Informe de evaluación</div><div class="rd">'+fecha+'</div></div></div>' +
+      '<div class="cname">'+nombre+'</div><div class="cmeta">'+meta+'</div>' +
+      '<div class="srow"><div><div class="sbig">'+total+'<span class="stxt">/100</span></div></div>' +
+      '<div><div class="badge">'+statusText+'</div>'+(obs?'<div style="font-size:11px;color:#555;margin-top:6px">'+obs+'</div>':'')+'</div></div>' +
+      '<div class="st">Desglose por categoría</div>'+(breakdownHTML||'<p style="font-size:11px;color:#999">Sin desglose.</p>') +
+      '<div class="tcol"><div><div class="st">Fortalezas</div><ul>'+goodHTML+'</ul></div>' +
+      '<div><div class="st">Brechas y recomendaciones</div><ul>'+badHTML+'</ul></div></div>' +
+      '<div class="ft"><span>ANE · ATS ANE</span><span>Generado: '+fecha+'</span></div>' +
+      '</div></body></html>';
+
+    var win = window.open('','_blank');
+    if(win){ win.document.open(); win.document.write(html); win.document.close(); }
+    else {
+      var blob = new Blob([html],{type:'text/html;charset=utf-8'});
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a'); a.href=url; a.download='informe-ats.html';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); },30000);
+    }
   }
 
-  // Event delegation: captura clics en cualquier .btn-pdf del documento
   document.addEventListener('click', function(e){
     var btn = e.target.closest('.btn-pdf');
     if(!btn) return;
-    // Extraer idx del onclick attribute o de data-idx
-    var idx = 0;
-    var oc = btn.getAttribute('onclick') || '';
-    var m = oc.match(/\d+/);
-    if(m) idx = parseInt(m[0]);
-    else if(btn.dataset.idx != null) idx = parseInt(btn.dataset.idx);
+    // Encontrar la tarjeta contenedora del candidato
+    var card = btn.closest('[class*="card"],[class*="result"],[class*="cand"]');
+    if(!card) card = btn.parentElement;
     e.stopImmediatePropagation();
     e.preventDefault();
-    generarInformePDF(idx);
-  }, true); // useCapture=true para interceptar antes que el handler original
+    try{ generarDesdeDOM(card); }
+    catch(err){ alert('Error: '+err.message); }
+  }, true);
 })();
 
 // ── Override showSection — el JS ofuscado usa un class name no mapeado en el CSS
