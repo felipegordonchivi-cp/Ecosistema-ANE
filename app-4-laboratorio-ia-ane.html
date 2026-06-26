@@ -1781,25 +1781,69 @@ function familyObjectiveBoost(f){
   let targetHits=kws.filter(k=>k && target.includes(k)).length;
   let textHits=kws.filter(k=>k && all.includes(k)).length;
   let boost=targetHits*18 + Math.min(textHits,5)*7;
-  // Ingeniería
-  const engineeringIntent=(target.includes('ingeniero')||target.includes('ingeniera')||target.includes('ingenieria')||target.includes('ingenieria'));
-  const ENG_FAM=['ingenieria_civil','ingenieria_industrial','ingenieria_sistemas','ingenieria_electromecanica','arquitectura','proyectos'];
-  if(engineeringIntent && ENG_FAM.includes(f.id)) boost+=35;
-  if(engineeringIntent && !ENG_FAM.concat(['mantenimiento','construccion_operativa','tic']).includes(f.id)) boost-=28;
-  // Administrativo/oficina: evita que ingeniería gane por competencias transversales
-  const adminIntent=(target.includes('asistente')||target.includes('administrativ')||target.includes('secretari')||target.includes('recepcionis')||target.includes('oficinista')||target.includes('auxiliar'));
-  const ADMIN_FAM=['administracion','legal','sector_publico','rrhh','contabilidad','compras','banca_seguros','asistente_virtual_cert','ofimatica_cert','erp_crm_cert'];
-  const TECH_FAM=['ingenieria_civil','ingenieria_industrial','ingenieria_sistemas','ingenieria_electromecanica','arquitectura','construccion_operativa','mantenimiento','manufactura','electricidad_cert','soldadura_cert','hvac_refrigeracion_cert','mecanica_automotriz_cert'];
-  if(adminIntent && ADMIN_FAM.includes(f.id)) boost+=30;
-  if(adminIntent && TECH_FAM.includes(f.id)) boost-=32;
-  // Ventas/comercial
-  const salesIntent=(target.includes('vendedor')||target.includes('asesor de ventas')||target.includes('ejecutivo comercial')||target.includes('ejecutivo de ventas'));
-  if(salesIntent && ['ventas','retail','servicio_cliente'].includes(f.id)) boost+=28;
-  if(salesIntent && TECH_FAM.includes(f.id)) boost-=20;
-  // Salud
-  const healthIntent=(target.includes('enfermero')||target.includes('enfermera')||target.includes('auxiliar de enfermeria')||target.includes('asistente dental')||target.includes('medico')||target.includes('medica'));
-  if(healthIntent && ['salud','farmacia','cuido_cert','tecnico_laboratorio_cert'].includes(f.id)) boost+=30;
-  if(healthIntent && TECH_FAM.includes(f.id)) boost-=24;
+  const has=s=>target.includes(norm(s));
+  // Grupos de familias por dominio
+  const ENG_FAM    =['ingenieria_civil','ingenieria_industrial','ingenieria_sistemas','ingenieria_electromecanica','arquitectura','proyectos'];
+  const TRADE_FAM  =['construccion_operativa','mantenimiento','electricidad_cert','soldadura_cert','hvac_refrigeracion_cert','mecanica_automotriz_cert','mecanica_motos_cert','maquinaria_pesada_cert','montacargas_cert','electronica_cctv_cert','fibra_optica_cert','redes_cisco'];
+  const ADMIN_FAM  =['administracion','legal','sector_publico','rrhh','contabilidad','compras','asistente_virtual_cert','ofimatica_cert','erp_crm_cert'];
+  const SALES_FAM  =['ventas','retail','servicio_cliente','call_center_financiero','emprendimiento','ecommerce_cert'];
+  const FINANCE_FAM=['contabilidad','banca_seguros','compras','comercio_exterior','call_center_financiero'];
+  const HEALTH_FAM =['salud','farmacia','cuido_cert','tecnico_laboratorio_cert','dispositivos_medicos'];
+  const IT_FAM     =['ingenieria_sistemas','datos_bi','ciberseguridad','soporte_helpdesk_cert','redes_cisco','cloud_cert','devops_cert','qa_testing_cert','ia_prompt_cert','machine_learning_cert','rpa_lowcode_cert'];
+  const LOG_FAM    =['logistica','transporte','compras','montacargas_cert','manufactura'];
+  const MFG_FAM    =['manufactura','calidad','logistica','inocuidad_bpm_cert','produccion_agroindustrial'];
+  const FOOD_FAM   =['gastronomia','turismo','cocina_tecnica_cert','barismo_bartending_cert','panaderia_reposteria_cert','inocuidad_bpm_cert'];
+  const EDU_FAM    =['educacion','orientacion_social','rrhh'];
+  const HR_FAM     =['rrhh','administracion','orientacion_social','educacion'];
+  const MKT_FAM    =['marketing','diseno_ux','ecommerce_cert','artes_audiovisual','idiomas_bpo'];
+  const CONSTR_FAM =['construccion_operativa','mantenimiento','electricidad_cert','soldadura_cert'];
+  const TOUR_FAM   =['turismo','gastronomia','servicio_cliente','idiomas_bpo'];
+  // Familias técnicas especializadas que NO deben ganar sin evidencia de dominio
+  const SPEC_TECH  =[...new Set([...ENG_FAM,...TRADE_FAM])];
+  const SPEC_HLTH  =HEALTH_FAM;
+  const SPEC_IT    =IT_FAM.filter(x=>x!=='ingenieria_sistemas');
+  // Tabla de intenciones: orden de más específico a más general; solo se aplica la PRIMERA que coincida
+  const INTENTS=[
+    // Ingeniería profesional
+    {ok:has('ingeniero')||has('ingeniera')||has('ingenieria'), on:ENG_FAM, off:[...TRADE_FAM,...ADMIN_FAM,...SALES_FAM,...HEALTH_FAM], bAmt:35, pAmt:28},
+    // TIC / sistemas / programación
+    {ok:has('programador')||has('desarrollador')||has('soporte tecnico')||has('soporte en sistemas')||(has('ingeniero en sistemas'))||has('informatica')||has('help desk'), on:IT_FAM, off:[...TRADE_FAM,...HEALTH_FAM,...ADMIN_FAM,...SALES_FAM,...MFG_FAM], bAmt:30, pAmt:22},
+    // Salud
+    {ok:has('enfermero')||has('enfermera')||has('auxiliar de enfermeria')||has('asistente dental')||has('medico')||has('medica')||has('farmaceutico')||has('cuidador'), on:HEALTH_FAM, off:[...ENG_FAM,...TRADE_FAM,...IT_FAM,...MFG_FAM], bAmt:30, pAmt:25},
+    // Contabilidad / finanzas
+    {ok:has('contador')||has('contabilidad')||has('contable')||has('auditor')||has('tesorero')||has('analista financiero'), on:FINANCE_FAM, off:[...ENG_FAM,...TRADE_FAM,...HEALTH_FAM,...IT_FAM,...MFG_FAM,...FOOD_FAM], bAmt:28, pAmt:22},
+    // Administrativo / secretariado / recepción
+    {ok:has('asistente')||has('administrativ')||has('secretari')||has('recepcionis')||has('oficinista')||has('auxiliar administrativ'), on:ADMIN_FAM, off:[...ENG_FAM,...TRADE_FAM,...HEALTH_FAM,...IT_FAM,...MFG_FAM,...FOOD_FAM], bAmt:30, pAmt:30},
+    // Ventas / comercial
+    {ok:has('vendedor')||has('vendedora')||(has('asesor')&&has('ventas'))||has('ejecutivo comercial')||has('ejecutivo de ventas')||has('promotor de ventas'), on:SALES_FAM, off:[...ENG_FAM,...TRADE_FAM,...HEALTH_FAM,...IT_FAM,...MFG_FAM], bAmt:28, pAmt:22},
+    // Servicio al cliente / call center
+    {ok:has('servicio al cliente')||has('atencion al cliente')||has('call center')||has('contact center')||has('agente de servicio'), on:['servicio_cliente','retail','turismo','call_center_financiero','bpo_ingles_cert'], off:[...ENG_FAM,...TRADE_FAM,...IT_FAM,...MFG_FAM], bAmt:26, pAmt:20},
+    // RRHH / talento
+    {ok:has('recursos humanos')||has('rrhh')||has('reclutamiento')||has('talento humano')||has('gestion de personal'), on:HR_FAM, off:[...ENG_FAM,...TRADE_FAM,...HEALTH_FAM,...IT_FAM,...MFG_FAM,...FOOD_FAM], bAmt:25, pAmt:18},
+    // Docencia / educación
+    {ok:has('docente')||has('profesor')||has('maestro')||has('instructor')||has('capacitador')||has('formador'), on:EDU_FAM, off:[...ENG_FAM,...TRADE_FAM,...HEALTH_FAM,...IT_FAM,...SALES_FAM,...MFG_FAM], bAmt:25, pAmt:18},
+    // Marketing / comunicación digital
+    {ok:has('marketing')||has('community manager')||has('contenido digital')||has('diseñador grafico')||has('disenador grafico')||has('ux')||has('ui'), on:MKT_FAM, off:[...ENG_FAM,...TRADE_FAM,...HEALTH_FAM,...MFG_FAM], bAmt:26, pAmt:18},
+    // Logística / bodega
+    {ok:has('bodeguero')||has('bodega')||has('logistica')||has('almacen')||has('despacho')||has('inventario'), on:LOG_FAM, off:[...ENG_FAM,...HEALTH_FAM,...IT_FAM,...FOOD_FAM,...ADMIN_FAM], bAmt:25, pAmt:18},
+    // Manufactura / operario
+    {ok:has('operario')||has('operaria')||has('manufactura')||has('ensamble')||has('produccion')||has('linea de produccion'), on:MFG_FAM, off:[...ENG_FAM,...IT_FAM,...HEALTH_FAM,...ADMIN_FAM,...SALES_FAM,...FOOD_FAM], bAmt:25, pAmt:18},
+    // Gastronomía / cocina
+    {ok:has('cocinero')||has('cocinera')||has('chef')||has('barista')||has('bartender')||has('panadero')||has('repostero'), on:FOOD_FAM, off:[...ENG_FAM,...TRADE_FAM,...IT_FAM,...HEALTH_FAM,...ADMIN_FAM,...SALES_FAM], bAmt:25, pAmt:20},
+    // Turismo / hotelería
+    {ok:has('turismo')||has('hoteleria')||has('hotel')||has('hospitalidad')||has('guia turistico')||has('recepcion hotelera'), on:TOUR_FAM, off:[...ENG_FAM,...TRADE_FAM,...IT_FAM,...HEALTH_FAM,...MFG_FAM], bAmt:24, pAmt:18},
+    // Construcción operativa / oficios
+    {ok:has('albanil')||has('albañil')||has('obra gris')||has('acabados')||has('carpintero')||has('plomero')||has('pintor de obra'), on:CONSTR_FAM, off:[...ENG_FAM,...IT_FAM,...HEALTH_FAM,...ADMIN_FAM,...SALES_FAM,...FOOD_FAM], bAmt:25, pAmt:18},
+    // Electricidad / mantenimiento técnico
+    {ok:has('electricista')||has('tecnico electricista')||(has('mantenimiento')&&(has('preventivo')||has('correctivo')))||has('aire acondicionado'), on:['mantenimiento','electricidad_cert','hvac_refrigeracion_cert','construccion_operativa'], off:[...IT_FAM,...HEALTH_FAM,...ADMIN_FAM,...SALES_FAM,...FOOD_FAM], bAmt:25, pAmt:18},
+  ];
+  // Aplicar SOLO la primera intención que coincida para cada familia
+  for(const intent of INTENTS){
+    if(!intent.ok) continue;
+    if(intent.on.includes(f.id)) boost+=intent.bAmt;
+    else if(intent.off.includes(f.id)) boost-=intent.pAmt;
+    break;
+  }
   return boost;
 }
 function familyScore(f,detected){
@@ -1808,12 +1852,27 @@ function familyScore(f,detected){
   let evidencePenalty=0;
   if(rel.length===0 && boost<18) evidencePenalty=-26;
   else if(rel.length<=1 && boost<12) evidencePenalty=-14;
-  // Evita que ventas gane solo por competencias transversales
-  if(f.id==='ventas' && !detected.some(s=>['ventas_servicio','ventas_comercio'].includes(s.group)) && familyObjectiveBoost(f)<18) evidencePenalty-=18;
-  // Evita que familias técnicas ganen solo por competencias transversales cuando no hay evidencia técnica
-  const TECH_SPECIFIC_GROUPS=['ingenieria_construccion','construccion_mantenimiento','manufactura','tic_soporte','digital_avanzado'];
-  const ENG_IDS=['ingenieria_civil','ingenieria_industrial','ingenieria_sistemas','ingenieria_electromecanica','arquitectura'];
-  if(ENG_IDS.includes(f.id) && !detected.some(s=>TECH_SPECIFIC_GROUPS.includes(s.group)) && boost<20) evidencePenalty-=22;
+  // Familias que requieren evidencia de dominio específico para puntuar alto
+  const DOMAIN_REQ={
+    ingenieria_civil:['ingenieria_construccion','construccion_mantenimiento'],
+    ingenieria_industrial:['manufactura','calidad_seguridad','ingenieria_construccion'],
+    ingenieria_sistemas:['tic_soporte','digital_avanzado'],
+    ingenieria_electromecanica:['construccion_mantenimiento','manufactura'],
+    arquitectura:['ingenieria_construccion'],
+    mantenimiento:['construccion_mantenimiento'],
+    construccion_operativa:['construccion_mantenimiento'],
+    manufactura:['manufactura','calidad_seguridad'],
+    salud:['salud_ciencias'],
+    farmacia:['salud_ciencias'],
+    dispositivos_medicos:['salud_ciencias','manufactura'],
+    datos_bi:['digital_avanzado'],
+    ciberseguridad:['tic_soporte','digital_avanzado'],
+    ventas:['ventas_servicio','ventas_comercio'],
+    gastronomia:['turismo_alimentos'],
+    logistica:['logistica'],
+  };
+  const domGroups=DOMAIN_REQ[f.id];
+  if(domGroups && !detected.some(s=>domGroups.includes(s.group)) && boost<20) evidencePenalty-=22;
   const demandBoost=(CR_MARKET[f.id]||{d:2}).d-2;
   return clamp(Math.round(f.base+raw/8+boost+evidencePenalty+demandBoost),25,98)
 }
