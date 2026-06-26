@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ecosistema ANE · Agencia Nacional del Empleo · Costa Rica</title>
 <meta name="description" content="Portal integrado del Ecosistema ANE: ATS, Simulador de Entrevistas, Centro de Control de Intermediación y Laboratorio IA ESCO-CR.">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d7373">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ANE Suite">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <style>
 /* ================================================================
    ECOSISTEMA ANE — PORTAL INTEGRADO v16
@@ -757,15 +765,58 @@ a { color: inherit; }
     </div>
 
     <div class="sidebar-bottom">
+      <!-- USUARIO ACTIVO -->
+      <div id="user-pill" style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(13,115,115,.18);border-radius:12px;margin-bottom:10px;cursor:pointer;" onclick="openUserModal()" title="Cambiar asesor activo">
+        <div id="user-avatar" style="width:32px;height:32px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;flex-shrink:0;">?</div>
+        <div style="min-width:0;">
+          <div id="user-name" style="font-weight:700;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Configurar asesor</div>
+          <div style="font-size:10px;color:var(--mint);opacity:.7;">Clic para cambiar</div>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;opacity:.5;"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+
+      <!-- BACKUP / RESTAURAR -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
+        <button class="util-btn" onclick="exportBackup()" title="Exportar todos los datos a un archivo JSON" style="font-size:10px;padding:7px 4px;">💾 Backup</button>
+        <button class="util-btn" onclick="document.getElementById('importFile').click()" title="Restaurar datos desde un backup" style="font-size:10px;padding:7px 4px;">📂 Restaurar</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(this)">
+      </div>
+      <div style="margin-bottom:10px;" id="pwa-install-wrap">
+        <button class="util-btn" id="pwa-install-btn" onclick="installPWA()" style="width:100%;font-size:10px;padding:7px;display:none;">📲 Instalar como app</button>
+      </div>
+
       <div class="sidecard">
-        <b>Madurez del ecosistema</b>
-        <p>4/4 módulos activos · 100% operativo · Uso interno ANE</p>
+        <b>Ecosistema ANE</b>
+        <p>4/4 módulos · 100% offline · <span id="backup-date" style="color:var(--mint)">Sin backup</span></p>
         <div class="mini-bar"><i></i></div>
       </div>
       <div class="sidebar-utils">
         <button class="util-btn" onclick="toggleTheme()" title="Cambiar tema">◐ Tema</button>
-        <button class="util-btn" onclick="toggleFullscreen()" title="Pantalla completa">⛶ Pantalla</button>
-        <button class="util-btn" onclick="reloadCurrent()" title="Recargar módulo">↺ Recargar</button>
+        <button class="util-btn" onclick="toggleFullscreen()" title="Pantalla completa">⛶</button>
+        <button class="util-btn" onclick="reloadCurrent()" title="Recargar módulo">↺</button>
+      </div>
+    </div>
+
+    <!-- MODAL USUARIO -->
+    <div id="user-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);align-items:center;justify-content:center;">
+      <div style="background:#0d2d2d;border:1px solid rgba(125,211,211,.2);border-radius:16px;padding:24px 28px;width:min(380px,94vw);box-shadow:0 20px 60px rgba(0,0,0,.5);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+          <h3 style="margin:0;font-size:15px;color:#7dd3d3;">Asesor activo</h3>
+          <button onclick="closeUserModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:#7dd3d3;line-height:1;">×</button>
+        </div>
+        <div style="margin-bottom:14px;">
+          <label style="font-size:11px;font-weight:700;color:#8abbbb;display:block;margin-bottom:6px;">NOMBRE</label>
+          <input id="user-input-name" type="text" placeholder="Ej. María González" style="width:100%;padding:9px 12px;background:rgba(13,115,115,.15);border:1px solid rgba(13,115,115,.4);border-radius:8px;color:#f7ffff;font-size:14px;box-sizing:border-box;">
+        </div>
+        <div style="margin-bottom:14px;">
+          <label style="font-size:11px;font-weight:700;color:#8abbbb;display:block;margin-bottom:6px;">CARGO</label>
+          <input id="user-input-cargo" type="text" placeholder="Ej. Asesora de Empleo" style="width:100%;padding:9px 12px;background:rgba(13,115,115,.15);border:1px solid rgba(13,115,115,.4);border-radius:8px;color:#f7ffff;font-size:14px;box-sizing:border-box;">
+        </div>
+        <div style="margin-bottom:18px;">
+          <label style="font-size:11px;font-weight:700;color:#8abbbb;display:block;margin-bottom:6px;">OFICINA</label>
+          <input id="user-input-oficina" type="text" placeholder="Ej. ANE Central · San José" style="width:100%;padding:9px 12px;background:rgba(13,115,115,.15);border:1px solid rgba(13,115,115,.4);border-radius:8px;color:#f7ffff;font-size:14px;box-sizing:border-box;">
+        </div>
+        <button onclick="saveUser()" style="width:100%;padding:10px;background:#0d9488;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:14px;cursor:pointer;">Guardar</button>
       </div>
     </div>
   </aside>
@@ -1360,6 +1411,156 @@ window.addEventListener('message', function(e) {
     ANE.bridge.notify(e.data.key, e.data.data);
   }
 });
+</script>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  ANE SUITE — OFFLINE / PWA / BACKUP / USUARIO
+// ═══════════════════════════════════════════════════════
+
+// ── Service Worker Registration ──────────────────────
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('./sw.js').then(reg=>{
+      reg.addEventListener('updatefound', ()=>{
+        const nw = reg.installing;
+        nw.addEventListener('statechange', ()=>{
+          if(nw.state==='installed' && navigator.serviceWorker.controller){
+            showToast('Nueva versión disponible — recarga para actualizar');
+          }
+        });
+      });
+    }).catch(e=> console.warn('[ANE] SW no registrado:', e));
+  });
+}
+
+// ── PWA Install Prompt ───────────────────────────────
+let _pwaPrompt = null;
+window.addEventListener('beforeinstallprompt', e=>{
+  e.preventDefault();
+  _pwaPrompt = e;
+  const btn = document.getElementById('pwa-install-btn');
+  if(btn) btn.style.display = 'block';
+});
+window.addEventListener('appinstalled', ()=>{
+  _pwaPrompt = null;
+  const btn = document.getElementById('pwa-install-btn');
+  if(btn) btn.style.display = 'none';
+  showToast('✓ ANE Suite instalada como aplicación');
+});
+window.installPWA = function(){
+  if(!_pwaPrompt){ showToast('Para instalar: abre el menú del navegador → "Instalar aplicación"'); return; }
+  _pwaPrompt.prompt();
+  _pwaPrompt.userChoice.then(r=>{
+    if(r.outcome==='accepted') showToast('✓ Instalando ANE Suite…');
+    _pwaPrompt = null;
+    const btn = document.getElementById('pwa-install-btn');
+    if(btn) btn.style.display = 'none';
+  });
+};
+
+// ── Usuario Activo ───────────────────────────────────
+const USER_KEY = 'ane_active_user';
+function loadUser(){
+  try{ return JSON.parse(localStorage.getItem(USER_KEY))||null; }catch(e){ return null; }
+}
+function renderUserPill(){
+  const u = loadUser();
+  const av = document.getElementById('user-avatar');
+  const nm = document.getElementById('user-name');
+  if(!u||!u.nombre){ if(av)av.textContent='?'; if(nm)nm.textContent='Configurar asesor'; return; }
+  const initials = u.nombre.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  if(av) av.textContent = initials;
+  if(nm) nm.textContent = u.nombre;
+}
+window.openUserModal = function(){
+  const u = loadUser();
+  document.getElementById('user-input-name').value = u?.nombre||'';
+  document.getElementById('user-input-cargo').value = u?.cargo||'';
+  document.getElementById('user-input-oficina').value = u?.oficina||'';
+  document.getElementById('user-modal').style.display = 'flex';
+};
+window.closeUserModal = function(){
+  document.getElementById('user-modal').style.display = 'none';
+};
+window.saveUser = function(){
+  const nombre = document.getElementById('user-input-name').value.trim();
+  if(!nombre){ document.getElementById('user-input-name').focus(); return; }
+  const u = { nombre, cargo: document.getElementById('user-input-cargo').value.trim(), oficina: document.getElementById('user-input-oficina').value.trim() };
+  localStorage.setItem(USER_KEY, JSON.stringify(u));
+  renderUserPill();
+  closeUserModal();
+  showToast('✓ Asesor guardado: '+nombre);
+};
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeUserModal(); });
+renderUserPill();
+
+// ── Backup / Restore ─────────────────────────────────
+const BACKUP_KEYS = [
+  'ane_eval_hist',
+  'ane_lab_profiles',
+  'ane_dash_roster',
+  'ane_dash_sheet',
+  'ane_active_user',
+  'ane_lab_theme',
+  'aneObsV4',
+  'ane_bridge_perfil',
+];
+
+function updateBackupDate(){
+  const d = localStorage.getItem('ane_last_backup');
+  const el = document.getElementById('backup-date');
+  if(el) el.textContent = d ? 'Backup: '+d : 'Sin backup';
+}
+
+window.exportBackup = function(){
+  const data = { _version: 1, _app: 'ANE Suite', _date: new Date().toISOString(), _keys: {} };
+  // Collect all ANE-prefixed keys + known keys
+  Object.keys(localStorage).forEach(k=>{
+    if(k.startsWith('ane_') || k.startsWith('ANE') || BACKUP_KEYS.includes(k)){
+      try{ data._keys[k] = JSON.parse(localStorage.getItem(k)); }
+      catch(e){ data._keys[k] = localStorage.getItem(k); }
+    }
+  });
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const fecha = new Date().toISOString().slice(0,10);
+  a.href = url; a.download = 'ane-backup-'+fecha+'.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  const label = fecha;
+  localStorage.setItem('ane_last_backup', label);
+  updateBackupDate();
+  showToast('✓ Backup exportado: ane-backup-'+fecha+'.json');
+};
+
+window.importBackup = function(input){
+  const file = input.files[0]; if(!file) return;
+  if(file.size > 20*1024*1024){ showToast('Archivo demasiado grande (máx 20 MB)'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const data = JSON.parse(e.target.result);
+      if(!data._version || !data._keys) throw new Error('Formato inválido');
+      const count = Object.keys(data._keys).length;
+      if(!confirm('¿Restaurar '+count+' registros del backup del '+data._date?.slice(0,10)+'? Esto reemplazará los datos actuales.')){ input.value=''; return; }
+      Object.entries(data._keys).forEach(([k,v])=>{
+        try{ localStorage.setItem(k, typeof v==='string'?v:JSON.stringify(v)); }catch(ex){}
+      });
+      localStorage.setItem('ane_last_backup', data._date?.slice(0,10)||'restaurado');
+      updateBackupDate();
+      renderUserPill();
+      showToast('✓ Backup restaurado — '+count+' registros');
+    }catch(err){
+      showToast('Error al leer el backup: '+err.message);
+    }
+    input.value = '';
+  };
+  reader.readAsText(file);
+};
+
+updateBackupDate();
 </script>
 </body>
 </html>

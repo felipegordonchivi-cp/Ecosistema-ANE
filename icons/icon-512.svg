@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="512" height="512">
+  <rect width="512" height="512" rx="32" fill="#041616"/>
+  <rect x="16" y="16" width="160" height="160" rx="24" fill="#0d7373" opacity="0.3"/>
+  <text x="96" y="80" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="900" font-size="52" fill="#0d9488">ANE</text>
+  <text x="96" y="116" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="600" font-size="18" fill="#7dd3d3">SUITE</text>
+  <rect x="32" y="132" width="128" height="3" rx="2" fill="#0d9488" opacity="0.6"/>
+  <text x="96" y="158" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="500" font-size="13" fill="#8abbbb">Empleo · CR</text>
+</svg>
