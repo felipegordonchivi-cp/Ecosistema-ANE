@@ -299,8 +299,27 @@ textarea{resize:vertical}
     </div>
   </div>
 
-  <!-- BODY -->
-  <div style="flex:1;display:flex;flex-direction:column;padding:20px;gap:16px;overflow-y:auto">
+  <!-- SALA DE ESPERA (mostrada antes de que el entrevistador apruebe) -->
+  <div id="sala-espera" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;gap:24px;background:var(--bg)">
+    <div style="text-align:center;max-width:480px;width:100%">
+      <div style="font-size:52px;margin-bottom:12px">🚪</div>
+      <div style="font-size:20px;font-weight:800;color:#7dd3d3;margin-bottom:6px">Sala de Espera</div>
+      <div style="font-size:13px;color:#4a7a7a;margin-bottom:28px">Ingresa tu nombre y solicita entrada al entrevistador</div>
+      <div style="background:var(--s1);border:1px solid var(--db);border-radius:14px;padding:28px;display:flex;flex-direction:column;gap:16px">
+        <div style="text-align:left">
+          <label style="font-size:12px;color:#7dd3d3;font-weight:700;display:block;margin-bottom:6px">Tu nombre</label>
+          <input id="sala-espera-nombre" type="text" placeholder="Nombre completo del candidato" style="width:100%;box-sizing:border-box;background:var(--s2);border:1px solid var(--db);border-radius:8px;padding:10px 14px;color:#e0f2f2;font-size:14px;outline:none" />
+        </div>
+        <button id="sala-espera-btn" onclick="solicitarEntrada()" style="background:var(--teal);color:#fff;border:none;border-radius:10px;padding:13px 20px;font-size:14px;font-weight:800;cursor:pointer;transition:opacity .2s">🔔 Solicitar entrada</button>
+        <div id="sala-espera-status" style="display:none;text-align:center;font-size:13px;color:#7dd3d3;padding:10px;background:rgba(13,115,115,.1);border:1px solid rgba(13,115,115,.3);border-radius:8px">
+          <span style="display:inline-block;margin-right:8px">⏳</span>Esperando aprobación del entrevistador…
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BODY (oculto hasta aprobación) -->
+  <div id="sala-entrevista-body" style="flex:1;display:none;flex-direction:column;padding:20px;gap:16px;overflow-y:auto">
 
     <!-- ESPERA -->
     <div id="cand-q-wait" style="max-width:800px;width:100%;margin:0 auto;background:var(--s1);border:1px solid var(--db);border-radius:14px;padding:28px;text-align:center;color:#3a7272">
@@ -428,6 +447,16 @@ textarea{resize:vertical}
       </div>
     </div>
 
+  </div><!-- end sala-entrevista-body -->
+</div><!-- end v-candidato -->
+
+<!-- NOTIFICACIÓN DE LLAMADO (panel entrevistador) -->
+<div id="knock-notify" style="display:none;position:fixed;bottom:24px;right:24px;z-index:9999;background:#0b3d52;border:2px solid var(--teal);border-radius:14px;padding:20px 24px;min-width:300px;box-shadow:0 8px 32px rgba(0,0,0,.5)">
+  <div style="font-size:13px;font-weight:800;color:#7dd3d3;margin-bottom:4px">🔔 Candidato en sala de espera</div>
+  <div id="knock-nombre" style="font-size:15px;color:#e0f2f2;font-weight:700;margin-bottom:16px"></div>
+  <div style="display:flex;gap:10px">
+    <button onclick="admitirCandidato()" style="flex:1;background:var(--teal);border:none;color:#fff;padding:10px;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer">✅ Admitir</button>
+    <button onclick="document.getElementById('knock-notify').style.display='none'" style="background:var(--s2);border:1px solid var(--db);color:#7dd3d3;padding:10px 16px;border-radius:8px;font-size:13px;cursor:pointer">✕</button>
   </div>
 </div>
 
@@ -2721,6 +2750,11 @@ if(bc){
     if(d.type==='clear') hideCandQuestion();
     if(d.type==='ping') bc.postMessage({type:'pong'});
     if(d.type==='pong'){ const el=document.getElementById('bc-iv-txt'); if(el) el.textContent='✓ Vista Candidato conectada'; }
+    if(d.type==='knock'){
+      const nn=document.getElementById('knock-notify');
+      const nb=document.getElementById('knock-nombre');
+      if(nn&&nb){ nb.textContent=d.nombre||'Candidato'; nn.style.display='block'; }
+    }
   };
 }
 
@@ -3271,16 +3305,49 @@ function animCandWave(on){
     document.getElementById('v-home').classList.remove('active');
     document.getElementById('v-candidato').classList.add('active');
     document.title='Vista Candidato · ANE';
+    // Ocultar el header de entrevistador y mostrar solo la sala de espera
+    document.getElementById('sala-espera').style.display='flex';
+    document.getElementById('sala-entrevista-body').style.display='none';
+    // Ocultar botones de entrevistador del header candidato
+    const ivBtns=document.querySelectorAll('#v-candidato .hdr button');
+    ivBtns.forEach(b=>{ if(b.textContent.includes('Vista Candidato')||b.textContent.includes('Inicio')) b.style.display='none'; });
     if(bc){
       bc.onmessage=(ev)=>{
         const d=ev.data;
+        if(d.type==='admit'){
+          // Entrevistador admitió al candidato
+          document.getElementById('sala-espera').style.display='none';
+          document.getElementById('sala-entrevista-body').style.display='flex';
+        }
         if(d.type==='question') showCandQuestion(d.q, d.qNum, d.profName);
         if(d.type==='clear') hideCandQuestion();
         if(d.type==='ping') bc.postMessage({type:'pong'});
+        if(d.type==='knock') {
+          // El candidato tocó la puerta (desde panel entrevistador — ignorar en candidato)
+        }
       };
     }
   }
 })();
+
+function solicitarEntrada(){
+  const nombre=(document.getElementById('sala-espera-nombre').value||'').trim();
+  if(!nombre){
+    document.getElementById('sala-espera-nombre').style.borderColor='#ef4444';
+    document.getElementById('sala-espera-nombre').focus();
+    return;
+  }
+  document.getElementById('sala-espera-nombre').style.borderColor='';
+  document.getElementById('sala-espera-btn').disabled=true;
+  document.getElementById('sala-espera-btn').style.opacity='0.5';
+  document.getElementById('sala-espera-status').style.display='block';
+  if(bc) bc.postMessage({type:'knock', nombre});
+}
+
+function admitirCandidato(){
+  document.getElementById('knock-notify').style.display='none';
+  if(bc) bc.postMessage({type:'admit'});
+}
 
 // ── NOMBRE EN OVERLAY DE CÁMARA ────────────────
 document.addEventListener('DOMContentLoaded',()=>{
