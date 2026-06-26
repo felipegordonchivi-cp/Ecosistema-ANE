@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdn.firebase.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; connect-src https://api.anthropic.com https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com; frame-ancestors 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; connect-src https://api.anthropic.com https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com https://firestore.googleapis.com; frame-ancestors 'self'">
 <title>Simulador de Entrevistas — ANE Costa Rica v7</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -180,80 +180,74 @@ textarea{resize:vertical}
 .ane-help-btn{position:fixed;right:18px;bottom:18px;z-index:999999;background:linear-gradient(135deg,#0d7373,#14b8a6);color:#fff!important;text-decoration:none;border-radius:999px;padding:12px 16px;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-weight:900;font-size:13px;box-shadow:0 16px 42px rgba(13,115,115,.38);border:1px solid rgba(255,255,255,.22);display:inline-flex;align-items:center;gap:8px}
 .ane-help-btn:hover{transform:translateY(-2px)}@media print{.ane-help-btn{display:none!important}}
 </style>
-<!-- Firebase SDK -->
-<script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import { getDatabase, ref, set, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
-
-  const firebaseConfig = {
+<!-- Firebase SDK (compat — scripts normales, sin módulos ES) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+(function(){
+  var firebaseConfig = {
     apiKey: "AIzaSyBlOKEFWgG1PKb5iOkShyOYTvquAx_nQ_Q",
     authDomain: "simulador-de-entrevista-a883d.firebaseapp.com",
     databaseURL: "https://simulador-de-entrevista-a883d-default-rtdb.firebaseio.com",
     projectId: "simulador-de-entrevista-a883d",
     storageBucket: "simulador-de-entrevista-a883d.firebasestorage.app",
     messagingSenderId: "1035959981732",
-    appId: "1:1035959981732:web:abfcef9631a1c8ce50f831",
-    measurementId: "G-44HV8X30W0"
+    appId: "1:1035959981732:web:abfcef9631a1c8ce50f831"
   };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+  try {
+    firebase.initializeApp(firebaseConfig);
+    var db = firebase.database();
 
-  // Exponer funciones globales para usar desde el código existente
-  window._fbSet = (path, val) => set(ref(db, path), val);
-  window._fbRemove = (path) => remove(ref(db, path));
-  window._fbOn = (path, cb) => onValue(ref(db, path), snap => cb(snap.val()));
+    window._fbSet    = function(path, val){ return db.ref(path).set(val); };
+    window._fbRemove = function(path){ return db.ref(path).remove(); };
+    window._fbOn     = function(path, cb){ db.ref(path).on('value', function(snap){ cb(snap.val()); }); };
 
-  // ── Detectar vista candidato con Firebase ──
-  const params = new URLSearchParams(window.location.search);
-  const salaId = params.get('sala');
-  const esCandidato = params.get('vista') === 'candidato';
+    var params    = new URLSearchParams(window.location.search);
+    var salaId    = params.get('sala');
+    var esCand    = params.get('vista') === 'candidato';
 
-  if(esCandidato && salaId){
-    // Escuchar admit desde Firebase
-    window._fbOn('salas/' + salaId + '/estado', val => {
-      if(val === 'admitido'){
-        document.getElementById('sala-espera').style.display = 'none';
-        document.getElementById('sala-entrevista-body').style.display = 'flex';
-      }
-    });
-    // Escuchar preguntas desde Firebase
-    window._fbOn('salas/' + salaId + '/pregunta', val => {
-      if(val && val.q){
-        if(typeof showCandQuestion === 'function') showCandQuestion(val.q, val.qNum, val.profName);
-      } else {
-        if(typeof hideCandQuestion === 'function') hideCandQuestion();
-      }
-    });
-    // Exponer función para enviar knock con Firebase
-    window._fbSolicitarEntrada = function(nombre){
-      window._fbSet('salas/' + salaId + '/knock', { nombre, ts: Date.now() });
-    };
-  }
-
-  if(!esCandidato){
-    // Entrevistador: escuchar knocks de cualquier sala activa
-    // Se registra cuando el entrevistador genera el código de sala
-    window._fbEscucharSala = function(id){
-      window._fbOn('salas/' + id + '/knock', val => {
-        if(!val) return;
-        const nn = document.getElementById('knock-notify');
-        const nb = document.getElementById('knock-nombre');
-        if(nn && nb){ nb.textContent = val.nombre || 'Candidato'; nn.style.display = 'block'; nn.dataset.sala = id; }
+    if(esCand && salaId){
+      // Candidato: escuchar admit y preguntas
+      window._fbOn('salas/'+salaId+'/estado', function(val){
+        if(val === 'admitido'){
+          document.getElementById('sala-espera').style.display = 'none';
+          document.getElementById('sala-entrevista-body').style.display = 'flex';
+        }
       });
-    };
-    window._fbAdmitir = function(salaId){
-      window._fbSet('salas/' + salaId + '/estado', 'admitido');
-      window._fbRemove('salas/' + salaId + '/knock');
-    };
-    // Exponer función para broadcast de preguntas via Firebase
-    window._fbBroadcastQuestion = function(salaId, q, qNum, profName){
-      window._fbSet('salas/' + salaId + '/pregunta', { q, qNum, profName });
-    };
-    window._fbBroadcastClear = function(salaId){
-      window._fbRemove('salas/' + salaId + '/pregunta');
-    };
-  }
+      window._fbOn('salas/'+salaId+'/pregunta', function(val){
+        if(val && val.q){ if(typeof showCandQuestion==='function') showCandQuestion(val.q, val.qNum, val.profName); }
+        else { if(typeof hideCandQuestion==='function') hideCandQuestion(); }
+      });
+      window._fbSolicitarEntrada = function(nombre){
+        window._fbSet('salas/'+salaId+'/knock', { nombre: nombre, ts: Date.now() });
+      };
+    }
+
+    if(!esCand){
+      // Entrevistador: escuchar knocks cuando se abre sala
+      window._fbEscucharSala = function(id){
+        window._fbOn('salas/'+id+'/knock', function(val){
+          if(!val) return;
+          var nn = document.getElementById('knock-notify');
+          var nb = document.getElementById('knock-nombre');
+          if(nn && nb){ nb.textContent = val.nombre || 'Candidato'; nn.style.display = 'block'; nn.dataset.sala = id; }
+        });
+      };
+      window._fbAdmitir = function(sid){
+        window._fbSet('salas/'+sid+'/estado', 'admitido');
+        window._fbRemove('salas/'+sid+'/knock');
+      };
+      window._fbBroadcastQuestion = function(sid, q, qNum, profName){
+        window._fbSet('salas/'+sid+'/pregunta', { q:q, qNum:qNum, profName:profName });
+      };
+      window._fbBroadcastClear = function(sid){
+        window._fbRemove('salas/'+sid+'/pregunta');
+      };
+    }
+
+  } catch(e){ console.warn('Firebase no disponible:', e.message); }
+})();
 </script>
 </head>
 <body>
