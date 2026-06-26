@@ -199,7 +199,8 @@
   .wrow .wval{font-family:var(--display);font-weight:700;text-align:right;font-size:1rem}
   .wsum{display:flex;align-items:center;justify-content:space-between;margin-top:6px;padding-top:14px;border-top:1px dashed var(--hair);font-size:.82rem}
   .wsum .tot{font-family:var(--display);font-weight:700;font-size:1.15rem}
-  .wsum.bad .tot{text-decoration:underline wavy}
+  .wsum.bad .tot{text-decoration:underline wavy;color:#dc2626}
+  .wsum.bad::after{content:'⚠ La suma debe ser exactamente 100';color:#dc2626;font-size:.78rem;font-weight:600;margin-left:8px}
 
   /* bandeja CV */
   .dropzone{border:2px dashed var(--g-35);border-radius:var(--r);padding:30px;text-align:center;transition:border-color .15s, background .15s;cursor:pointer;background:var(--surface)}

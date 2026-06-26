@@ -1939,7 +1939,7 @@ function stopReading(){
 // ============================================================
 function startRecording(){
   if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){
-    alert('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge en escritorio.');
+    (function(msg){ const t=document.createElement('div'); t.textContent=msg; Object.assign(t.style,{position:'fixed',bottom:'24px',left:'50%',transform:'translateX(-50%)',background:'#1e293b',color:'#fff',padding:'10px 20px',borderRadius:'10px',fontWeight:'600',fontSize:'13px',zIndex:'9999',boxShadow:'0 4px 16px rgba(0,0,0,.3)',transition:'opacity .4s',maxWidth:'90vw',textAlign:'center'}); document.body.appendChild(t); setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),500);},4000); })('⚠️ Reconocimiento de voz no disponible en este navegador. Usa Chrome o Edge, o escribe tu respuesta manualmente.');
     return;
   }
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -3119,7 +3119,8 @@ async function toggleCandCam(){
       if(err.name==='NotAllowedError') msg='Permiso denegado. Haz clic en el ícono de cámara en la barra del navegador y permite el acceso.';
       else if(err.name==='NotFoundError') msg='No se encontró cámara en este dispositivo.';
       else if(err.name==='NotReadableError') msg='La cámara está siendo usada por otra aplicación. Ciérrala e intenta.';
-      alert('⚠️ '+msg);
+      const ph=document.getElementById('cand-video-ph');
+      if(ph) ph.innerHTML=`<div style="text-align:center;padding:20px"><div style="font-size:28px;margin-bottom:8px">📵</div><div style="font-size:13px;color:#ef4444;font-weight:600;margin-bottom:12px">${msg}</div><button onclick="toggleCandCam()" style="padding:8px 18px;background:#0d9488;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">🔄 Reintentar</button></div>`;
     }
   } else {
     if(candCamStream) candCamStream.getTracks().forEach(t=>t.stop());
@@ -3241,6 +3242,38 @@ document.addEventListener('DOMContentLoaded',()=>{
   const ni=document.getElementById('cand-name'); const ov=document.getElementById('cand-name-overlay');
   if(ni&&ov) ni.addEventListener('input',()=>{ov.textContent=ni.value||'Candidato';});
 });
+
+// ── ESC PARA CERRAR MODALES ────────────────────
+document.addEventListener('keydown', e=>{
+  if(e.key!=='Escape') return;
+  ['perfil-modal','sala-modal','crm-modal'].forEach(id=>{
+    const m=document.getElementById(id);
+    if(m && !m.classList.contains('hidden')) m.classList.add('hidden');
+  });
+});
+
+// ── VALIDACIÓN CORREO ANTES DE GENERAR ─────────
+(function(){
+  const _orig = window.generarCorreo;
+  window.generarCorreo = function(){
+    const nombre = (document.getElementById('email-cand-name')||{}).value||'';
+    const fecha  = (document.getElementById('email-fecha')||{}).value||'';
+    const hora   = (document.getElementById('email-hora')||{}).value||'';
+    const missing = [];
+    if(!nombre.trim()) missing.push('nombre del candidato');
+    if(!fecha.trim())  missing.push('fecha de entrevista');
+    if(!hora.trim())   missing.push('hora');
+    if(missing.length){
+      const t=document.createElement('div');
+      t.textContent='⚠️ Por favor completa: '+missing.join(', ');
+      Object.assign(t.style,{position:'fixed',bottom:'24px',left:'50%',transform:'translateX(-50%)',background:'#dc2626',color:'#fff',padding:'10px 20px',borderRadius:'10px',fontWeight:'600',fontSize:'13px',zIndex:'9999',boxShadow:'0 4px 16px rgba(0,0,0,.3)',transition:'opacity .4s',maxWidth:'90vw',textAlign:'center'});
+      document.body.appendChild(t);
+      setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),500);},3500);
+      return;
+    }
+    _orig();
+  };
+})();
 
 </script>
 

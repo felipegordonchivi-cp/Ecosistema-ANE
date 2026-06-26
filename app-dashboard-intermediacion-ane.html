@@ -607,7 +607,7 @@ button.tab-dup.active{ background: #fff3ed !important; color: #c2410c !important
     <div class="side-foot">
       <div class="advisor-pill">
         <div class="av" id="advisorAvatar">EQ</div>
-        <div class="meta"><b id="advisorName">Equipo completo</b><span id="advisorSub">13 asesores</span></div>
+        <div class="meta"><b id="advisorName">Equipo completo</b><span id="advisorSub" id="advisorSub">— asesores</span></div>
       </div>
       <button class="collapse-btn" id="btnCollapse">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"/></svg>
@@ -623,8 +623,9 @@ button.tab-dup.active{ background: #fff3ed !important; color: #c2410c !important
         <p id="pageSubtitle">Vista consolidada del proceso de intermediación laboral</p>
       </div>
       <div class="search-box">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-        <input type="text" id="globalSearch" placeholder="Buscar por nombre o cédula...">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="globalSearch" placeholder="Buscar por nombre o cédula..." aria-label="Buscar por nombre o cédula">
+        <button id="btnClearSearch" onclick="document.getElementById('globalSearch').value='';document.getElementById('globalSearch').dispatchEvent(new Event('input'));this.style.display='none';" style="display:none;background:none;border:none;cursor:pointer;color:#94a3b8;font-size:16px;padding:0 4px;line-height:1;" aria-label="Limpiar búsqueda">×</button>
       </div>
       <div class="topbar-filters">
         <select class="filter-select" id="selAsesor"><option value="">Todo el equipo</option></select>
@@ -637,13 +638,13 @@ button.tab-dup.active{ background: #fff3ed !important; color: #c2410c !important
           <option value="todo">Todo el historial</option>
         </select>
       </div>
-      <button class="icon-btn" id="btnRefresh" title="Cargar nuevos archivos">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 22v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L21 8M2.99 15a9 9 0 0 0 14.85 3.36L21 16"/></svg>
+      <button class="icon-btn" id="btnRefresh" title="Cargar nuevos archivos" aria-label="Cargar nuevos archivos Excel">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 2v6h-6M3 22v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L21 8M2.99 15a9 9 0 0 0 14.85 3.36L21 16"/></svg>
       </button>
-      <button class="icon-btn" id="btnPrint" title="Exportar / Imprimir reporte">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>
+      <button class="icon-btn" id="btnPrint" title="Exportar / Imprimir reporte" aria-label="Exportar e imprimir reporte">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>
       </button>
-      <button class="icon-btn" id="btnRosterSettings" title="Configurar equipo de asesores">
+      <button class="icon-btn" id="btnRosterSettings" title="Configurar equipo de asesores" aria-label="Configurar equipo de asesores">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
     </header>
@@ -1545,6 +1546,11 @@ function exportCSV(filename, headers, rows){
   a.href = url; a.download = filename;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
+  const t=document.createElement('div');
+  t.textContent='\u2713 Descargado: '+filename+' ('+rows.length+' filas)';
+  Object.assign(t.style,{position:'fixed',bottom:'24px',right:'24px',background:'#0d9488',color:'#fff',padding:'10px 18px',borderRadius:'8px',fontWeight:'600',fontSize:'13px',zIndex:'9999',boxShadow:'0 4px 12px rgba(0,0,0,.2)',transition:'opacity .4s'});
+  document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),500);},3000);
 }
 
 const OBS_KEY = 'aneObsV4';
@@ -2044,7 +2050,11 @@ document.addEventListener('click', e => {
   }
 });
 document.addEventListener('input', e => {
-  if(e.target.id==='globalSearch'){ casesUI.search = e.target.value; casesUI.page=1; window.__ANE_APP__.renderActiveView(); }
+  if(e.target.id==='globalSearch'){
+    casesUI.search = e.target.value; casesUI.page=1; window.__ANE_APP__.renderActiveView();
+    const clr=document.getElementById('btnClearSearch');
+    if(clr) clr.style.display = e.target.value ? 'block' : 'none';
+  }
 });
 
 window.__ANE_VIEWS__.cases = renderCasesView;
@@ -2121,7 +2131,7 @@ const VIEWS = window.__ANE_VIEWS__;
 const PAGE_META = {
   overview:{ title:'Resumen Ejecutivo', sub:'Vista consolidada del proceso de intermediación laboral' },
   funnel:{ title:'Embudo & Resultados', sub:'Conversión completa, del referido al resultado final' },
-  team:{ title:'Equipo', sub:'Rendimiento comparado de los 13 asesores' },
+  team:{ title:'Equipo', sub:'Rendimiento comparado del equipo de asesores' },
   quality:{ title:'Validación de Datos', sub:'Brecha de captura y calidad de la información' },
   cases:{ title:'Casos', sub:'Seguimiento detallado con observaciones por caso' },
   workload:{ title:'Carga de Trabajo', sub:'Distribución horaria de las sesiones agendadas' },
@@ -2153,7 +2163,8 @@ function updateAdvisorPill(){
   } else {
     av.textContent = 'EQ';
     nm.textContent = 'Equipo completo';
-    sb.textContent = (STATE.control.length? new Set(STATE.control.map(c=>c.agente)).size : 13)+' asesores';
+    const C2=window.__ANE_CORE__; const rLen=C2?C2.ROSTER.length:13;
+    sb.textContent = (STATE.control.length? new Set(STATE.control.map(c=>c.agente)).size : rLen)+' asesores';
   }
 }
 function setFiltroAsesor(val){ STATE.filtroAsesor = val; updateAdvisorPill(); recomputeAndRender(); }
@@ -2225,14 +2236,23 @@ function refreshProcesarBtn(){
    FLUJO DE CARGA DE ARCHIVOS
    ==================================================================== */
 const fileSlots = { control:null, ventanilla:null, orientacion:null };
+const MAX_FILE_MB = 30;
 function wireDropzone(inputId, dzId, fileLabelId, slotKey){
   const input = document.getElementById(inputId);
   input.addEventListener('change', () => {
     const f = input.files[0];
+    if(f && f.size > MAX_FILE_MB * 1024 * 1024){
+      showUploadStatus(`El archivo "${f.name}" supera el límite de ${MAX_FILE_MB} MB. Verifica que sea el archivo correcto.`, 'error');
+      input.value = '';
+      fileSlots[slotKey] = null;
+      const dz = document.getElementById(dzId); const lbl = document.getElementById(fileLabelId);
+      dz.classList.remove('filled'); lbl.textContent = '';
+      refreshProcesarBtn(); return;
+    }
     fileSlots[slotKey] = f || null;
     const dz = document.getElementById(dzId);
     const lbl = document.getElementById(fileLabelId);
-    if(f){ dz.classList.add('filled'); lbl.textContent = f.name; }
+    if(f){ dz.classList.add('filled'); lbl.textContent = f.name+' ('+Math.round(f.size/1024)+' KB)'; }
     else { dz.classList.remove('filled'); lbl.textContent = ''; }
     refreshProcesarBtn();
   });
@@ -2401,5 +2421,19 @@ document.getElementById('modalConfirmBtn').addEventListener('click', () => {
     document.body.appendChild(flash);
     setTimeout(()=>{ flash.style.opacity='0'; setTimeout(()=>flash.remove(),500); }, 2500);
   };
+})();
+
+// ── ESC para cerrar modal roster ───────────────────────
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){
+    const m=document.getElementById('rosterModal');
+    if(m && m.style.display!=='none') closeRosterModal();
+  }
+});
+
+// ── Inicializar pill de asesores con conteo real del ROSTER ──
+(function(){
+  const sb=document.getElementById('advisorSub');
+  if(sb){ const C=window.__ANE_CORE__; sb.textContent=(C?C.ROSTER.length:13)+' asesores'; }
 })();
 </script>
