@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; connect-src https://api.anthropic.com; frame-ancestors 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdn.firebase.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; connect-src https://api.anthropic.com https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com; frame-ancestors 'self'">
 <title>Simulador de Entrevistas — ANE Costa Rica v7</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -180,6 +180,81 @@ textarea{resize:vertical}
 .ane-help-btn{position:fixed;right:18px;bottom:18px;z-index:999999;background:linear-gradient(135deg,#0d7373,#14b8a6);color:#fff!important;text-decoration:none;border-radius:999px;padding:12px 16px;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-weight:900;font-size:13px;box-shadow:0 16px 42px rgba(13,115,115,.38);border:1px solid rgba(255,255,255,.22);display:inline-flex;align-items:center;gap:8px}
 .ane-help-btn:hover{transform:translateY(-2px)}@media print{.ane-help-btn{display:none!important}}
 </style>
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getDatabase, ref, set, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBlOKEFWgG1PKb5iOkShyOYTvquAx_nQ_Q",
+    authDomain: "simulador-de-entrevista-a883d.firebaseapp.com",
+    databaseURL: "https://simulador-de-entrevista-a883d-default-rtdb.firebaseio.com",
+    projectId: "simulador-de-entrevista-a883d",
+    storageBucket: "simulador-de-entrevista-a883d.firebasestorage.app",
+    messagingSenderId: "1035959981732",
+    appId: "1:1035959981732:web:abfcef9631a1c8ce50f831",
+    measurementId: "G-44HV8X30W0"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // Exponer funciones globales para usar desde el código existente
+  window._fbSet = (path, val) => set(ref(db, path), val);
+  window._fbRemove = (path) => remove(ref(db, path));
+  window._fbOn = (path, cb) => onValue(ref(db, path), snap => cb(snap.val()));
+
+  // ── Detectar vista candidato con Firebase ──
+  const params = new URLSearchParams(window.location.search);
+  const salaId = params.get('sala');
+  const esCandidato = params.get('vista') === 'candidato';
+
+  if(esCandidato && salaId){
+    // Escuchar admit desde Firebase
+    window._fbOn('salas/' + salaId + '/estado', val => {
+      if(val === 'admitido'){
+        document.getElementById('sala-espera').style.display = 'none';
+        document.getElementById('sala-entrevista-body').style.display = 'flex';
+      }
+    });
+    // Escuchar preguntas desde Firebase
+    window._fbOn('salas/' + salaId + '/pregunta', val => {
+      if(val && val.q){
+        if(typeof showCandQuestion === 'function') showCandQuestion(val.q, val.qNum, val.profName);
+      } else {
+        if(typeof hideCandQuestion === 'function') hideCandQuestion();
+      }
+    });
+    // Exponer función para enviar knock con Firebase
+    window._fbSolicitarEntrada = function(nombre){
+      window._fbSet('salas/' + salaId + '/knock', { nombre, ts: Date.now() });
+    };
+  }
+
+  if(!esCandidato){
+    // Entrevistador: escuchar knocks de cualquier sala activa
+    // Se registra cuando el entrevistador genera el código de sala
+    window._fbEscucharSala = function(id){
+      window._fbOn('salas/' + id + '/knock', val => {
+        if(!val) return;
+        const nn = document.getElementById('knock-notify');
+        const nb = document.getElementById('knock-nombre');
+        if(nn && nb){ nb.textContent = val.nombre || 'Candidato'; nn.style.display = 'block'; nn.dataset.sala = id; }
+      });
+    };
+    window._fbAdmitir = function(salaId){
+      window._fbSet('salas/' + salaId + '/estado', 'admitido');
+      window._fbRemove('salas/' + salaId + '/knock');
+    };
+    // Exponer función para broadcast de preguntas via Firebase
+    window._fbBroadcastQuestion = function(salaId, q, qNum, profName){
+      window._fbSet('salas/' + salaId + '/pregunta', { q, qNum, profName });
+    };
+    window._fbBroadcastClear = function(salaId){
+      window._fbRemove('salas/' + salaId + '/pregunta');
+    };
+  }
+</script>
 </head>
 <body>
 
@@ -2759,20 +2834,40 @@ if(bc){
 }
 
 function broadcastQuestion(){
-  if(!bc||!activeQ) return;
+  if(!activeQ) return;
   const qIdx=currentProf?.qs.indexOf(activeQ)??-1;
-  bc.postMessage({type:'question', q:activeQ, qNum:qIdx+1, profName:currentProf?.name||''});
+  const payload={type:'question', q:activeQ, qNum:qIdx+1, profName:currentProf?.name||''};
+  if(bc) bc.postMessage(payload);
+  if(typeof window._fbBroadcastQuestion === 'function' && window._activeSalaId)
+    window._fbBroadcastQuestion(window._activeSalaId, activeQ, qIdx+1, currentProf?.name||'');
 }
-function broadcastClear(){ if(bc) bc.postMessage({type:'clear'}); }
+function broadcastClear(){
+  if(bc) bc.postMessage({type:'clear'});
+  if(typeof window._fbBroadcastClear === 'function' && window._activeSalaId)
+    window._fbBroadcastClear(window._activeSalaId);
+}
 function pingCandidateView(){ if(bc) bc.postMessage({type:'ping'}); }
 
 function openCandidateView(){
-  const url=window.location.href.split('?')[0]+'?vista=candidato';
-  const win=window.open(url,'ANECandidato','width=980,height=700,toolbar=no,menubar=no,scrollbars=yes');
-  if(!win){
-    alert('Tu navegador bloqueó la ventana emergente.\n\n→ Permite las ventanas emergentes para este sitio\n→ O abre manualmente una nueva pestaña con el mismo archivo y agrega ?vista=candidato a la URL.');
-  }
-  setTimeout(updateBcStatus,1200);
+  // Generar código de sala único
+  const salaId = Math.random().toString(36).slice(2,8).toUpperCase();
+  window._activeSalaId = salaId;
+  const base = window.location.href.split('?')[0];
+  const url = base + '?vista=candidato&sala=' + salaId;
+  // Escuchar knock via Firebase para esta sala
+  if(typeof window._fbEscucharSala === 'function') window._fbEscucharSala(salaId);
+  // Mostrar el enlace en un toast copiable
+  const toast = document.createElement('div');
+  toast.id = 'sala-link-toast';
+  toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#0b3d52;border:2px solid var(--teal);border-radius:14px;padding:18px 24px;z-index:99999;box-shadow:0 8px 32px rgba(0,0,0,.5);max-width:90vw;min-width:340px';
+  toast.innerHTML = '<div style="font-size:12px;color:#7dd3d3;font-weight:700;margin-bottom:8px">🔗 Enlace para el candidato</div>'
+    + '<div style="background:rgba(0,0,0,.3);border-radius:8px;padding:8px 12px;font-size:11px;color:#e0f2f2;word-break:break-all;margin-bottom:10px">' + url + '</div>'
+    + '<div style="display:flex;gap:8px">'
+    + '<button onclick="navigator.clipboard.writeText(\''+url+'\').then(()=>{this.textContent=\'✓ Copiado\';setTimeout(()=>this.textContent=\'📋 Copiar enlace\',2000)})" style="flex:1;background:var(--teal);border:none;color:#fff;padding:9px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">📋 Copiar enlace</button>'
+    + '<button onclick="this.closest(\'#sala-link-toast\').remove()" style="background:var(--s2);border:1px solid var(--db);color:#7dd3d3;padding:9px 14px;border-radius:8px;font-size:12px;cursor:pointer">✕</button>'
+    + '</div>';
+  document.getElementById('sala-link-toast')?.remove();
+  document.body.appendChild(toast);
 }
 function showSalaModal(){
   document.getElementById('sala-modal').classList.remove('hidden');
@@ -3341,11 +3436,17 @@ function solicitarEntrada(){
   document.getElementById('sala-espera-btn').disabled=true;
   document.getElementById('sala-espera-btn').style.opacity='0.5';
   document.getElementById('sala-espera-status').style.display='block';
+  // Firebase (cross-device) + BroadcastChannel (mismo navegador)
+  if(typeof window._fbSolicitarEntrada === 'function') window._fbSolicitarEntrada(nombre);
   if(bc) bc.postMessage({type:'knock', nombre});
 }
 
 function admitirCandidato(){
-  document.getElementById('knock-notify').style.display='none';
+  const nn = document.getElementById('knock-notify');
+  const salaId = nn?.dataset?.sala || window._activeSalaId;
+  nn.style.display='none';
+  // Firebase (cross-device) + BroadcastChannel (mismo navegador)
+  if(typeof window._fbAdmitir === 'function' && salaId) window._fbAdmitir(salaId);
   if(bc) bc.postMessage({type:'admit'});
 }
 
