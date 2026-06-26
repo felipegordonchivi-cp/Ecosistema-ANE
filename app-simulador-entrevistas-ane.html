@@ -232,6 +232,7 @@ textarea{resize:vertical}
           var nn = document.getElementById('knock-notify');
           var nb = document.getElementById('knock-nombre');
           if(nn && nb){ nb.textContent = val.nombre || 'Candidato'; nn.style.display = 'block'; nn.dataset.sala = id; }
+          if(typeof activarBtnAprobar === 'function') activarBtnAprobar(val.nombre || 'Candidato');
         });
       };
       window._fbAdmitir = function(sid){
@@ -660,6 +661,7 @@ textarea{resize:vertical}
         <button onclick="openCandidateView();updateBcStatus()" style="background:linear-gradient(135deg,var(--teal),var(--tl));border:none;color:#fff;padding:12px;border-radius:10px;font-size:13px;font-weight:800">📺 Abrir Vista Candidato</button>
         <button onclick="copyCandUrl()" style="background:var(--s2);border:1px solid var(--teal);color:var(--tl);padding:12px;border-radius:10px;font-size:13px;font-weight:800">📋 Copiar URL</button>
       </div>
+      <button id="btn-aprobar-sala" onclick="admitirCandidato()" disabled style="margin-top:8px;width:100%;background:var(--s2);border:2px solid #3a5a5a;color:#3a6a6a;padding:12px;border-radius:10px;font-size:13px;font-weight:800;cursor:not-allowed;transition:all .3s">✅ Aprobar sala — sin solicitudes</button>
       <div style="margin-top:10px;background:rgba(234,179,8,.06);border:1px solid rgba(234,179,8,.2);border-radius:8px;padding:10px;font-size:11px;color:#92400e">
         ⚠️ <b>Nota de privacidad:</b> La Vista Candidato solo muestra el texto de la pregunta. No tiene acceso al panel del asesor, evaluaciones, transcripciones ni datos del sistema ANE. Es seguro compartirla por pantalla.
       </div>
@@ -760,6 +762,7 @@ textarea{resize:vertical}
         <button onclick="pingCandidateView()" style="background:rgba(13,115,115,.2);border:1px solid var(--db);color:#7dd3d3;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700">Verificar</button>
       </div>
       <button onclick="openCandidateView();updateBcStatus()" style="width:100%;background:linear-gradient(135deg,var(--teal),var(--tl));border:none;color:#fff;padding:12px;border-radius:10px;font-size:14px;font-weight:800">📺 Abrir Vista Candidato</button>
+      <button id="btn-aprobar-sala2" onclick="admitirCandidato()" disabled style="margin-top:8px;width:100%;background:var(--s2);border:2px solid #3a5a5a;color:#3a6a6a;padding:12px;border-radius:10px;font-size:14px;font-weight:800;cursor:not-allowed;transition:all .3s">✅ Aprobar sala — sin solicitudes</button>
     </div>
 
   </div>
@@ -2822,7 +2825,8 @@ if(bc){
     if(d.type==='knock'){
       const nn=document.getElementById('knock-notify');
       const nb=document.getElementById('knock-nombre');
-      if(nn&&nb){ nb.textContent=d.nombre||'Candidato'; nn.style.display='block'; }
+      if(nn&&nb){ nb.textContent=d.nombre||'Candidato'; nn.style.display='block'; nn.dataset.sala=window._activeSalaId||''; }
+      activarBtnAprobar(d.nombre||'Candidato');
     }
   };
 }
@@ -3435,10 +3439,39 @@ function solicitarEntrada(){
   if(bc) bc.postMessage({type:'knock', nombre});
 }
 
+function activarBtnAprobar(nombre){
+  ['btn-aprobar-sala','btn-aprobar-sala2'].forEach(function(id){
+    var b = document.getElementById(id);
+    if(!b) return;
+    b.disabled = false;
+    b.style.background = 'linear-gradient(135deg,#16a34a,#15803d)';
+    b.style.border = '2px solid #4ade80';
+    b.style.color = '#fff';
+    b.style.cursor = 'pointer';
+    b.innerHTML = '✅ Aprobar sala — ' + nombre;
+    b.classList.add('blink');
+  });
+}
+
+function desactivarBtnAprobar(){
+  ['btn-aprobar-sala','btn-aprobar-sala2'].forEach(function(id){
+    var b = document.getElementById(id);
+    if(!b) return;
+    b.disabled = true;
+    b.style.background = 'var(--s2)';
+    b.style.border = '2px solid #3a5a5a';
+    b.style.color = '#3a6a6a';
+    b.style.cursor = 'not-allowed';
+    b.innerHTML = '✅ Aprobar sala — sin solicitudes';
+    b.classList.remove('blink');
+  });
+}
+
 function admitirCandidato(){
   const nn = document.getElementById('knock-notify');
   const salaId = nn?.dataset?.sala || window._activeSalaId;
-  nn.style.display='none';
+  if(nn) nn.style.display='none';
+  desactivarBtnAprobar();
   // Firebase (cross-device) + BroadcastChannel (mismo navegador)
   if(typeof window._fbAdmitir === 'function' && salaId) window._fbAdmitir(salaId);
   if(bc) bc.postMessage({type:'admit'});
