@@ -234,6 +234,23 @@ textarea{resize:vertical}
           if(nn && nb){ nb.textContent = val.nombre || 'Candidato'; nn.style.display = 'block'; nn.dataset.sala = id; }
           if(typeof activarBtnAprobar === 'function') activarBtnAprobar(val.nombre || 'Candidato');
         });
+        // Recibir transcripción del candidato en tiempo real
+        window._fbOn('salas/'+id+'/transcript', function(val){
+          if(!val) return;
+          var tf = document.getElementById('transcript-final');
+          var ti = document.getElementById('transcript-interim');
+          var ph = document.getElementById('transcript-ph');
+          if(tf) tf.textContent = val.final || '';
+          if(ti) ti.textContent = val.interim || '';
+          if(ph && (val.final || val.interim)) ph.style.display = 'none';
+          // Sincronizar con variable interna para que el evaluador IA funcione
+          if(typeof finalTranscript !== 'undefined') finalTranscript = val.final || '';
+          // Indicador visual de que está grabando
+          var dot = document.getElementById('rec-dot');
+          var status = document.getElementById('audio-status-txt');
+          if(dot && val.interim) dot.style.background = '#ef4444';
+          if(status && val.interim) status.textContent = 'Candidato grabando…';
+        });
       };
       window._fbAdmitir = function(sid){
         window._fbSet('salas/'+sid+'/estado', 'admitido');
@@ -3473,6 +3490,12 @@ function startCandRecording(){
     candFinalTranscript=local;
     const f=document.getElementById('cand-transcript-final'); const it=document.getElementById('cand-transcript-interim');
     if(f) f.textContent=local; if(it) it.textContent=interim;
+    // Enviar transcripción al entrevistador via Firebase
+    const params=new URLSearchParams(window.location.search);
+    const sid=params.get('sala');
+    if(sid && typeof window._fbSet==='function'){
+      window._fbSet('salas/'+sid+'/transcript', { final: local, interim: interim, ts: Date.now() });
+    }
   };
   candRecognition.onerror=(e)=>{ console.warn('cand SR',e.error); stopCandRecording(); };
   candRecognition.onend=()=>{ if(isCandRecording) stopCandRecording(); };
@@ -3481,6 +3504,12 @@ function startCandRecording(){
 function stopCandRecording(){
   if(candRecognition) candRecognition.stop();
   isCandRecording=false; setCandRecStatus(false); stopCandRecTimerFn(); animCandWave(false);
+  // Limpiar interim en Firebase (mantener final)
+  const params=new URLSearchParams(window.location.search);
+  const sid=params.get('sala');
+  if(sid && typeof window._fbSet==='function' && candFinalTranscript){
+    window._fbSet('salas/'+sid+'/transcript', { final: candFinalTranscript, interim: '', ts: Date.now() });
+  }
 }
 function setCandRecStatus(on){
   const dot=document.getElementById('cand-rec-dot-box'); const txt=document.getElementById('cand-rec-status');
