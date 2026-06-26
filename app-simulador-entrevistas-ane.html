@@ -824,6 +824,7 @@ textarea{resize:vertical}
     <div style="display:flex;gap:8px;align-items:center">
       <input id="cand-name" placeholder="Nombre del candidato…" style="width:180px;font-size:12px">
       <input id="cand-date" type="date" style="font-size:12px;width:140px">
+      <button id="btn-aprobar-sala3" onclick="admitirCandidato()" disabled title="Sin solicitudes pendientes" style="background:var(--s2);border:2px solid #3a5a5a;color:#3a6a6a;padding:5px 12px;border-radius:6px;font-size:11px;font-weight:800;cursor:not-allowed;transition:all .3s;white-space:nowrap">✅ Aprobar sala</button>
       <button onclick="showView('home')" style="background:transparent;border:1px solid var(--db);color:#7dd3d3;padding:5px 10px;border-radius:6px;font-size:11px">← Inicio</button>
     </div>
   </div>
@@ -3440,7 +3441,7 @@ function solicitarEntrada(){
 }
 
 function activarBtnAprobar(nombre){
-  ['btn-aprobar-sala','btn-aprobar-sala2'].forEach(function(id){
+  ['btn-aprobar-sala','btn-aprobar-sala2','btn-aprobar-sala3'].forEach(function(id){
     var b = document.getElementById(id);
     if(!b) return;
     b.disabled = false;
@@ -3448,13 +3449,13 @@ function activarBtnAprobar(nombre){
     b.style.border = '2px solid #4ade80';
     b.style.color = '#fff';
     b.style.cursor = 'pointer';
-    b.innerHTML = '✅ Aprobar sala — ' + nombre;
+    b.innerHTML = id === 'btn-aprobar-sala3' ? '✅ Aprobar — ' + nombre : '✅ Aprobar sala — ' + nombre;
     b.classList.add('blink');
   });
 }
 
 function desactivarBtnAprobar(){
-  ['btn-aprobar-sala','btn-aprobar-sala2'].forEach(function(id){
+  ['btn-aprobar-sala','btn-aprobar-sala2','btn-aprobar-sala3'].forEach(function(id){
     var b = document.getElementById(id);
     if(!b) return;
     b.disabled = true;
