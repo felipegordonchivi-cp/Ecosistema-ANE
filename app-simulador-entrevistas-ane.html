@@ -299,11 +299,13 @@ textarea{resize:vertical}
       // ── WebRTC: entrevistador recibe video del candidato ──
       var ivPC = null;
       window._initWebRTCInterviewer = function(sid){
+        window._ivPC = null;
         var cfg = { iceServers: [
           { urls: 'stun:stun.l.google.com:19302' },
           { urls: 'stun:stun1.l.google.com:19302' }
         ]};
         ivPC = new RTCPeerConnection(cfg);
+        window._ivPC = ivPC;
         ivPC.onicecandidate = function(e){
           if(e.candidate) db.ref('salas/'+sid+'/ice-iv').push(e.candidate.toJSON());
         };
@@ -350,6 +352,12 @@ textarea{resize:vertical}
           var c = snap.val();
           if(c && ivPC.remoteDescription) ivPC.addIceCandidate(new RTCIceCandidate(c)).catch(function(){});
         });
+        // Renegociación: recibir reanswer del candidato cuando el entrevistador activa cámara
+        db.ref('salas/'+sid+'/webrtc-reanswer').on('value', function(snap){
+          var ans = snap.val();
+          if(!ans || !ivPC.pendingLocalDescription) return;
+          ivPC.setRemoteDescription(new RTCSessionDescription(ans)).catch(function(e){ console.warn('WebRTC reanswer error:', e); });
+        });
         // Mostrar panel de video
         var wp = document.getElementById('webrtc-panel');
         if(wp) wp.style.display='block';
@@ -369,6 +377,15 @@ textarea{resize:vertical}
         candPC.onicecandidate = function(e){
           if(e.candidate) db.ref('salas/'+salaId+'/ice-cand').push(e.candidate.toJSON());
         };
+        // Recibir audio del entrevistador cuando renegocia
+        candPC.ontrack = function(e){
+          var aud = document.getElementById('iv-audio-out');
+          if(aud){
+            if(!aud.srcObject) aud.srcObject = e.streams[0];
+            else e.streams[0].getTracks().forEach(function(t){ aud.srcObject.addTrack(t); });
+            aud.play().catch(function(){ aud.muted=false; aud.play(); });
+          }
+        };
         // Escuchar answer del entrevistador
         db.ref('salas/'+salaId+'/webrtc-answer').on('value', function(snap){
           var ans = snap.val();
@@ -380,12 +397,24 @@ textarea{resize:vertical}
           var c = snap.val();
           if(c && candPC.remoteDescription) candPC.addIceCandidate(new RTCIceCandidate(c)).catch(function(){});
         });
-        // Crear offer
+        // Crear offer inicial (candidato → entrevistador)
         candPC.createOffer({ offerToReceiveVideo: false, offerToReceiveAudio: false }).then(function(offer){
           return candPC.setLocalDescription(offer);
         }).then(function(){
           db.ref('salas/'+salaId+'/webrtc-offer').set(candPC.localDescription.toJSON());
         }).catch(function(e){ console.warn('WebRTC offer error:', e); });
+        // Renegociación cuando el entrevistador activa su cámara
+        db.ref('salas/'+salaId+'/webrtc-reoffer').on('value', function(snap){
+          var offer = snap.val();
+          if(!offer) return;
+          candPC.setRemoteDescription(new RTCSessionDescription(offer)).then(function(){
+            return candPC.createAnswer();
+          }).then(function(ans){
+            return candPC.setLocalDescription(ans);
+          }).then(function(){
+            db.ref('salas/'+salaId+'/webrtc-reanswer').set(candPC.localDescription.toJSON());
+          }).catch(function(e){ console.warn('WebRTC renegotiation error:', e); });
+        });
       };
     }
 
@@ -673,6 +702,7 @@ textarea{resize:vertical}
     </div>
 
   </div><!-- end sala-entrevista-body -->
+<audio id="iv-audio-out" autoplay playsinline style="display:none"></audio>
 </div><!-- end v-candidato -->
 
 <!-- NOTIFICACIÓN DE LLAMADO (panel entrevistador) -->
@@ -3716,6 +3746,17 @@ async function toggleIvCam(){
       ivCamStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:true});
       if(vid){vid.srcObject=ivCamStream;vid.style.display='block';} if(ph) ph.style.display='none';
       if(btn) btn.textContent='📷 Cámara OFF';
+      // Renegociar WebRTC para enviar audio al candidato
+      var ivPC = window._ivPC;
+      var sid  = window._activeSalaId;
+      if(ivPC && sid && typeof firebase !== 'undefined'){
+        ivCamStream.getTracks().forEach(function(t){ ivPC.addTrack(t, ivCamStream); });
+        ivPC.createOffer().then(function(offer){
+          return ivPC.setLocalDescription(offer);
+        }).then(function(){
+          firebase.database().ref('salas/'+sid+'/webrtc-reoffer').set(ivPC.localDescription.toJSON());
+        }).catch(function(e){ console.warn('WebRTC reoffer error:', e); });
+      }
     }catch(e){ alert('No se pudo acceder a la cámara: '+e.message); }
   }
 }
