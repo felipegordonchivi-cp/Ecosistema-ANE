@@ -817,6 +817,33 @@
 
 
 
+<script>
+// ── ATS: Weight sum validation ─────────────────────────
+(function(){
+  function updateWeightSum(){
+    const sliders = document.querySelectorAll('.wrow input[type=range][data-w]');
+    let total = 0;
+    sliders.forEach(s=>{
+      total += parseInt(s.value)||0;
+      const lbl = document.getElementById('wv-'+s.dataset.w);
+      if(lbl) lbl.textContent = s.value;
+    });
+    const wsumEl = document.getElementById('wsumVal');
+    const wsumWrap = document.getElementById('wsum');
+    const runBtn = document.getElementById('runBtn');
+    if(wsumEl) wsumEl.textContent = total;
+    const bad = total !== 100;
+    if(wsumWrap){ wsumWrap.classList.toggle('bad', bad); }
+    if(runBtn){ runBtn.disabled = bad; runBtn.title = bad ? 'Los pesos deben sumar exactamente 100%' : ''; }
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    const sliders = document.querySelectorAll('.wrow input[type=range][data-w]');
+    sliders.forEach(s => s.addEventListener('input', updateWeightSum));
+    updateWeightSum();
+  });
+})();
+</script>
+
 <a class="ane-help-btn" href="manual-ats-ane.html" target="_blank" rel="noopener">❔ Manual y FAQ</a>
 </body>
 </html>

@@ -976,7 +976,7 @@ textarea{resize:vertical}
 // ============================================================
 let currentProf = null;
 let activeQ = null;
-let evalHistory = [];
+let evalHistory = (()=>{ try{ return JSON.parse(localStorage.getItem('ane_eval_hist'))||[]; }catch(e){ return []; } })();
 let starScores = {S:0,T:0,A:0,R:0};
 let globalScore = 5;
 let recognition = null;
@@ -1789,6 +1789,8 @@ function init(){
   updateGlobalScore(5);
   setupTTSRate();
   setupWordCount();
+  const hc = document.getElementById('hist-count');
+  if(hc && evalHistory.length) hc.textContent = evalHistory.length;
 }
 
 function setupTTSRate(){
@@ -2358,6 +2360,7 @@ function saveEval(){
     ai:document.getElementById('ai-result')?.textContent||'',
   };
   evalHistory.unshift(entry);
+  try{ localStorage.setItem('ane_eval_hist', JSON.stringify(evalHistory.slice(0,100))); }catch(e){}
   document.getElementById('hist-count').textContent = evalHistory.length;
   const f = document.getElementById('save-flash');
   if(f){ f.classList.remove('hidden'); setTimeout(()=>f.classList.add('hidden'),2500); }
