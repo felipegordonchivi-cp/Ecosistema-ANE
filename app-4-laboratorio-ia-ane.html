@@ -1781,9 +1781,25 @@ function familyObjectiveBoost(f){
   let targetHits=kws.filter(k=>k && target.includes(k)).length;
   let textHits=kws.filter(k=>k && all.includes(k)).length;
   let boost=targetHits*18 + Math.min(textHits,5)*7;
-  const engineeringIntent=(target.includes('ingeniero')||target.includes('ingeniera')||target.includes('ingenieria')||target.includes('ingeniería'));
-  if(engineeringIntent && ['ingenieria_civil','ingenieria_industrial','ingenieria_sistemas','ingenieria_electromecanica','arquitectura','proyectos'].includes(f.id)) boost+=35;
-  if(engineeringIntent && !['ingenieria_civil','ingenieria_industrial','ingenieria_sistemas','ingenieria_electromecanica','arquitectura','proyectos','mantenimiento','construccion_operativa','tic'].includes(f.id)) boost-=28;
+  // Ingeniería
+  const engineeringIntent=(target.includes('ingeniero')||target.includes('ingeniera')||target.includes('ingenieria')||target.includes('ingenieria'));
+  const ENG_FAM=['ingenieria_civil','ingenieria_industrial','ingenieria_sistemas','ingenieria_electromecanica','arquitectura','proyectos'];
+  if(engineeringIntent && ENG_FAM.includes(f.id)) boost+=35;
+  if(engineeringIntent && !ENG_FAM.concat(['mantenimiento','construccion_operativa','tic']).includes(f.id)) boost-=28;
+  // Administrativo/oficina: evita que ingeniería gane por competencias transversales
+  const adminIntent=(target.includes('asistente')||target.includes('administrativ')||target.includes('secretari')||target.includes('recepcionis')||target.includes('oficinista')||target.includes('auxiliar'));
+  const ADMIN_FAM=['administracion','legal','sector_publico','rrhh','contabilidad','compras','banca_seguros','asistente_virtual_cert','ofimatica_cert','erp_crm_cert'];
+  const TECH_FAM=['ingenieria_civil','ingenieria_industrial','ingenieria_sistemas','ingenieria_electromecanica','arquitectura','construccion_operativa','mantenimiento','manufactura','electricidad_cert','soldadura_cert','hvac_refrigeracion_cert','mecanica_automotriz_cert'];
+  if(adminIntent && ADMIN_FAM.includes(f.id)) boost+=30;
+  if(adminIntent && TECH_FAM.includes(f.id)) boost-=32;
+  // Ventas/comercial
+  const salesIntent=(target.includes('vendedor')||target.includes('asesor de ventas')||target.includes('ejecutivo comercial')||target.includes('ejecutivo de ventas'));
+  if(salesIntent && ['ventas','retail','servicio_cliente'].includes(f.id)) boost+=28;
+  if(salesIntent && TECH_FAM.includes(f.id)) boost-=20;
+  // Salud
+  const healthIntent=(target.includes('enfermero')||target.includes('enfermera')||target.includes('auxiliar de enfermeria')||target.includes('asistente dental')||target.includes('medico')||target.includes('medica'));
+  if(healthIntent && ['salud','farmacia','cuido_cert','tecnico_laboratorio_cert'].includes(f.id)) boost+=30;
+  if(healthIntent && TECH_FAM.includes(f.id)) boost-=24;
   return boost;
 }
 function familyScore(f,detected){
@@ -1792,9 +1808,13 @@ function familyScore(f,detected){
   let evidencePenalty=0;
   if(rel.length===0 && boost<18) evidencePenalty=-26;
   else if(rel.length<=1 && boost<12) evidencePenalty=-14;
-  // Evita que ventas gane solo por competencias transversales como comunicación u orientación a resultados.
+  // Evita que ventas gane solo por competencias transversales
   if(f.id==='ventas' && !detected.some(s=>['ventas_servicio','ventas_comercio'].includes(s.group)) && familyObjectiveBoost(f)<18) evidencePenalty-=18;
-  const demandBoost=(CR_MARKET[f.id]||{d:2}).d-2; // -1..+2 points based on demand
+  // Evita que familias técnicas ganen solo por competencias transversales cuando no hay evidencia técnica
+  const TECH_SPECIFIC_GROUPS=['ingenieria_construccion','construccion_mantenimiento','manufactura','tic_soporte','digital_avanzado'];
+  const ENG_IDS=['ingenieria_civil','ingenieria_industrial','ingenieria_sistemas','ingenieria_electromecanica','arquitectura'];
+  if(ENG_IDS.includes(f.id) && !detected.some(s=>TECH_SPECIFIC_GROUPS.includes(s.group)) && boost<20) evidencePenalty-=22;
+  const demandBoost=(CR_MARKET[f.id]||{d:2}).d-2;
   return clamp(Math.round(f.base+raw/8+boost+evidencePenalty+demandBoost),25,98)
 }
 function topSkillsForFamily(f,detected,limit=10){let have=new Set(detected.map(s=>s.id));return ESCO_CR_500.filter(s=>f.groups.includes(s.group)&&!have.has(s.id)).sort((a,b)=>b.priority-a.priority).slice(0,limit)}
