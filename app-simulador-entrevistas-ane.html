@@ -2153,19 +2153,67 @@ function renderQuestions(){
     <div class="q-item${activeQ===q?' active-q':''}" id="qi-${i}">
       <div class="q-num">${i+1}</div>
       <div style="flex:1">
-        <p style="font-size:13px;line-height:1.5;margin:0 0 8px;font-weight:500">${q}</p>
+        <p id="q-text-${i}" style="font-size:13px;line-height:1.5;margin:0 0 8px;font-weight:500">${q}</p>
+        <textarea id="q-edit-${i}" style="display:none;width:100%;font-size:13px;line-height:1.5;background:rgba(13,115,115,.1);border:1px solid var(--teal);border-radius:8px;color:#e0f2f2;padding:8px;resize:vertical;min-height:60px;font-family:inherit;margin-bottom:8px">${q}</textarea>
         <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
           ${[['S','Situación','#3b82f6'],['T','Tarea','#f59e0b'],['A','Acción','#10b981'],['R','Resultado','#8b5cf6']].map(([l,n,c])=>`<span style="display:inline-flex;align-items:center;gap:4px;background:${c}18;border:1px solid ${c}33;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700"><span style="color:${c};font-size:11px;font-weight:900">${l}</span><span style="color:#7a9a9a">${n}</span></span>`).join('')}
         </div>
         <div style="display:flex;gap:6px">
-          <button class="q-act-btn${activeQ===q?' is-active':''}" onclick="setActiveQ(${i})">
+          <button class="q-act-btn${activeQ===q?' is-active':''}" id="q-act-btn-${i}" onclick="setActiveQEdited(${i})">
             ${activeQ===q?'✓ Activa':'▶ Activar'}
           </button>
+          <button onclick="toggleEditQ(${i})" id="q-edit-btn-${i}" title="Editar pregunta" style="background:rgba(13,115,115,.15);border:1px solid rgba(13,115,115,.3);color:#7dd3d3;padding:4px 8px;border-radius:6px;font-size:11px">✏️</button>
           <button onclick="readQuestionText('${q.replace(/'/g,"\\'")}',${i})" style="background:rgba(13,115,115,.15);border:1px solid rgba(13,115,115,.3);color:#7dd3d3;padding:4px 8px;border-radius:6px;font-size:11px">🔊</button>
         </div>
       </div>
     </div>
   `).join('');
+}
+
+function toggleEditQ(idx){
+  const txt = document.getElementById('q-text-'+idx);
+  const area = document.getElementById('q-edit-'+idx);
+  const btn = document.getElementById('q-edit-btn-'+idx);
+  if(!txt||!area) return;
+  const editing = area.style.display !== 'none';
+  if(editing){
+    // Guardar edición
+    txt.textContent = area.value || txt.textContent;
+    area.style.display = 'none';
+    txt.style.display = '';
+    btn.textContent = '✏️';
+    btn.style.borderColor = 'rgba(13,115,115,.3)';
+  } else {
+    // Abrir editor
+    area.value = txt.textContent;
+    area.style.display = 'block';
+    txt.style.display = 'none';
+    btn.textContent = '✓';
+    btn.style.borderColor = 'var(--teal)';
+    area.focus();
+  }
+}
+
+function setActiveQEdited(idx){
+  // Usar texto editado si existe, si no el original
+  const area = document.getElementById('q-edit-'+idx);
+  const txt = document.getElementById('q-text-'+idx);
+  const edited = (area && area.style.display !== 'none') ? area.value.trim() : (txt ? txt.textContent.trim() : null);
+  activeQ = edited || currentProf?.qs[idx] || null;
+  // Cerrar editor si estaba abierto
+  if(area && area.style.display !== 'none') toggleEditQ(idx);
+  renderQuestions();
+  const box = document.getElementById('active-q-box');
+  const noq = document.getElementById('no-q-box');
+  if(activeQ){
+    box.style.display='block'; noq.style.display='none';
+    document.getElementById('active-q-text').textContent = activeQ;
+  } else {
+    box.style.display='none'; noq.style.display='block';
+  }
+  updateEvalCtx();
+  if(activeQ) broadcastQuestion();
+  else broadcastClear();
 }
 
 function setActiveQ(idx){
