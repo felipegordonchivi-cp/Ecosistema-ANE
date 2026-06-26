@@ -993,28 +993,65 @@
       '<div class="ft"><span>ANE · ATS ANE</span><span>Generado: '+fecha+'</span></div>' +
       '</div></body></html>';
 
-    var win = window.open('','_blank');
-    if(win){ win.document.open(); win.document.write(html); win.document.close(); }
-    else {
-      var blob = new Blob([html],{type:'text/html;charset=utf-8'});
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a'); a.href=url; a.download='informe-ats.html';
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      setTimeout(function(){ URL.revokeObjectURL(url); },30000);
+    // Intentar abrir popup; si bloqueado, mostrar modal inline
+    var win = null;
+    try{ win = window.open('','_blank'); } catch(ex){ win = null; }
+    if(win && win.document){
+      win.document.open(); win.document.write(html); win.document.close();
+    } else {
+      // Mostrar inline modal
+      var overlay = document.getElementById('pdf-modal-overlay');
+      if(overlay) overlay.remove();
+      overlay = document.createElement('div');
+      overlay.id = 'pdf-modal-overlay';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99999;display:flex;align-items:center;justify-content:center;';
+      var box = document.createElement('div');
+      box.style.cssText = 'background:#fff;border-radius:8px;width:90vw;max-width:820px;height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.4)';
+      var toolbar = document.createElement('div');
+      toolbar.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:#0f4c6e;color:#fff;flex-shrink:0';
+      toolbar.innerHTML = '<span style="font-weight:700;font-size:14px">Informe de Candidato — ANE</span><div style="display:flex;gap:8px">' +
+        '<button onclick="var b=new Blob([document.getElementById(\'pdf-frame\').srcdoc||\'<html/>\'],{type:\'text/html\'});var u=URL.createObjectURL(b);var a=document.createElement(\'a\');a.href=u;a.download=\'informe-ats.html\';a.click();" ' +
+        'style="background:#26a69a;color:#fff;border:none;border-radius:4px;padding:5px 12px;cursor:pointer;font-size:12px">⬇ Descargar</button>' +
+        '<button onclick="document.getElementById(\'pdf-modal-overlay\').remove()" style="background:#e53935;color:#fff;border:none;border-radius:4px;padding:5px 12px;cursor:pointer;font-size:12px">✕ Cerrar</button></div>';
+      var frame = document.createElement('iframe');
+      frame.id = 'pdf-frame';
+      frame.style.cssText = 'flex:1;border:none;width:100%';
+      frame.srcdoc = html;
+      box.appendChild(toolbar); box.appendChild(frame);
+      overlay.appendChild(box);
+      document.body.appendChild(overlay);
     }
   }
 
   document.addEventListener('click', function(e){
-    var btn = e.target.closest('.btn-pdf');
+    var btn = e.target.closest('.btn-pdf, button[class*="pdf"], [class*="btn-pdf"]');
     if(!btn) return;
-    // Encontrar la tarjeta contenedora del candidato
-    var card = btn.closest('[class*="card"],[class*="result"],[class*="cand"]');
+    var card = btn.closest('[class*="card"],[class*="result"],[class*="cand"],[class*="item"]');
     if(!card) card = btn.parentElement;
     e.stopImmediatePropagation();
     e.preventDefault();
     try{ generarDesdeDOM(card); }
-    catch(err){ alert('Error: '+err.message); }
+    catch(err){ alert('Error al generar informe: '+err.message+'\n\nClase botón: '+btn.className+'\nClase tarjeta: '+(card?card.className:'no encontrada')); }
   }, true);
+
+  // Fallback: also intercept by scanning all buttons with "pdf" in text
+  document.addEventListener('DOMContentLoaded', function(){
+    document.addEventListener('click', function(e){
+      var btn = e.target.closest('button');
+      if(!btn) return;
+      var txt2 = btn.textContent.toLowerCase();
+      var cls = (btn.className||'').toLowerCase();
+      if(txt2.indexOf('pdf')===-1 && cls.indexOf('pdf')===-1) return;
+      if(btn.dataset.pdfHandled) return;
+      btn.dataset.pdfHandled = '1';
+      var card = btn.closest('[class*="card"],[class*="result"],[class*="cand"],[class*="item"]');
+      if(!card) card = btn.parentElement;
+      e.stopImmediatePropagation();
+      e.preventDefault();
+      try{ generarDesdeDOM(card); }
+      catch(err){ alert('Error: '+err.message); }
+    }, true);
+  });
 })();
 
 // ── Override showSection — el JS ofuscado usa un class name no mapeado en el CSS
