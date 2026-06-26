@@ -2386,6 +2386,8 @@ document.getElementById('modalConfirmBtn').addEventListener('click', () => {
 
   window.removeRosterRow = function(i){
     const C = window.__ANE_CORE__;
+    const nombre = C.ROSTER[i]?.completo || C.ROSTER[i]?.corto || 'este asesor';
+    if(!confirm('¿Eliminar a ' + nombre + ' del equipo?')) return;
     C.ROSTER.splice(i,1);
     renderRosterList(C.ROSTER);
   };

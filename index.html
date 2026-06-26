@@ -674,7 +674,7 @@ a { color: inherit; }
 
 <div class="shell">
   <!-- ===== SIDEBAR ===== -->
-  <aside class="sidebar" id="sidebar" aria-label="Navegación del ecosistema">
+  <aside class="sidebar" role="complementary" aria-label="Navegación ANE" id="sidebar" aria-label="Navegación del ecosistema">
     <div class="brand">
       <div class="brandmark" aria-hidden="true">
         <svg viewBox="0 0 32 28" fill="none">
@@ -698,13 +698,13 @@ a { color: inherit; }
 
     <div>
       <div class="navlabel">Centro de mando</div>
-      <nav class="nav">
-        <button class="nav-btn active" data-panel="home" onclick="switchPanel('home', this, 'Inicio ejecutivo', 'Panel maestro del ecosistema ANE')">
+      <nav class="nav" role="navigation">
+        <button class="nav-btn active" aria-label="Inicio ejecutivo" data-panel="home" onclick="switchPanel('home', this, 'Inicio ejecutivo', 'Panel maestro del ecosistema ANE')">
           <span class="nav-ico">⌁</span>
           <span>Inicio ejecutivo</span>
           <div class="loading-dot"></div>
         </button>
-        <button class="nav-btn" data-panel="audit" onclick="switchPanel('audit', this, 'Auditoría del ecosistema', 'Estado técnico y diagnóstico de los 4 módulos')">
+        <button class="nav-btn" aria-label="Auditoría técnica" data-panel="audit" onclick="switchPanel('audit', this, 'Auditoría del ecosistema', 'Estado técnico y diagnóstico de los 4 módulos')">
           <span class="nav-ico">◈</span>
           <span>Auditoría técnica</span>
           <div class="loading-dot"></div>
@@ -714,29 +714,29 @@ a { color: inherit; }
 
     <div>
       <div class="navlabel">Módulos activos</div>
-      <nav class="nav">
-        <button class="nav-btn" data-panel="ats" data-src="app-ats-ane.html"
+      <nav class="nav" role="navigation">
+        <button class="nav-btn" aria-label="Módulo ATS · Ranking CV" data-panel="ats" data-src="app-ats-ane.html"
           onclick="loadModule('ats','app-ats-ane.html',this,'ATS ANE · Preselección curricular','Motor de ranking y evaluación de CV por competencias ESCO-CR')">
           <span class="nav-ico">☑</span>
           <span>ATS · Ranking CV</span>
           <span class="nav-badge live">Activo</span>
           <div class="loading-dot"></div>
         </button>
-        <button class="nav-btn" data-panel="sim" data-src="app-simulador-entrevistas-ane.html"
+        <button class="nav-btn" aria-label="Módulo Simulador STAR" data-panel="sim" data-src="app-simulador-entrevistas-ane.html"
           onclick="loadModule('sim','app-simulador-entrevistas-ane.html',this,'Simulador de Entrevistas STAR','Evaluación por competencias con metodología STAR, audio y reportes')">
           <span class="nav-ico">🎙</span>
           <span>Simulador STAR</span>
           <span class="nav-badge live">Activo</span>
           <div class="loading-dot"></div>
         </button>
-        <button class="nav-btn" data-panel="dash" data-src="app-dashboard-intermediacion-ane.html"
+        <button class="nav-btn" aria-label="Módulo Centro de Control" data-panel="dash" data-src="app-dashboard-intermediacion-ane.html"
           onclick="loadModule('dash','app-dashboard-intermediacion-ane.html',this,'Centro de Control · Intermediación','Dashboard ejecutivo: citas, sesiones, referidos y productividad')">
           <span class="nav-ico">📊</span>
           <span>Centro de Control</span>
           <span class="nav-badge live">Activo</span>
           <div class="loading-dot"></div>
         </button>
-        <button class="nav-btn" data-panel="lab" data-src="app-4-laboratorio-ia-ane.html"
+        <button class="nav-btn" aria-label="Módulo Laboratorio IA" data-panel="lab" data-src="app-4-laboratorio-ia-ane.html"
           onclick="loadModule('lab','app-4-laboratorio-ia-ane.html',this,'Laboratorio IA · ESCO-CR v15','Copiloto de orientación con confianza calibrada y trazabilidad')">
           <span class="nav-ico">⚡</span>
           <span>Laboratorio IA</span>
@@ -748,7 +748,7 @@ a { color: inherit; }
 
     <div>
       <div class="navlabel">Recursos</div>
-      <nav class="nav">
+      <nav class="nav" role="navigation">
         <button class="nav-btn" data-panel="help"
           onclick="loadModule('help','manual-centro-ayuda-ane.html',this,'Centro de Ayuda','Manuales, FAQ y guías de uso del ecosistema ANE')">
           <span class="nav-ico">📘</span>
@@ -777,8 +777,8 @@ a { color: inherit; }
 
       <!-- BACKUP / RESTAURAR -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
-        <button class="util-btn" onclick="exportBackup()" title="Exportar todos los datos a un archivo JSON" style="font-size:10px;padding:7px 4px;">💾 Backup</button>
-        <button class="util-btn" onclick="document.getElementById('importFile').click()" title="Restaurar datos desde un backup" style="font-size:10px;padding:7px 4px;">📂 Restaurar</button>
+        <button class="util-btn" onclick="exportBackup()" title="Exportar todos los datos a un archivo JSON" aria-label="Exportar backup" style="font-size:10px;padding:7px 4px;">💾 Backup</button>
+        <button class="util-btn" onclick="document.getElementById('importFile').click()" title="Restaurar datos desde un backup" aria-label="Importar backup" style="font-size:10px;padding:7px 4px;">📂 Restaurar</button>
         <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(this)">
       </div>
       <div style="margin-bottom:10px;" id="pwa-install-wrap">
@@ -786,14 +786,18 @@ a { color: inherit; }
       </div>
 
       <div class="sidecard">
-        <b>Ecosistema ANE</b>
+        <b>Ecosistema ANE <span style="font-size:10px;opacity:.6;font-weight:400">v2.0</span></b>
         <p>4/4 módulos · 100% offline · <span id="backup-date" style="color:var(--mint)">Sin backup</span></p>
+        <div id="storage-bar-wrap" style="margin-top:6px;display:none">
+          <div style="font-size:10px;color:var(--amber);margin-bottom:3px" id="storage-label"></div>
+          <div style="height:4px;border-radius:2px;background:rgba(125,211,211,.15);overflow:hidden"><div id="storage-bar" style="height:100%;background:var(--teal2);transition:width .4s"></div></div>
+        </div>
         <div class="mini-bar"><i></i></div>
       </div>
       <div class="sidebar-utils">
-        <button class="util-btn" onclick="toggleTheme()" title="Cambiar tema">◐ Tema</button>
-        <button class="util-btn" onclick="toggleFullscreen()" title="Pantalla completa">⛶</button>
-        <button class="util-btn" onclick="reloadCurrent()" title="Recargar módulo">↺</button>
+        <button class="util-btn" onclick="toggleTheme()" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro">◐ Tema</button>
+        <button class="util-btn" onclick="toggleFullscreen()" title="Pantalla completa" aria-label="Pantalla completa">⛶</button>
+        <button class="util-btn" onclick="reloadCurrent()" title="Recargar módulo" aria-label="Recargar módulo actual">↺</button>
       </div>
     </div>
 
@@ -1560,6 +1564,50 @@ window.importBackup = function(input){
 };
 
 updateBackupDate();
+
+// ── Monitor de almacenamiento localStorage ─────────────────────────────────
+function checkStorage(){
+  try{
+    // Estimar uso de localStorage
+    let used = 0;
+    for(let k in localStorage){ if(Object.prototype.hasOwnProperty.call(localStorage,k)) used += (localStorage[k].length + k.length) * 2; }
+    const limit = 5 * 1024 * 1024; // 5 MB aprox
+    const pct = Math.min(Math.round(used / limit * 100), 100);
+    const wrap = document.getElementById('storage-bar-wrap');
+    const bar  = document.getElementById('storage-bar');
+    const lbl  = document.getElementById('storage-label');
+    if(!wrap) return;
+    if(pct >= 70){
+      wrap.style.display = 'block';
+      bar.style.width = pct + '%';
+      bar.style.background = pct >= 90 ? '#ef4444' : pct >= 80 ? '#f59e0b' : 'var(--teal2)';
+      lbl.textContent = 'Almacenamiento: ' + pct + '% usado';
+      lbl.style.color = pct >= 90 ? '#ef4444' : '#f59e0b';
+      if(pct >= 95) showToast('⚠ Almacenamiento casi lleno ('+pct+'%). Exporta un backup ahora.');
+    } else {
+      wrap.style.display = 'none';
+    }
+  }catch(e){}
+}
+checkStorage();
+// Verificar después de cada backup/restauración
+const _origExport = window.exportBackup;
+window.exportBackup = function(){ _origExport(); checkStorage(); };
+
+// ── Aviso HTTPS para Simulador ─────────────────────────────────────────────
+function checkHTTPS(moduleName){
+  if(moduleName === 'sim' && location.protocol !== 'https:' && location.hostname !== 'localhost'){
+    showToast('⚠ El Simulador requiere HTTPS para usar el micrófono. Usa la URL de GitHub Pages o un servidor con TLS.');
+  }
+}
+// Hook en loadModule
+const _origLoad = window.loadModule;
+if(typeof _origLoad === 'function'){
+  window.loadModule = function(id, ...args){
+    checkHTTPS(id);
+    return _origLoad(id, ...args);
+  };
+}
 </script>
 </body>
 </html>
