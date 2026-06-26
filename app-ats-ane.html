@@ -874,14 +874,12 @@
 <a class="ane-help-btn" href="manual-ats-ane.html" target="_blank" rel="noopener">❔ Manual y FAQ</a>
 
 <script>
-// ── Override generateCandidatePDF ─────────────────────────────────────────
-// El script ofuscado accede window[clave_codificada][idx] que puede no estar
-// definido, causando falla silenciosa. Esta versión lee window.lastResults
-// directamente y usa Blob URL en lugar de window.open('').
+// ── Interceptor de botón PDF via event delegation ─────────────────────────
+// El JS ofuscado puede usar una closure/referencia directa a la función
+// original, haciendo que window.generateCandidatePDF no pueda sobreescribirse.
+// Capturamos el clic en el botón .btn-pdf directamente y generamos el informe.
 (function(){
-  // Esperar a que los scripts ofuscados terminen de definir sus globals
-  document.addEventListener('DOMContentLoaded', function(){
-    window.generateCandidatePDF = function(idx){
+  function generarInformePDF(idx){
       var results = window.lastResults;
       if(!results || !results[idx]){
         alert('No hay datos del candidato para generar el informe.');
@@ -1001,8 +999,22 @@
       } catch(e){
         alert('Error al generar el informe: ' + e.message);
       }
-    };
-  });
+  }
+
+  // Event delegation: captura clics en cualquier .btn-pdf del documento
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('.btn-pdf');
+    if(!btn) return;
+    // Extraer idx del onclick attribute o de data-idx
+    var idx = 0;
+    var oc = btn.getAttribute('onclick') || '';
+    var m = oc.match(/\d+/);
+    if(m) idx = parseInt(m[0]);
+    else if(btn.dataset.idx != null) idx = parseInt(btn.dataset.idx);
+    e.stopImmediatePropagation();
+    e.preventDefault();
+    generarInformePDF(idx);
+  }, true); // useCapture=true para interceptar antes que el handler original
 })();
 
 // ── Override showSection — el JS ofuscado usa un class name no mapeado en el CSS
