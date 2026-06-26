@@ -3472,6 +3472,15 @@ function admitirCandidato(){
   // Firebase (cross-device) + BroadcastChannel (mismo navegador)
   if(typeof window._fbAdmitir === 'function' && salaId) window._fbAdmitir(salaId);
   if(bc) bc.postMessage({type:'admit'});
+  // Cerrar modal y abrir Panel Entrevistador
+  closeSalaModal();
+  showView('entrevista');
+  // Toast de confirmación
+  const t = document.createElement('div');
+  t.textContent = '✅ Candidato admitido — ya puede ver las preguntas';
+  Object.assign(t.style,{position:'fixed',bottom:'24px',left:'50%',transform:'translateX(-50%)',background:'#16a34a',color:'#fff',padding:'12px 22px',borderRadius:'10px',fontWeight:'700',fontSize:'13px',zIndex:'9999',boxShadow:'0 4px 16px rgba(0,0,0,.3)',transition:'opacity .4s',whiteSpace:'nowrap'});
+  document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),500);},3000);
 }
 
 // ── NOMBRE EN OVERLAY DE CÁMARA ────────────────
