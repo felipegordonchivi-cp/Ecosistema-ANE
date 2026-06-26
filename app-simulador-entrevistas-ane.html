@@ -632,36 +632,32 @@ textarea{resize:vertical}
         <div style="display:grid;gap:10px">
           <div style="display:flex;gap:12px;align-items:flex-start">
             <div style="background:var(--teal);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">1</div>
-            <div><div style="font-size:13px;font-weight:700">Inicia la videollamada con el candidato</div><div style="font-size:11px;color:#4a8a8a;margin-top:2px">Usa Teams, Zoom, Google Meet u otra plataforma. El candidato solo necesita su cámara y micrófono — no instala nada.</div></div>
+            <div><div style="font-size:13px;font-weight:700">Genera el enlace del candidato</div><div style="font-size:11px;color:#4a8a8a;margin-top:2px">Clic en <b>Generar enlace</b>. Se crea un código de sala único — cópialo y envíaselo al candidato por Teams, WhatsApp o correo.</div></div>
           </div>
           <div style="display:flex;gap:12px;align-items:flex-start">
             <div style="background:var(--teal);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">2</div>
-            <div><div style="font-size:13px;font-weight:700">Abre la Vista Candidato en tu equipo</div><div style="font-size:11px;color:#4a8a8a;margin-top:2px">Abre una segunda ventana con el botón de abajo. Esa ventana mostrará las preguntas en grande, sin datos internos del sistema.</div></div>
+            <div><div style="font-size:13px;font-weight:700">El candidato abre el enlace y solicita entrada</div><div style="font-size:11px;color:#4a8a8a;margin-top:2px">Verá la Sala de Espera. Escribe su nombre y hace clic en "Solicitar entrada". No necesita instalar nada.</div></div>
           </div>
           <div style="display:flex;gap:12px;align-items:flex-start">
             <div style="background:var(--teal);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">3</div>
-            <div><div style="font-size:13px;font-weight:700">Comparte ESA ventana por pantalla</div><div style="font-size:11px;color:#4a8a8a;margin-top:2px">En Teams/Zoom, usa "Compartir pantalla" → selecciona solo esa ventana. El candidato la ve en su pantalla. Tú activas las preguntas desde el Panel Entrevistador.</div></div>
+            <div><div style="font-size:13px;font-weight:700">Aprueba la entrada</div><div style="font-size:11px;color:#4a8a8a;margin-top:2px">El botón <b>Aprobar sala</b> se activa con el nombre del candidato. Haz clic para admitirlo a la entrevista.</div></div>
           </div>
           <div style="display:flex;gap:12px;align-items:flex-start">
             <div style="background:var(--teal);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">4</div>
-            <div><div style="font-size:13px;font-weight:700">El candidato responde verbalmente</div><div style="font-size:11px;color:#4a8a8a;margin-top:2px">Tú capturas y evalúas la respuesta desde el Panel Entrevistador. El candidato no accede al sistema ANE.</div></div>
+            <div><div style="font-size:13px;font-weight:700">Las preguntas se sincronizan en tiempo real</div><div style="font-size:11px;color:#4a8a8a;margin-top:2px">Cada pregunta que actives aparece al instante en la pantalla del candidato, desde cualquier dispositivo.</div></div>
           </div>
         </div>
       </div>
-      <!-- Estado conexión BroadcastChannel -->
+      <!-- Estado conexión -->
       <div style="background:var(--s2);border:1px solid var(--db);border-radius:10px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:12px">
         <span id="bc-conn-dot" style="width:10px;height:10px;border-radius:50%;background:#3a7272;flex-shrink:0"></span>
         <div style="flex:1">
-          <div id="bc-conn-txt" style="font-size:12px;font-weight:700;color:#5a9898">Vista Candidato: no abierta</div>
-          <div style="font-size:10px;color:#3a7272;margin-top:2px">La sincronización de preguntas es automática en el mismo equipo</div>
+          <div id="bc-conn-txt" style="font-size:12px;font-weight:700;color:#5a9898">Sin sala activa — genera el enlace para comenzar</div>
+          <div style="font-size:10px;color:#3a7272;margin-top:2px">Funciona entre dispositivos distintos via internet</div>
         </div>
-        <button onclick="pingCandidateView()" style="background:rgba(13,115,115,.2);border:1px solid var(--db);color:#7dd3d3;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700">Verificar</button>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <button onclick="openCandidateView();updateBcStatus()" style="background:linear-gradient(135deg,var(--teal),var(--tl));border:none;color:#fff;padding:12px;border-radius:10px;font-size:13px;font-weight:800">📺 Abrir Vista Candidato</button>
-        <button onclick="copyCandUrl()" style="background:var(--s2);border:1px solid var(--teal);color:var(--tl);padding:12px;border-radius:10px;font-size:13px;font-weight:800">📋 Copiar URL</button>
-      </div>
-      <button id="btn-aprobar-sala" onclick="admitirCandidato()" disabled style="margin-top:8px;width:100%;background:var(--s2);border:2px solid #3a5a5a;color:#3a6a6a;padding:12px;border-radius:10px;font-size:13px;font-weight:800;cursor:not-allowed;transition:all .3s">✅ Aprobar sala — sin solicitudes</button>
+      <button onclick="openCandidateView();updateBcStatus()" style="width:100%;background:linear-gradient(135deg,var(--teal),var(--tl));border:none;color:#fff;padding:13px;border-radius:10px;font-size:14px;font-weight:800;margin-bottom:8px">🔗 Generar enlace para el candidato</button>
+      <button id="btn-aprobar-sala" onclick="admitirCandidato()" disabled style="width:100%;background:var(--s2);border:2px solid #3a5a5a;color:#3a6a6a;padding:13px;border-radius:10px;font-size:14px;font-weight:800;cursor:not-allowed;transition:all .3s">✅ Aprobar sala — sin solicitudes</button>
       <div style="margin-top:10px;background:rgba(234,179,8,.06);border:1px solid rgba(234,179,8,.2);border-radius:8px;padding:10px;font-size:11px;color:#92400e">
         ⚠️ <b>Nota de privacidad:</b> La Vista Candidato solo muestra el texto de la pregunta. No tiene acceso al panel del asesor, evaluaciones, transcripciones ni datos del sistema ANE. Es seguro compartirla por pantalla.
       </div>
