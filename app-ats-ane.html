@@ -891,8 +891,18 @@
       var cfg = window.lastCfg || {};
 
       // Extraer nombre — intentar distintas claves conocidas
+      // ── Nombre del candidato ──────────────────────────────────────────────
+      // El campo de nombre en sec2 (#pasteName) se guarda dentro del objeto cand.
+      // Probar múltiples claves; si se obtiene el texto completo del CV, tomar
+      // solo la primera línea y truncar a 60 caracteres.
       var cand = r.cand || r.candidato || r.candidate || {};
-      var nombre = cand.nombre || cand.completo || cand.name || cand.text && cand.text.substring(0,40) || ('Candidato #' + (idx+1));
+      var _rawName = cand.nombre || cand.completo || cand.name || cand.id ||
+                     cand.tag   || cand.label    || cand.ref  || cand.alias ||
+                     r.nombre   || r.name        || r.label   || '';
+      if(!_rawName && cand.text) _rawName = cand.text.split(/[\n\r]/)[0].trim();
+      // Limpiar: quitar teléfonos, emails y truncar
+      var nombre = _rawName.replace(/\(?\d{3,4}\)?[\s\-]?\d{4}[\s\-]?\d{4}/g,'').replace(/[\w.]+@[\w.]+/g,'').replace(/\s{2,}/g,' ').trim().substring(0,60) || ('Candidato #' + (idx+1));
+
       var puesto = cfg.titulo || cfg.puesto || cfg.title || 'Puesto no especificado';
       var area   = cfg.area || '';
       var total  = r.total || 0;
@@ -903,7 +913,7 @@
       var statusColor = {ok:'#00525a', mid:'#7a5c00', low:'#5a3000', ko:'#1a1a1a'}[status] || '#333';
       var scoreColor  = total >= 70 ? '#00525a' : '#8a4a00';
 
-      // Desglose por categoría
+      // ── Desglose por categoría ────────────────────────────────────────────
       var breakdown = r.breakdown || r.desglose || r.categories || r.cats || [];
       var breakdownHTML = '';
       if(breakdown.length){
@@ -913,8 +923,8 @@
           '<th style="text-align:right;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#7a7a7a;padding:5px 8px;border-bottom:1.5px solid #333">Peso</th></tr>';
         breakdown.forEach(function(cat){
           var catName  = cat.nombre || cat.name || cat.cat || cat.label || '';
-          var catScore = cat.score  || cat.puntaje || cat.value || 0;
-          var catW     = cat.w     || cat.peso    || cat.weight || '';
+          var catScore = (cat.score != null ? cat.score : cat.puntaje != null ? cat.puntaje : cat.value) || 0;
+          var catW     = cat.w != null ? cat.w : (cat.peso || cat.weight || '');
           breakdownHTML += '<tr>' +
             '<td style="padding:6px 8px;font-size:11px;border-bottom:1px solid #eee">' + catName + '</td>' +
             '<td style="padding:6px 8px;font-size:11px;font-weight:700;text-align:right;border-bottom:1px solid #eee">' + catScore + '/100</td>' +
@@ -923,9 +933,11 @@
         breakdownHTML += '</table>';
       }
 
-      // Fortalezas y brechas
-      var good = r.good || r.fortalezas || r.strengths || [];
-      var bad  = r.bad  || r.brechas    || r.gaps      || [];
+      // ── Fortalezas y brechas ──────────────────────────────────────────────
+      // buildRecs() es la función del script ofuscado que genera estos arrays.
+      var _recs = (typeof window.buildRecs === 'function') ? (window.buildRecs(r, cfg) || {}) : {};
+      var good = _recs.good || r.good || r.fortalezas || r.strengths || [];
+      var bad  = _recs.bad  || r.bad  || r.brechas    || r.gaps      || [];
       var goodHTML = good.length ? good.map(function(g){ return '<li style="color:#00525a;font-size:11px;margin-bottom:4px">✓ ' + g + '</li>'; }).join('') : '<li style="font-size:11px;color:#999">Sin datos</li>';
       var badHTML  = bad.length  ? bad.map(function(b){  return '<li style="color:#8a0000;font-size:11px;margin-bottom:4px">✗ ' + b + '</li>'; }).join('') : '<li style="font-size:11px;color:#00525a">✓ Sin brechas relevantes</li>';
 
