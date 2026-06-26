@@ -199,7 +199,8 @@
   .wrow .wval{font-family:var(--display);font-weight:700;text-align:right;font-size:1rem}
   .wsum{display:flex;align-items:center;justify-content:space-between;margin-top:6px;padding-top:14px;border-top:1px dashed var(--hair);font-size:.82rem}
   .wsum .tot{font-family:var(--display);font-weight:700;font-size:1.15rem}
-  .wsum.bad .tot{text-decoration:underline wavy}
+  .wsum.bad .tot{text-decoration:underline wavy;color:#dc2626}
+  .wsum.bad::after{content:'⚠ La suma debe ser exactamente 100';color:#dc2626;font-size:.78rem;font-weight:600;margin-left:8px}
 
   /* bandeja CV */
   .dropzone{border:2px dashed var(--g-35);border-radius:var(--r);padding:30px;text-align:center;transition:border-color .15s, background .15s;cursor:pointer;background:var(--surface)}
@@ -842,6 +843,33 @@
 </head>\x0a<body>\x0a<div\x20class=\x22page\x22>\x0a\x20\x20<!--\x20Header\x20-->\x0a\x20\x20<div\x20class=\x22header\x22>\x0a\x20\x20\x20\x20<div\x20class=\x22header-left\x22>\x0a\x20\x20\x20\x20\x20\x20<div\x20class=\x22agency\x22>ANE<span\x20style=\x22font-weight:400\x22>\x20·\x20Brete.cr</span></div>\x0a\x20\x20\x20\x20\x20\x20<div\x20class=\x22sub\x22>Agencia\x20Nacional\x20del\x20Empleo\x20—\x20ATS\x20ANE</div>\x0a\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20<div\x20class=\x22header-right\x22>\x0a\x20\x20\x20\x20\x20\x20<div\x20class=\x22report-label\x22>Informe\x20de\x20evaluación</div>\x0a\x20\x20\x20\x20\x20\x20<div\x20class=\x22report-date\x22>'+_0x1066a0+'</div>\x0a\x20\x20\x20\x20</div>\x0a\x20\x20</div>\x0a\x0a\x20\x20<!--\x20Candidate\x20header\x20-->\x0a\x20\x20<div\x20class=\x22candidate-name\x22>'+escapeHtml(_0x4c22f7)+_0x4e72ac(0x14d)+escapeHtml(_0x42f658)+_0x4e72ac(0x11b)+(_0x4eaa0a?_0x4e72ac(0xef)+escapeHtml(_0x4eaa0a):'')+'</div>\x0a\x0a\x20\x20<div\x20class=\x22score-hero\x22>\x0a\x20\x20\x20\x20<div\x20class=\x22score-big\x22>'+_0x4bcc58['total']+_0x4e72ac(0xfd)+_0x2c3b0b+'\x0a\x20\x20\x20\x20\x20\x20<div\x20style=\x22font-size:10px;color:#7a7a7a\x22>Umbral\x20de\x20recomendación:\x20'+(_0x3855a6[_0x4e72ac(0x115)]||0x46)+_0x4e72ac(0x141)+_0x88a352+_0x4e72ac(0x13c)+_0x312c2e+'\x0a\x20\x20</table>\x0a\x0a\x20\x20<div\x20class=\x22two-col\x22\x20style=\x22margin-top:16px\x22>\x0a\x20\x20\x20\x20<!--\x20Fortalezas\x20-->\x0a\x20\x20\x20\x20<div\x20class=\x22col-section\x22>\x0a\x20\x20\x20\x20\x20\x20<div\x20class=\x22section-title\x22>Fortalezas\x20detectadas</div>\x0a\x20\x20\x20\x20\x20\x20<ul>'+(_0x463f5a||_0x4e72ac(0x101))+_0x4e72ac(0x117)+(_0x1b9f0b||'<li\x20style=\x22color:#00525a;font-size:11px\x22>✓\x20Sin\x20brechas\x20relevantes\x20detectadas.</li>')+'</ul>\x0a\x20\x20\x20\x20</div>\x0a\x20\x20</div>\x0a\x0a\x20\x20<!--\x20Ruta\x20de\x20crecimiento\x20ESCO\x20-->\x0a\x20\x20'+_0x424635+_0x4e72ac(0x159)+new Date()[_0x4e72ac(0x140)]()+_0x4e72ac(0x162),_0x2bad68=window['open']('',_0x4e72ac(0x131),_0x4e72ac(0x146));if(!_0x2bad68){alert(_0x4e72ac(0x14b));return;}_0x2bad68[_0x4e72ac(0x132)]['write'](_0x3921dd),_0x2bad68['document'][_0x4e72ac(0xfb)]();}</script>
 
 
+
+<script>
+// ── ATS: Weight sum validation ─────────────────────────
+(function(){
+  function updateWeightSum(){
+    const sliders = document.querySelectorAll('.wrow input[type=range][data-w]');
+    let total = 0;
+    sliders.forEach(s=>{
+      total += parseInt(s.value)||0;
+      const lbl = document.getElementById('wv-'+s.dataset.w);
+      if(lbl) lbl.textContent = s.value;
+    });
+    const wsumEl = document.getElementById('wsumVal');
+    const wsumWrap = document.getElementById('wsum');
+    const runBtn = document.getElementById('runBtn');
+    if(wsumEl) wsumEl.textContent = total;
+    const bad = total !== 100;
+    if(wsumWrap){ wsumWrap.classList.toggle('bad', bad); }
+    if(runBtn){ runBtn.disabled = bad; runBtn.title = bad ? 'Los pesos deben sumar exactamente 100%' : ''; }
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    const sliders = document.querySelectorAll('.wrow input[type=range][data-w]');
+    sliders.forEach(s => s.addEventListener('input', updateWeightSum));
+    updateWeightSum();
+  });
+})();
+</script>
 
 <a class="ane-help-btn" href="manual-ats-ane.html" target="_blank" rel="noopener">❔ Manual y FAQ</a>
 </body>

@@ -1,0 +1,62 @@
+{
+  "name": "Ecosistema ANE · Agencia Nacional del Empleo",
+  "short_name": "ANE Suite",
+  "description": "Suite integrada de herramientas de intermediación laboral: ATS, Simulador STAR, Dashboard y Laboratorio IA ESCO-CR",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#041616",
+  "theme_color": "#0d7373",
+  "orientation": "landscape-primary",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "icons/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Dashboard de Intermediación"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "ATS · Evaluación de CVs",
+      "short_name": "ATS",
+      "url": "./app-ats-ane.html",
+      "description": "Sistema de seguimiento y evaluación de candidatos"
+    },
+    {
+      "name": "Simulador de Entrevistas",
+      "short_name": "Simulador",
+      "url": "./app-simulador-entrevistas-ane.html",
+      "description": "Simulador STAR con grabación y evaluación IA"
+    },
+    {
+      "name": "Dashboard de Intermediación",
+      "short_name": "Dashboard",
+      "url": "./app-dashboard-intermediacion-ane.html",
+      "description": "Centro de control y KPIs del equipo"
+    },
+    {
+      "name": "Laboratorio IA ESCO-CR",
+      "short_name": "Lab IA",
+      "url": "./app-4-laboratorio-ia-ane.html",
+      "description": "Diagnóstico de competencias con 2000 perfiles CR"
+    }
+  ],
+  "categories": ["productivity", "business", "utilities"],
+  "prefer_related_applications": false
+}

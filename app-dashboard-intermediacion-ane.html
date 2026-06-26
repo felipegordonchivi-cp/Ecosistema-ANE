@@ -607,7 +607,7 @@ button.tab-dup.active{ background: #fff3ed !important; color: #c2410c !important
     <div class="side-foot">
       <div class="advisor-pill">
         <div class="av" id="advisorAvatar">EQ</div>
-        <div class="meta"><b id="advisorName">Equipo completo</b><span id="advisorSub">13 asesores</span></div>
+        <div class="meta"><b id="advisorName">Equipo completo</b><span id="advisorSub" id="advisorSub">— asesores</span></div>
       </div>
       <button class="collapse-btn" id="btnCollapse">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"/></svg>
@@ -623,8 +623,9 @@ button.tab-dup.active{ background: #fff3ed !important; color: #c2410c !important
         <p id="pageSubtitle">Vista consolidada del proceso de intermediación laboral</p>
       </div>
       <div class="search-box">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-        <input type="text" id="globalSearch" placeholder="Buscar por nombre o cédula...">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="globalSearch" placeholder="Buscar por nombre o cédula..." aria-label="Buscar por nombre o cédula">
+        <button id="btnClearSearch" onclick="document.getElementById('globalSearch').value='';document.getElementById('globalSearch').dispatchEvent(new Event('input'));this.style.display='none';" style="display:none;background:none;border:none;cursor:pointer;color:#94a3b8;font-size:16px;padding:0 4px;line-height:1;" aria-label="Limpiar búsqueda">×</button>
       </div>
       <div class="topbar-filters">
         <select class="filter-select" id="selAsesor"><option value="">Todo el equipo</option></select>
@@ -637,13 +638,42 @@ button.tab-dup.active{ background: #fff3ed !important; color: #c2410c !important
           <option value="todo">Todo el historial</option>
         </select>
       </div>
-      <button class="icon-btn" id="btnRefresh" title="Cargar nuevos archivos">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6M3 22v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L21 8M2.99 15a9 9 0 0 0 14.85 3.36L21 16"/></svg>
+      <button class="icon-btn" id="btnRefresh" title="Cargar nuevos archivos" aria-label="Cargar nuevos archivos Excel">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 2v6h-6M3 22v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L21 8M2.99 15a9 9 0 0 0 14.85 3.36L21 16"/></svg>
       </button>
-      <button class="icon-btn" id="btnPrint" title="Exportar / Imprimir reporte">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>
+      <button class="icon-btn" id="btnPrint" title="Exportar / Imprimir reporte" aria-label="Exportar e imprimir reporte">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>
+      </button>
+      <button class="icon-btn" id="btnRosterSettings" title="Configurar equipo de asesores" aria-label="Configurar equipo de asesores">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
     </header>
+
+    <!-- ROSTER SETTINGS MODAL -->
+    <div id="rosterModal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.45);align-items:center;justify-content:center;">
+      <div style="background:#fff;border-radius:16px;padding:28px 32px;width:min(640px,96vw);max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+          <h3 style="margin:0;font-size:17px;font-weight:700;color:#0f2f2a;">Equipo de Asesores</h3>
+          <button onclick="closeRosterModal()" style="background:none;border:none;cursor:pointer;font-size:22px;color:#64748b;line-height:1;">×</button>
+        </div>
+        <p style="font-size:13px;color:#64748b;margin:0 0 18px;">Los cambios se guardan en este navegador. También puede cambiar el nombre de la hoja de Excel.</p>
+
+        <div style="margin-bottom:16px;">
+          <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">Nombre de hoja en Excel (Control de Citas)</label>
+          <input id="rosterSheetName" type="text" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;" placeholder="Control de Citas 2026">
+        </div>
+
+        <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px;">Asesores del equipo</div>
+        <div id="rosterList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;"></div>
+
+        <button onclick="addRosterRow()" style="width:100%;padding:9px;background:#f0fdf4;border:1px dashed #16a34a;border-radius:8px;color:#16a34a;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:20px;">+ Agregar asesor</button>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button onclick="closeRosterModal()" style="padding:9px 20px;background:#f1f5f9;border:none;border-radius:8px;font-size:13px;font-weight:600;color:#374151;cursor:pointer;">Cancelar</button>
+          <button onclick="saveRosterModal()" style="padding:9px 20px;background:#0d9488;border:none;border-radius:8px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;">Guardar cambios</button>
+        </div>
+      </div>
+    </div>
 
     <main id="content">
       <!-- views injected below -->
@@ -920,7 +950,7 @@ button.tab-dup.active{ background: #fff3ed !important; color: #c2410c !important
    de nombre inconsistentes entre archivos.
    ==================================================================== */
 
-const ROSTER = [
+const ROSTER_DEFAULT = [
   { id:'felipe',    corto:'Felipe G.',    completo:'Felipe Gordon Chivi',        tokens:['GORDON','CHIVI','FELIPE'] },
   { id:'karina',    corto:'Karina R.',    completo:'Karina Rodríguez Fonseca',   tokens:['RODRIGUEZ','FONSECA','KARINA'] },
   { id:'catalina',  corto:'Catalina',     completo:'Catalina del Valle Jimenez', tokens:['VALLE','JIMENEZ','CATALINA'] },
@@ -935,6 +965,8 @@ const ROSTER = [
   { id:'jeimy',     corto:'Jeimy L.',     completo:'Jeimy Lizano Villareal',     tokens:['LIZANO','VILLAREAL','JEIMY'] },
   { id:'lucia',     corto:'Lucia S.',     completo:'Jeannette Lucía Sanchez',    tokens:['SANCHEZ','PANIAGUA','JEANNETTE','LUCIA'] },
 ];
+let ROSTER = (()=>{ try{ const s=localStorage.getItem('ane_dash_roster'); return s?JSON.parse(s):ROSTER_DEFAULT; }catch(e){ return ROSTER_DEFAULT; } })();
+let SHEET_NAME = localStorage.getItem('ane_dash_sheet')||(('Control de Citas ')+new Date().getFullYear());
 const ROSTER_BY_CORTO = {}; ROSTER.forEach(a => ROSTER_BY_CORTO[a.corto] = a);
 
 function normalizeStr(s){
@@ -1002,7 +1034,7 @@ function MESNAME(d){
 }
 function quarterOf(d){ return Math.floor(d.getMonth()/3)+1; }
 
-window.__ANE_CORE__ = { ROSTER, ROSTER_BY_CORTO, normalizeStr, matchAgent, esSi, toDate, toTimeStr, hourOf, cedKey, MESNAME, quarterOf };
+window.__ANE_CORE__ = { ROSTER, ROSTER_BY_CORTO, SHEET_NAME, normalizeStr, matchAgent, esSi, toDate, toTimeStr, hourOf, cedKey, MESNAME, quarterOf };
 })();
 </script>
 <script>
@@ -1049,7 +1081,16 @@ function sheetRows(wb, sheetName, headerRow){
    "Personas con DCP" (90 registros reales). No es un dato confiable.
    ==================================================================== */
 function parseControl(wb){
-  const rows = sheetRows(wb, 'Control de Citas 2026', 0);
+  const sheetN = C.SHEET_NAME || ('Control de Citas '+new Date().getFullYear());
+  let rows = sheetRows(wb, sheetN, 0);
+  if(!rows || rows.length<=1){
+    const yr = new Date().getFullYear();
+    for(const alt of ['Control de Citas '+yr, 'Control de Citas '+(yr-1), 'Control de Citas', 'Hoja1', 'Sheet1']){
+      rows = sheetRows(wb, alt, 0);
+      if(rows && rows.length>1) break;
+    }
+  }
+  // rows assignment continues below using this variable instead of direct call
   const out = [];
   const badDates = [];
   for(let i=1;i<rows.length;i++){
@@ -1505,6 +1546,11 @@ function exportCSV(filename, headers, rows){
   a.href = url; a.download = filename;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
+  const t=document.createElement('div');
+  t.textContent='\u2713 Descargado: '+filename+' ('+rows.length+' filas)';
+  Object.assign(t.style,{position:'fixed',bottom:'24px',right:'24px',background:'#0d9488',color:'#fff',padding:'10px 18px',borderRadius:'8px',fontWeight:'600',fontSize:'13px',zIndex:'9999',boxShadow:'0 4px 12px rgba(0,0,0,.2)',transition:'opacity .4s'});
+  document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),500);},3000);
 }
 
 const OBS_KEY = 'aneObsV4';
@@ -2004,7 +2050,11 @@ document.addEventListener('click', e => {
   }
 });
 document.addEventListener('input', e => {
-  if(e.target.id==='globalSearch'){ casesUI.search = e.target.value; casesUI.page=1; window.__ANE_APP__.renderActiveView(); }
+  if(e.target.id==='globalSearch'){
+    casesUI.search = e.target.value; casesUI.page=1; window.__ANE_APP__.renderActiveView();
+    const clr=document.getElementById('btnClearSearch');
+    if(clr) clr.style.display = e.target.value ? 'block' : 'none';
+  }
 });
 
 window.__ANE_VIEWS__.cases = renderCasesView;
@@ -2081,7 +2131,7 @@ const VIEWS = window.__ANE_VIEWS__;
 const PAGE_META = {
   overview:{ title:'Resumen Ejecutivo', sub:'Vista consolidada del proceso de intermediación laboral' },
   funnel:{ title:'Embudo & Resultados', sub:'Conversión completa, del referido al resultado final' },
-  team:{ title:'Equipo', sub:'Rendimiento comparado de los 13 asesores' },
+  team:{ title:'Equipo', sub:'Rendimiento comparado del equipo de asesores' },
   quality:{ title:'Validación de Datos', sub:'Brecha de captura y calidad de la información' },
   cases:{ title:'Casos', sub:'Seguimiento detallado con observaciones por caso' },
   workload:{ title:'Carga de Trabajo', sub:'Distribución horaria de las sesiones agendadas' },
@@ -2113,7 +2163,8 @@ function updateAdvisorPill(){
   } else {
     av.textContent = 'EQ';
     nm.textContent = 'Equipo completo';
-    sb.textContent = (STATE.control.length? new Set(STATE.control.map(c=>c.agente)).size : 13)+' asesores';
+    const C2=window.__ANE_CORE__; const rLen=C2?C2.ROSTER.length:13;
+    sb.textContent = (STATE.control.length? new Set(STATE.control.map(c=>c.agente)).size : rLen)+' asesores';
   }
 }
 function setFiltroAsesor(val){ STATE.filtroAsesor = val; updateAdvisorPill(); recomputeAndRender(); }
@@ -2185,14 +2236,23 @@ function refreshProcesarBtn(){
    FLUJO DE CARGA DE ARCHIVOS
    ==================================================================== */
 const fileSlots = { control:null, ventanilla:null, orientacion:null };
+const MAX_FILE_MB = 30;
 function wireDropzone(inputId, dzId, fileLabelId, slotKey){
   const input = document.getElementById(inputId);
   input.addEventListener('change', () => {
     const f = input.files[0];
+    if(f && f.size > MAX_FILE_MB * 1024 * 1024){
+      showUploadStatus(`El archivo "${f.name}" supera el límite de ${MAX_FILE_MB} MB. Verifica que sea el archivo correcto.`, 'error');
+      input.value = '';
+      fileSlots[slotKey] = null;
+      const dz = document.getElementById(dzId); const lbl = document.getElementById(fileLabelId);
+      dz.classList.remove('filled'); lbl.textContent = '';
+      refreshProcesarBtn(); return;
+    }
     fileSlots[slotKey] = f || null;
     const dz = document.getElementById(dzId);
     const lbl = document.getElementById(fileLabelId);
-    if(f){ dz.classList.add('filled'); lbl.textContent = f.name; }
+    if(f){ dz.classList.add('filled'); lbl.textContent = f.name+' ('+Math.round(f.size/1024)+' KB)'; }
     else { dz.classList.remove('filled'); lbl.textContent = ''; }
     refreshProcesarBtn();
   });
@@ -2223,7 +2283,7 @@ document.getElementById('btnProcesar').addEventListener('click', async () => {
     const ventanilla = P.parseVentanilla(wbVent);
     const orientacion = P.parseOrientacion(wbOrient);
 
-    if(control.length===0) throw new Error('El archivo de Control no tiene filas reconocibles. Verifica que sea el archivo correcto (hoja "Control de Citas 2026").');
+    if(control.length===0) throw new Error('El archivo de Control no tiene filas reconocibles. Verifica que sea el archivo correcto. Puedes configurar el nombre de hoja con el botón ⚙️.');
 
     STATE.control = control; STATE.ventanilla = ventanilla; STATE.orientacion = orientacion; STATE.badDates = badDates;
     STATE.cargado = true;
@@ -2285,5 +2345,95 @@ document.getElementById('modalConfirmBtn').addEventListener('click', () => {
   refreshProcesarBtn();
 });
 
+})();
+</script>
+
+<script>
+// ── ROSTER SETTINGS MODAL ─────────────────────────────
+(function(){
+  const btn = document.getElementById('btnRosterSettings');
+  const modal = document.getElementById('rosterModal');
+
+  btn.addEventListener('click', openRosterModal);
+  modal.addEventListener('click', e => { if(e.target===modal) closeRosterModal(); });
+
+  window.openRosterModal = function(){
+    const C = window.__ANE_CORE__;
+    document.getElementById('rosterSheetName').value = C.SHEET_NAME || ('Control de Citas '+new Date().getFullYear());
+    renderRosterList(C.ROSTER);
+    modal.style.display = 'flex';
+  };
+
+  window.closeRosterModal = function(){ modal.style.display = 'none'; };
+
+  window.renderRosterList = function(roster){
+    const el = document.getElementById('rosterList');
+    el.innerHTML = roster.map((a,i)=>`
+      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;padding:8px 10px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;">
+        <input type="text" value="${a.corto.replace(/"/g,'&quot;')}" placeholder="Nombre corto" data-i="${i}" data-field="corto"
+          style="padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;width:100%;box-sizing:border-box;">
+        <input type="text" value="${a.completo.replace(/"/g,'&quot;')}" placeholder="Nombre completo" data-i="${i}" data-field="completo"
+          style="padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;width:100%;box-sizing:border-box;">
+        <button onclick="removeRosterRow(${i})" style="background:#fee2e2;border:none;border-radius:6px;padding:6px 10px;color:#dc2626;font-size:14px;cursor:pointer;font-weight:700;">×</button>
+      </div>`).join('');
+  };
+
+  window.addRosterRow = function(){
+    const C = window.__ANE_CORE__;
+    C.ROSTER.push({ id:'asesor'+Date.now(), corto:'', completo:'', tokens:[] });
+    renderRosterList(C.ROSTER);
+  };
+
+  window.removeRosterRow = function(i){
+    const C = window.__ANE_CORE__;
+    C.ROSTER.splice(i,1);
+    renderRosterList(C.ROSTER);
+  };
+
+  window.saveRosterModal = function(){
+    const C = window.__ANE_CORE__;
+    document.querySelectorAll('#rosterList input').forEach(inp=>{
+      const i = parseInt(inp.dataset.i);
+      const field = inp.dataset.field;
+      if(!isNaN(i) && C.ROSTER[i]){
+        C.ROSTER[i][field] = inp.value.trim();
+        if(field==='completo'){
+          C.ROSTER[i].tokens = inp.value.toUpperCase()
+            .normalize('NFKD').replace(/[̀-ͯ]/g,'')
+            .replace(/[^A-Z\s]/g,' ').trim().split(/\s+/).filter(t=>t.length>2);
+        }
+        if(field==='corto') C.ROSTER[i].id = inp.value.toLowerCase().replace(/[^a-z]/g,'').slice(0,12)||('a'+i);
+      }
+    });
+    const sn = document.getElementById('rosterSheetName').value.trim();
+    if(sn){ C.SHEET_NAME = sn; localStorage.setItem('ane_dash_sheet', sn); }
+    try{ localStorage.setItem('ane_dash_roster', JSON.stringify(C.ROSTER)); }catch(e){}
+    Object.keys(C.ROSTER_BY_CORTO).forEach(k=>delete C.ROSTER_BY_CORTO[k]);
+    C.ROSTER.forEach(a=>{ C.ROSTER_BY_CORTO[a.corto]=a; });
+    const sel = document.getElementById('selAsesor');
+    if(sel && sel.options.length>1){
+      sel.innerHTML='<option value="">Todo el equipo</option>'+C.ROSTER.map(a=>`<option value="${a.corto}">${a.corto}</option>`).join('');
+    }
+    closeRosterModal();
+    const flash = document.createElement('div');
+    flash.textContent = '✓ Configuración guardada';
+    Object.assign(flash.style, {position:'fixed',bottom:'24px',right:'24px',background:'#0d9488',color:'#fff',padding:'10px 20px',borderRadius:'8px',fontWeight:'600',zIndex:'9999',boxShadow:'0 4px 12px rgba(0,0,0,.2)',transition:'opacity .4s'});
+    document.body.appendChild(flash);
+    setTimeout(()=>{ flash.style.opacity='0'; setTimeout(()=>flash.remove(),500); }, 2500);
+  };
+})();
+
+// ── ESC para cerrar modal roster ───────────────────────
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){
+    const m=document.getElementById('rosterModal');
+    if(m && m.style.display!=='none') closeRosterModal();
+  }
+});
+
+// ── Inicializar pill de asesores con conteo real del ROSTER ──
+(function(){
+  const sb=document.getElementById('advisorSub');
+  if(sb){ const C=window.__ANE_CORE__; sb.textContent=(C?C.ROSTER.length:13)+' asesores'; }
 })();
 </script>
