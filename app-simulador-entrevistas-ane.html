@@ -245,6 +245,88 @@ textarea{resize:vertical}
       window._fbBroadcastClear = function(sid){
         window._fbRemove('salas/'+sid+'/pregunta');
       };
+
+      // ── WebRTC: entrevistador recibe video del candidato ──
+      var ivPC = null;
+      window._initWebRTCInterviewer = function(sid){
+        var cfg = { iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' }
+        ]};
+        ivPC = new RTCPeerConnection(cfg);
+        ivPC.onicecandidate = function(e){
+          if(e.candidate) db.ref('salas/'+sid+'/ice-iv').push(e.candidate.toJSON());
+        };
+        ivPC.ontrack = function(e){
+          var vid = document.getElementById('iv-remote-video');
+          var ph  = document.getElementById('iv-video-ph');
+          if(vid){ vid.srcObject = e.streams[0]; if(ph) ph.style.display='none'; }
+          var dot = document.getElementById('webrtc-status-dot');
+          var txt = document.getElementById('webrtc-status-txt');
+          if(dot) dot.style.background='#22c55e';
+          if(txt) txt.textContent='Conectado';
+        };
+        ivPC.onconnectionstatechange = function(){
+          var txt = document.getElementById('webrtc-status-txt');
+          var dot = document.getElementById('webrtc-status-dot');
+          if(!txt||!dot) return;
+          if(ivPC.connectionState==='connected'){ dot.style.background='#22c55e'; txt.textContent='Conectado'; }
+          if(ivPC.connectionState==='disconnected'||ivPC.connectionState==='failed'){ dot.style.background='#ef4444'; txt.textContent='Desconectado'; }
+        };
+        // Esperar offer del candidato
+        db.ref('salas/'+sid+'/webrtc-offer').on('value', function(snap){
+          var offer = snap.val();
+          if(!offer || ivPC.remoteDescription) return;
+          ivPC.setRemoteDescription(new RTCSessionDescription(offer)).then(function(){
+            return ivPC.createAnswer();
+          }).then(function(ans){
+            return ivPC.setLocalDescription(ans);
+          }).then(function(){
+            db.ref('salas/'+sid+'/webrtc-answer').set(ivPC.localDescription.toJSON());
+          }).catch(function(e){ console.warn('WebRTC answer error:', e); });
+        });
+        // ICE candidatos del candidato
+        db.ref('salas/'+sid+'/ice-cand').on('child_added', function(snap){
+          var c = snap.val();
+          if(c && ivPC.remoteDescription) ivPC.addIceCandidate(new RTCIceCandidate(c)).catch(function(){});
+        });
+        // Mostrar panel de video
+        var wp = document.getElementById('webrtc-panel');
+        if(wp) wp.style.display='block';
+      };
+    }
+
+    if(esCand && salaId){
+      // ── WebRTC: candidato envía su video al entrevistador ──
+      var candPC = null;
+      window._initWebRTCCandidate = function(stream){
+        var cfg = { iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' }
+        ]};
+        candPC = new RTCPeerConnection(cfg);
+        stream.getTracks().forEach(function(t){ candPC.addTrack(t, stream); });
+        candPC.onicecandidate = function(e){
+          if(e.candidate) db.ref('salas/'+salaId+'/ice-cand').push(e.candidate.toJSON());
+        };
+        // Escuchar answer del entrevistador
+        db.ref('salas/'+salaId+'/webrtc-answer').on('value', function(snap){
+          var ans = snap.val();
+          if(!ans || candPC.remoteDescription) return;
+          candPC.setRemoteDescription(new RTCSessionDescription(ans)).catch(function(e){ console.warn('WebRTC setRemote error:', e); });
+        });
+        // ICE candidatos del entrevistador
+        db.ref('salas/'+salaId+'/ice-iv').on('child_added', function(snap){
+          var c = snap.val();
+          if(c && candPC.remoteDescription) candPC.addIceCandidate(new RTCIceCandidate(c)).catch(function(){});
+        });
+        // Crear offer
+        candPC.createOffer({ offerToReceiveVideo: false, offerToReceiveAudio: false }).then(function(offer){
+          return candPC.setLocalDescription(offer);
+        }).then(function(){
+          db.ref('salas/'+salaId+'/webrtc-offer').set(candPC.localDescription.toJSON());
+        }).catch(function(e){ console.warn('WebRTC offer error:', e); });
+      };
     }
 
   } catch(e){ console.warn('Firebase no disponible:', e.message); }
@@ -866,6 +948,25 @@ textarea{resize:vertical}
 
       <!-- RIGHT: Active Q + audio panel -->
       <div style="width:320px;background:var(--s1);border-left:1px solid var(--db);padding:16px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;flex-shrink:0">
+
+        <!-- CÁMARA CANDIDATO (WebRTC) -->
+        <div id="webrtc-panel" style="display:none;background:var(--s2);border:1px solid var(--db);border-radius:10px;overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:rgba(13,115,115,.15);border-bottom:1px solid var(--db)">
+            <span style="font-size:10px;color:#7dd3d3;font-weight:700;text-transform:uppercase;letter-spacing:1px">📹 Cámara del candidato</span>
+            <div style="display:flex;gap:6px;align-items:center">
+              <span id="webrtc-status-dot" style="width:8px;height:8px;border-radius:50%;background:#eab308;display:inline-block"></span>
+              <span id="webrtc-status-txt" style="font-size:10px;color:#7dd3d3">Conectando…</span>
+            </div>
+          </div>
+          <div style="position:relative;background:#000;aspect-ratio:16/9">
+            <video id="iv-remote-video" autoplay playsinline style="width:100%;height:100%;object-fit:cover;display:block"></video>
+            <div id="iv-video-ph" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;color:#3a7272;background:#0a1a1a">
+              <span style="font-size:28px">👤</span>
+              <span style="font-size:11px">Esperando cámara del candidato…</span>
+            </div>
+          </div>
+        </div>
+
         <h3 style="color:var(--tl);font-size:11px;text-transform:uppercase;letter-spacing:1px">Pregunta Activa</h3>
         <div id="active-q-box" style="background:rgba(13,115,115,.2);border:2px solid var(--teal);border-radius:10px;padding:14px;display:none">
           <div style="color:var(--tl);font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">PREGUNTA SELECCIONADA</div>
@@ -3283,6 +3384,8 @@ async function toggleCandCam(){
       if(micOv) micOv.classList.remove('hidden');
       updateCandButtons();
       loadCameraList();
+      // Iniciar WebRTC para enviar video al entrevistador
+      if(typeof window._initWebRTCCandidate === 'function') window._initWebRTCCandidate(candCamStream);
     }catch(err){
       let msg='No se pudo acceder a la cámara.';
       if(err.name==='NotAllowedError') msg='Permiso denegado. Haz clic en el ícono de cámara en la barra del navegador y permite el acceso.';
@@ -3475,6 +3578,8 @@ function admitirCandidato(){
   // Cerrar modal y abrir Panel Entrevistador
   closeSalaModal();
   showView('entrevista');
+  // Iniciar WebRTC para recibir video del candidato
+  if(typeof window._initWebRTCInterviewer === 'function' && salaId) window._initWebRTCInterviewer(salaId);
   // Toast de confirmación
   const t = document.createElement('div');
   t.textContent = '✅ Candidato admitido — ya puede ver las preguntas';
