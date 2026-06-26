@@ -704,9 +704,9 @@ a { color: inherit; }
           <span>Inicio ejecutivo</span>
           <div class="loading-dot"></div>
         </button>
-        <button class="nav-btn" aria-label="Auditoría técnica" data-panel="audit" onclick="switchPanel('audit', this, 'Auditoría del ecosistema', 'Estado técnico y diagnóstico de los 4 módulos')">
-          <span class="nav-ico">◈</span>
-          <span>Auditoría técnica</span>
+        <button class="nav-btn" aria-label="Acerca del ecosistema" data-panel="about" onclick="switchPanel('about', this, 'Acerca del ecosistema', 'Versión, módulos y guía rápida de uso')">
+          <span class="nav-ico">ℹ</span>
+          <span>Acerca de</span>
           <div class="loading-dot"></div>
         </button>
       </nav>
@@ -1000,194 +1000,87 @@ a { color: inherit; }
         </div>
       </div>
 
-      <!-- AUDIT panel -->
-      <div class="audit-panel" id="panel-audit">
+      <!-- ABOUT panel -->
+      <div class="audit-panel" id="panel-about">
         <div class="hero-home" style="margin-bottom:22px">
-          <div class="eyebrow">◈ Auditoría técnica del ecosistema</div>
-          <h1>Diagnóstico <span>técnico v16</span></h1>
-          <p class="hero-lead">Estado actual de los 4 módulos: arquitectura, diseño, funcionalidades, hallazgos y recomendaciones de mejora continua para la Agencia Nacional del Empleo.</p>
-        </div>
-
-        <div class="section-h" style="margin-bottom:14px">
-          <div><h2>Resumen ejecutivo</h2><p>Evaluación de madurez por módulo</p></div>
+          <div class="eyebrow">ℹ Ecosistema ANE</div>
+          <h1>Acerca <span>del ecosistema</span></h1>
+          <p class="hero-lead">Suite de herramientas digitales para la Agencia Nacional del Empleo de Costa Rica. Procesamiento 100% local — sin servidores externos, sin envío de datos.</p>
         </div>
 
         <div class="audit-grid" style="margin-bottom:20px">
           <div class="audit-card">
-            <div class="score-row">
-              <div class="score-circle"><span>89</span></div>
-              <div class="score-desc"><b class="status-ok">ATS ANE</b> — Módulo maduro<br>Ranking curricular ESCO-CR con generación de informes PDF, modo de privacidad local, términos y condiciones.</div>
-            </div>
-            <div class="tag-row">
-              <span class="atag ok">✓ Ranking CV</span>
-              <span class="atag ok">✓ PDF trazable</span>
-              <span class="atag ok">✓ Filtros obligatorios</span>
-              <span class="atag ok">✓ Modo privacidad</span>
-              <span class="atag ok">✓ Parcheado (override externo)</span>
+            <div class="score-desc" style="padding:4px 0">
+              <b class="status-ok" style="font-size:15px">ATS ANE</b>
+              <p style="margin:6px 0 0;font-size:13px;color:var(--muted)">Sistema de clasificación curricular. Ingresá la vacante, cargá los CV en texto y obtené un ranking ponderado con informes PDF por candidato.</p>
             </div>
           </div>
           <div class="audit-card">
-            <div class="score-row">
-              <div class="score-circle" style="background:conic-gradient(var(--teal2) 0deg, var(--teal2) 288deg, rgba(125,211,211,.12) 288deg)"><span>80</span></div>
-              <div class="score-desc"><b class="status-ok">Simulador STAR</b> — Módulo robusto<br>Panel dual entrevistador/candidato, grabación de audio, transcripción, metodología STAR, exportación PDF.</div>
-            </div>
-            <div class="tag-row">
-              <span class="atag ok">✓ Panel dual</span>
-              <span class="atag ok">✓ Metodología STAR</span>
-              <span class="atag ok">✓ Audio/Transcripción</span>
-              <span class="atag info">ℹ Requiere HTTPS para audio</span>
+            <div class="score-desc" style="padding:4px 0">
+              <b class="status-ok" style="font-size:15px">Simulador STAR</b>
+              <p style="margin:6px 0 0;font-size:13px;color:var(--muted)">Entrevistas estructuradas con metodología STAR. Panel doble entrevistador/candidato, grabación de audio y exportación de resultados.</p>
             </div>
           </div>
           <div class="audit-card">
-            <div class="score-row">
-              <div class="score-circle" style="background:conic-gradient(var(--teal2) 0deg, var(--teal2) 304deg, rgba(125,211,211,.12) 304deg)"><span>84</span></div>
-              <div class="score-desc"><b class="status-ok">Centro de Control</b> — Dashboard completo<br>BI ejecutivo con Chart.js, importación/exportación XLSX, gestión de citas y equipos, CDN con fallback.</div>
-            </div>
-            <div class="tag-row">
-              <span class="atag ok">✓ Chart.js integrado</span>
-              <span class="atag ok">✓ XLSX import/export</span>
-              <span class="atag ok">✓ CDN fallback</span>
-              <span class="atag ok">✓ Vendor local · CDN fallback offline</span>
+            <div class="score-desc" style="padding:4px 0">
+              <b class="status-ok" style="font-size:15px">Centro de Control</b>
+              <p style="margin:6px 0 0;font-size:13px;color:var(--muted)">Dashboard ejecutivo con KPIs, gráficas, registro de citas, gestión del equipo asesor y exportación XLSX.</p>
             </div>
           </div>
           <div class="audit-card">
-            <div class="score-row">
-              <div class="score-circle" style="background:conic-gradient(var(--teal2) 0deg, var(--teal2) 334deg, rgba(125,211,211,.12) 334deg)"><span>93</span></div>
-              <div class="score-desc"><b class="status-ok">Laboratorio IA v15</b> — Módulo avanzado<br>Copiloto ESCO-CR con 2 000 perfiles embebidos, confianza calibrada, verificación académica CR.</div>
-            </div>
-            <div class="tag-row">
-              <span class="atag ok">✓ 2 000 perfiles ESCO-CR</span>
-              <span class="atag ok">✓ Confianza calibrada</span>
-              <span class="atag ok">✓ Oferta académica CR</span>
-              <span class="atag info">ℹ Archivo grande 3.8 MB</span>
+            <div class="score-desc" style="padding:4px 0">
+              <b class="status-ok" style="font-size:15px">Laboratorio IA</b>
+              <p style="margin:6px 0 0;font-size:13px;color:var(--muted)">Diagnóstico de perfil ocupacional con base en 2 000 perfiles ESCO-CR. Recomendaciones de familias laborales y rutas académicas en Costa Rica.</p>
             </div>
           </div>
         </div>
 
         <div class="section-h" style="margin-bottom:14px">
-          <div><h2>Hallazgos técnicos detallados</h2><p>Análisis de arquitectura, diseño y seguridad</p></div>
+          <div><h2>Guía rápida de uso</h2><p>Pasos recomendados por módulo</p></div>
         </div>
 
         <div class="audit-card">
-          <h3>🏗 Arquitectura y despliegue</h3>
-          <p>El ecosistema es un paquete de archivos HTML estáticos con procesamiento 100% local (sin servidor, sin base de datos externa). Esto garantiza privacidad por diseño. El portal integrado (este archivo) usa iframes para cargar cada módulo de forma aislada, evitando conflictos de CSS/JS entre módulos.</p>
-          <div class="tag-row">
-            <span class="atag ok">✓ Sin backend requerido</span>
-            <span class="atag ok">✓ Archivos HTML estáticos</span>
-            <span class="atag ok">✓ Iframes aislados</span>
-            <span class="atag ok">✓ Compatible GitHub Pages / Netlify / S3</span>
-            <span class="atag ok">✓ Compatible servidor institucional</span>
-          </div>
+          <h3>📋 ATS ANE — Clasificación de candidaturas</h3>
+          <ol style="margin:8px 0 0;padding-left:18px;font-size:13px;color:var(--muted);line-height:2">
+            <li><b>Configuración:</b> Ingresá el puesto, área, pesos por categoría y filtros obligatorios.</li>
+            <li><b>Bandeja de CV:</b> Pegá el texto de cada CV en el campo correspondiente y nombrá al candidato.</li>
+            <li><b>Evaluación:</b> Ejecutá el análisis y revisá el ranking. Descargá el informe PDF por candidato.</li>
+          </ol>
         </div>
 
         <div class="audit-card">
-          <h3>🎨 Sistemas de diseño</h3>
-          <p>Los módulos comparten la paleta ANE (fondo #041616, teal #0d7373, mint #7dd3d3) e IBM Plex Sans como tipografía principal. Las variaciones tipográficas secundarias por módulo quedan contenidas en sus iframes sin afectar la identidad visual del portal.</p>
-          <div class="tag-row">
-            <span class="atag info">ℹ Iframes preservan aislamiento visual</span>
-            <span class="atag ok">✓ Portal unificador cohesivo</span>
-            <span class="atag info">ℹ Recomendable unificar en v2</span>
-          </div>
+          <h3>🎙 Simulador STAR — Entrevistas estructuradas</h3>
+          <ol style="margin:8px 0 0;padding-left:18px;font-size:13px;color:var(--muted);line-height:2">
+            <li>Seleccioná el rol y las competencias a evaluar.</li>
+            <li>Usá el panel de entrevistador para guiar la sesión con preguntas STAR generadas.</li>
+            <li>Activá la grabación de audio si lo necesitás (requiere HTTPS y permiso del micrófono).</li>
+            <li>Exportá el informe con puntuaciones y transcripción al finalizar.</li>
+          </ol>
         </div>
 
         <div class="audit-card">
-          <h3>🔒 Seguridad y privacidad</h3>
-          <p>El ATS incluye Content-Security-Policy en meta tag que restringe orígenes externos. El Laboratorio IA incluye protocolo de uso seguro y panel de confianza calibrada. Los datos ingresados en los módulos no se envían a ningún servidor externo — todo el procesamiento ocurre en el navegador del usuario.</p>
-          <p style="margin-top:8px;padding:10px 12px;background:rgba(13,115,115,.1);border-left:3px solid #14b8a6;border-radius:6px;font-size:13px">🛡️ <b>Cumplimiento Ley 8968 CR:</b> Herramienta de uso interno ANE. No toma decisiones automatizadas vinculantes. Todo diagnóstico requiere revisión humana. Datos de CV y audios se procesan únicamente en el navegador del asesor — nunca se transmiten a servidores externos. API key del Simulador se almacena en sessionStorage (se borra al cerrar el tab). postMessage entre módulos restringido al mismo origen.</p>
-          <div class="tag-row">
-            <span class="atag ok">✓ CSP en módulos</span>
-            <span class="atag ok">✓ Procesamiento 100% local</span>
-            <span class="atag ok">✓ Sin cookies de seguimiento</span>
-            <span class="atag ok">✓ postMessage origen validado</span>
-            <span class="atag ok">✓ API key en sessionStorage</span>
+          <h3>🧠 Laboratorio IA — Diagnóstico de perfil</h3>
+          <ol style="margin:8px 0 0;padding-left:18px;font-size:13px;color:var(--muted);line-height:2">
+            <li>Ingresá el objetivo laboral de la persona en el campo de texto.</li>
+            <li>Completá las secciones de habilidades, educación y experiencia.</li>
+            <li>Revisá el diagnóstico: familia ocupacional recomendada, brecha de competencias y opciones académicas en CR.</li>
+          </ol>
+        </div>
+
+        <div class="audit-card" style="background:rgba(13,115,115,.08);border:1px solid rgba(13,115,115,.2)">
+          <h3>🔒 Privacidad y uso de datos</h3>
+          <p style="font-size:13px;color:var(--muted);line-height:1.7">Todo el procesamiento ocurre en el navegador del asesor — ningún dato se envía a servidores externos. Los CV, audios y diagnósticos permanecen en tu dispositivo. Esta herramienta no toma decisiones automatizadas vinculantes; todo resultado requiere revisión humana.</p>
+          <div class="tag-row" style="margin-top:10px">
+            <span class="atag ok">✓ Sin servidores externos</span>
+            <span class="atag ok">✓ Datos en tu dispositivo</span>
+            <span class="atag ok">✓ Revisión humana requerida</span>
             <span class="atag ok">✓ Ley 8968 CR</span>
-            <span class="atag ok">✓ ATS parcheado con override externo</span>
-          </div>
-        </div>
-
-        <div class="audit-card">
-          <h3>📊 Funcionalidades por módulo</h3>
-          <div class="audit-grid" style="gap:10px;margin-top:10px">
-            <div>
-              <p style="margin-bottom:6px"><b>ATS ANE</b></p>
-              <div class="tag-row">
-                <span class="atag ok">✓ Ingreso de vacante</span>
-                <span class="atag ok">✓ Carga de CV (texto)</span>
-                <span class="atag ok">✓ Ranking ponderado</span>
-                <span class="atag ok">✓ Filtros obligatorios</span>
-                <span class="atag ok">✓ Informe PDF por candidato</span>
-                <span class="atag ok">✓ Ruta ESCO de crecimiento</span>
-                <span class="atag ok">✓ Términos y condiciones</span>
-              </div>
-            </div>
-            <div>
-              <p style="margin-bottom:6px"><b>Simulador STAR</b></p>
-              <div class="tag-row">
-                <span class="atag ok">✓ Vista entrevistador</span>
-                <span class="atag ok">✓ Vista candidato</span>
-                <span class="atag ok">✓ Banco de preguntas STAR</span>
-                <span class="atag ok">✓ Grabación de audio</span>
-                <span class="atag ok">✓ Transcripción automática</span>
-                <span class="atag ok">✓ Calificación por competencia</span>
-                <span class="atag ok">✓ Exportación PDF</span>
-              </div>
-            </div>
-            <div>
-              <p style="margin-bottom:6px"><b>Centro de Control</b></p>
-              <div class="tag-row">
-                <span class="atag ok">✓ KPIs ejecutivos</span>
-                <span class="atag ok">✓ Gráficas Chart.js</span>
-                <span class="atag ok">✓ Registro de citas</span>
-                <span class="atag ok">✓ Gestión de equipo</span>
-                <span class="atag ok">✓ Referidos y colocados</span>
-                <span class="atag ok">✓ Import/Export XLSX</span>
-                <span class="atag ok">✓ CDN con fallback triple</span>
-              </div>
-            </div>
-            <div>
-              <p style="margin-bottom:6px"><b>Laboratorio IA v15</b></p>
-              <div class="tag-row">
-                <span class="atag ok">✓ 2 000 perfiles ESCO-CR</span>
-                <span class="atag ok">✓ Puntuación de confianza</span>
-                <span class="atag ok">✓ Explicación del porqué</span>
-                <span class="atag ok">✓ Verificación académica CR</span>
-                <span class="atag ok">✓ Trazabilidad para revisión</span>
-                <span class="atag ok">✓ Modo dual dark/light</span>
-                <span class="atag ok">✓ Protocolo uso responsable</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="audit-card">
-          <h3>🚀 Recomendaciones prioritarias</h3>
-          <div style="display:grid;gap:8px;margin-top:8px">
-            <div style="display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:12px;background:rgba(13,45,45,.3)">
-              <span style="color:var(--mint);font-size:18px;flex-shrink:0">✓</span>
-              <div><b style="font-size:13px;color:var(--mint)">ATS parcheado con override externo</b><p style="margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.55">El módulo ATS fue parcheado con scripts de validación externos sin modificar el JS ofuscado. Validación de pesos, suma=100, upload PDF y persistencia localStorage funcionan correctamente.</p></div>
-            </div>
-            <div style="display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:12px;background:rgba(13,45,45,.3)">
-              <span style="color:var(--mint);font-size:18px;flex-shrink:0">2</span>
-              <div><b style="font-size:13px">Despliegue en servidor HTTPS</b><p style="margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.55">El Simulador de Entrevistas requiere HTTPS para acceder a la API de grabación de audio (MediaRecorder/getUserMedia). GitHub Pages, Netlify y cualquier dominio institucional con TLS cumplen este requisito.</p></div>
-            </div>
-            <div style="display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:12px;background:rgba(13,45,45,.3)">
-              <span style="color:var(--mint);font-size:18px;flex-shrink:0">3</span>
-              <div><b style="font-size:13px">Unificación del sistema de diseño (v2)</b><p style="margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.55">Los 4 módulos usan fuentes y paletas distintas. Migrar a un único design token set (teal institucional + Inter/Manrope) mejorará la coherencia visual y reducirá el tiempo de carga.</p></div>
-            </div>
-            <div style="display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:12px;background:rgba(13,45,45,.3)">
-              <span style="color:var(--mint);font-size:18px;flex-shrink:0">4</span>
-              <div><b style="font-size:13px">Integración de datos entre módulos</b><p style="margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.55">Actualmente cada módulo es independiente. En v2 se recomienda usar localStorage o IndexedDB para pasar candidatos preseleccionados del ATS al Simulador y al Centro de Control automáticamente.</p></div>
-            </div>
-            <div style="display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:12px;background:rgba(13,45,45,.3)">
-              <span style="color:var(--mint);font-size:18px;flex-shrink:0">5</span>
-              <div><b style="font-size:13px">Comprimir el Laboratorio IA</b><p style="margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.55">El módulo pesa 3.8 MB porque los 2 000 perfiles ESCO-CR están embebidos inline. Extraer los datos a un archivo JSON/CSV separado reduciría el archivo principal a ~100 KB y mejoraría el tiempo de carga inicial.</p></div>
-            </div>
           </div>
         </div>
 
         <div class="home-footer" style="margin-top:0">
-          <div><b>Auditoría técnica Ecosistema ANE v16</b><br>Análisis realizado sobre el paquete portable v15 · Recomendación responsable</div>
-          <div style="text-align:right">Generado: <span id="auditDate"></span><br>Portal integrado · Costa Rica 2026</div>
+          <div><b>Ecosistema ANE v2.0</b><br>Suite de herramientas de intermediación laboral · Costa Rica 2026</div>
+          <div style="text-align:right">Agencia Nacional del Empleo<br>Brete.cr</div>
         </div>
       </div>
 
@@ -1216,7 +1109,7 @@ let loadedModules = {};
 
 const panels = {
   home: { el: document.getElementById('panel-home'), type: 'panel' },
-  audit: { el: document.getElementById('panel-audit'), type: 'panel' },
+  about: { el: document.getElementById('panel-about'), type: 'panel' },
   ats: { el: document.getElementById('frame-ats'), type: 'frame' },
   sim: { el: document.getElementById('frame-sim'), type: 'frame' },
   dash: { el: document.getElementById('frame-dash'), type: 'frame' },
