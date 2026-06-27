@@ -406,6 +406,12 @@
 
   /* ── Mobile responsive ── */
 
+  /* En móvil el IntersectionObserver de iOS Safari no dispara → .reveal
+     quedaría invisible. Se fuerza visible directamente. */
+  @media(max-width:768px){
+    .reveal{opacity:1!important;transform:none!important;transition:none!important}
+  }
+
   /* 680px ya existía para .g2/.g3 y .drow.kw/lang/filtro;
      extendemos para cubrir .drow.cert y reducir padding general */
   @media(max-width:680px){
