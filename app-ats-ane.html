@@ -485,6 +485,8 @@
 </style>
 </head>
 <body>
+<!-- Forzar .reveal visible en táctil sin depender de IntersectionObserver -->
+<script>if('ontouchstart' in window||navigator.maxTouchPoints>0){document.documentElement.style.setProperty('--reveal-opacity','1');var _rstyle=document.createElement('style');_rstyle.textContent='.reveal,.reveal.in{opacity:1!important;transform:none!important;transition:none!important}';document.head.appendChild(_rstyle);}</script>
 <a href="#sec1" class="skip">Saltar al contenido</a>
 
 <!-- ======================= CABECERA ======================= -->
