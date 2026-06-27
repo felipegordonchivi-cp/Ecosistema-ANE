@@ -3160,6 +3160,9 @@ function openCandidateView(){
   const s = document.getElementById('_sala-id-store'); if(s) s.value = salaId;
   const base = window.location.href.split('?')[0];
   const url = base + '?vista=candidato&sala=' + salaId;
+  window._candidateViewUrl = url;
+  // Auto-llenar el campo Link del correo
+  const linkFld = document.getElementById('email-link'); if(linkFld && !linkFld.value) linkFld.value = url;
   // Escuchar knock via Firebase para esta sala
   if(typeof window._fbEscucharSala === 'function') window._fbEscucharSala(salaId);
   // Mostrar el enlace en un toast copiable
@@ -3257,77 +3260,38 @@ function precargarCamposEmail(p){
 
 // ── CORREO CONVOCATORIA ────────────────────────────────────
 function buildCorreoTxt(){
-  const nombre=document.getElementById('email-cand-name').value.trim()||'Candidato/a';
+  const nombre=document.getElementById('email-cand-name').value.trim();
   const p=cargarPerfil();
-  const asesorNombre=document.getElementById('email-asesor-name').value.trim()||p.nombre||'el equipo ANE';
-  const cargo=p.cargo||'Orientador/a Laboral';
-  const oficina=p.oficina||'Agencia Nacional de Empleo (ANE)';
-  const telefono=p.telefono;
-  const emailAsesor=p.email;
+  const asesorNombre=document.getElementById('email-asesor-name').value.trim()||p.nombre||'el agente';
   const fechaRaw=document.getElementById('email-fecha').value;
-  const hora=document.getElementById('email-hora').value||'09:00';
-  const plataforma=document.getElementById('email-plataforma').value;
-  const link=document.getElementById('email-link').value.trim();
-  const puesto=document.getElementById('email-puesto').value.trim()||'el puesto indicado';
-  const duracion=document.getElementById('email-duracion').value;
+  const hora=document.getElementById('email-hora').value||'';
+  const link=document.getElementById('email-link').value.trim()||window._candidateViewUrl||'(genere el enlace desde "Conectar Candidato")';
   let fecha='[fecha por confirmar]';
   if(fechaRaw){ const d=new Date(fechaRaw+'T12:00:00'); fecha=d.toLocaleDateString('es-CR',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); }
-  const linkLine=link?`\nEnlace / acceso:   ${link}`:'';
-  const telLine=telefono?`\nTeléfono:          ${telefono}`:'';
-  const emailLine=emailAsesor?`\nCorreo:            ${emailAsesor}`:'';
+  const h=new Date().getHours();
+  const saludo=h<12?'Buenos días':h<18?'Buenas tardes':'Buenas noches';
+  const candidatoLinea=nombre?`Estimado/a ${nombre},\n\n`:'';
+  const horaFmt=hora?hora+' hrs':'[hora por confirmar]';
   return {
-    asunto:`Convocatoria a entrevista virtual — ${puesto} | ANE Costa Rica`,
-    cuerpo:`Estimado/a ${nombre},
+    asunto:`Confirmación de cita - Sesión Intermediación Laboral | ANE`,
+    cuerpo:`${candidatoLinea}${saludo}
+Le saluda ${asesorNombre}, agente de intermediación del Centro de Contacto de la Agencia Nacional de Empleo.
+En seguimiento a nuestra conversación, confirmó su cita de atención para la revisión de su perfil laboral dentro de la plataforma www.brete.cr y asesorarle en la búsqueda de vacantes concordantes según su perfil.
 
-Por medio del presente correo, la Agencia Nacional de Empleo (ANE) del Ministerio de Trabajo y Seguridad Social de Costa Rica le convoca a una entrevista virtual por competencias para el proceso de orientación laboral en el que participa.
+Sesión Intermediación Laboral - Agente ${asesorNombre}
+Fecha: ${fecha}
+Hora: ${horaFmt}
+Modalidad: Virtual
+Link: ${link}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-DETALLES DE LA SESIÓN
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Fecha:             ${fecha}
-Hora:              ${hora} hrs (Costa Rica, UTC-6)
-Plataforma:        ${plataforma}
-Duración estimada: ${duracion}
-Puesto evaluado:   ${puesto}${linkLine}
-Asesor/a:          ${asesorNombre} — ${cargo}
+Agradecemos su confirmación respondiendo a este mensaje, o bien nos indique si tiene alguna consulta. Nuestro horario de atención es de lunes a domingo de 7:00 am a 10:00 pm. Puede contactarnos por los siguientes medios:
+Teléfono y WhatsApp: 2210-6060
+Correo electrónico: intermediacion@ane.cr
+En la Agencia Nacional de Empleo, estamos para servirle.
+Saludos.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-QUÉ OCURRIRÁ DURANTE LA ENTREVISTA
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-• El/la asesor/a compartirá su pantalla. Usted verá las preguntas
-  directamente en su pantalla durante la videollamada.
-• Las preguntas siguen la metodología STAR (Situación, Tarea, Acción,
-  Resultado). No hay respuestas "correctas" o "incorrectas"; se busca
-  conocer su experiencia real.
-• No necesita instalar ningún programa adicional.
-• Tendrá tiempo suficiente para reflexionar y responder cada pregunta.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CÓMO PREPARARSE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✔ Conéctese desde un lugar tranquilo, con buena iluminación y sin ruido.
-✔ Verifique que su cámara y micrófono funcionen antes de la sesión.
-✔ Ingrese a ${plataforma} con 5 minutos de anticipación.
-✔ Tenga a mano su CV o una nota con sus experiencias laborales recientes.
-✔ Cuente con una identificación oficial (cédula, DIMEX o pasaporte).
-
-Si necesita reprogramar la sesión o tiene alguna consulta, comuníquese
-con nosotros respondiendo este correo antes de la fecha indicada.
-
-Agradecemos su disposición y le deseamos mucho éxito en la sesión.
-
-Atentamente,
-
-${asesorNombre}
-${cargo}
-${oficina}
-Ministerio de Trabajo y Seguridad Social — Costa Rica${telLine}${emailLine}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Este mensaje forma parte del proceso de orientación laboral de la ANE.
-La información recopilada durante la entrevista se trata conforme a la
-Ley de Protección de la Persona frente al tratamiento de sus datos
-personales — Ley N° 8968, Costa Rica.`
+"La Agencia Nacional de Empleo promueve la NO DISCRIMINACIÓN en la publicación de vacantes y la generación de perfiles concordantes, en apego a la legislación nacional. En concordancia, invitamos a priorizar el cumplimiento de requisitos objetivos y necesarios para desempeñar efectivamente las labores correspondientes al puesto, tanto en la aplicación de vacantes con en la selección de personal"`
   };
 }
 function generarCorreo(){
