@@ -152,26 +152,46 @@ textarea{resize:vertical}
 /* ── VISTA CANDIDATO ─────────────────────────────────── */
 #v-candidato{min-height:100vh;display:none;flex-direction:column;background:#020e0e}
 #v-candidato.active{display:flex}
-.cand-q-card{background:rgba(13,115,115,.15);border:2px solid var(--teal);border-radius:16px;padding:28px 32px;max-width:800px;width:100%;margin:0 auto;box-shadow:0 0 60px rgba(13,115,115,.2);animation:fadeIn .4s ease}
-@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.cand-q-num{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;background:var(--teal);border-radius:50%;font-weight:800;font-size:15px;margin-bottom:14px;color:#fff}
-.cand-q-text{font-size:20px;font-weight:700;line-height:1.5;color:#fff}
-.star-guide-cand{margin-top:18px;background:rgba(13,115,115,.12);border:1px solid rgba(125,211,211,.2);border-radius:12px;padding:14px 16px}
-.sgc-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7dd3d3;margin-bottom:10px}
-.sgc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-@media(max-width:600px){.sgc-grid{grid-template-columns:1fr}}
-.sgc-item{display:flex;gap:10px;align-items:flex-start;background:rgba(0,0,0,.2);border:1px solid rgba(125,211,211,.15);border-radius:8px;padding:8px 10px}
-.sgc-letter{flex:0 0 auto;width:28px;height:28px;border-radius:6px;background:rgba(125,211,211,.1);color:var(--col);font-size:15px;font-weight:900;display:flex;align-items:center;justify-content:center;font-family:'Manrope',sans-serif}
-.sgc-name{font-size:12px;font-weight:700;color:var(--col);margin-bottom:2px}
-.sgc-hint{font-size:11px;color:#5a9898;line-height:1.4}
-.cand-video-wrap{width:100%;max-width:460px;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;position:relative;border:2px solid var(--db);margin:0 auto}
-.cand-video-wrap video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:none}
-.cand-ctrl-btn{background:var(--s2);border:2px solid var(--db);border-radius:10px;padding:10px 14px;color:#4a8a8a;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;cursor:pointer}
-.cand-ctrl-btn.on{background:rgba(13,115,115,.3);border-color:var(--teal);color:var(--tl)}
-.rec-pulse{animation:pulse-rec 1.5s infinite}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulse-rec{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}70%{box-shadow:0 0 0 10px rgba(239,68,68,0)}}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes glowQ{0%,100%{box-shadow:0 0 20px rgba(13,115,115,.2)}50%{box-shadow:0 0 40px rgba(13,115,115,.5)}}
+.rec-pulse{animation:pulse-rec 1.5s infinite}
 .blink{animation:blink 1s infinite}
+
+/* Candidate question card */
+.cand-q-card{background:linear-gradient(135deg,rgba(13,115,115,.18),rgba(4,22,22,.95));border:2px solid var(--teal);border-radius:20px;padding:32px 36px;max-width:820px;width:100%;margin:0 auto;box-shadow:0 0 60px rgba(13,115,115,.25),0 20px 60px rgba(0,0,0,.4);animation:glowQ 3s ease-in-out infinite,fadeIn .5s ease}
+.cand-q-num{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;background:linear-gradient(135deg,var(--teal),var(--tl));border-radius:50%;font-weight:900;font-size:16px;margin-bottom:16px;color:#fff;box-shadow:0 4px 16px rgba(13,115,115,.5)}
+.cand-q-text{font-size:22px;font-weight:700;line-height:1.55;color:#fff;letter-spacing:-.2px}
+.star-guide-cand{margin-top:20px;background:rgba(0,0,0,.2);border:1px solid rgba(125,211,211,.15);border-radius:14px;padding:14px 16px}
+.sgc-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.15em;color:#5eead4;margin-bottom:10px}
+.sgc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:600px){.sgc-grid{grid-template-columns:1fr}}
+.sgc-item{display:flex;gap:10px;align-items:flex-start;background:rgba(0,0,0,.25);border:1px solid rgba(125,211,211,.12);border-radius:10px;padding:9px 12px;transition:border-color .2s}
+.sgc-item:hover{border-color:rgba(125,211,211,.3)}
+.sgc-letter{flex:0 0 auto;width:30px;height:30px;border-radius:8px;background:rgba(125,211,211,.08);color:var(--col);font-size:16px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.sgc-name{font-size:12px;font-weight:800;color:var(--col);margin-bottom:3px;letter-spacing:.02em}
+.sgc-hint{font-size:11px;color:#4a8a8a;line-height:1.5}
+
+/* Candidate controls */
+.cand-ctrl-btn{background:rgba(13,115,115,.12);border:2px solid rgba(13,115,115,.35);border-radius:12px;padding:11px 16px;color:#5a9898;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s;cursor:pointer}
+.cand-ctrl-btn.on{background:rgba(13,115,115,.3);border-color:var(--teal);color:#7dd3d3;box-shadow:0 0 16px rgba(13,115,115,.3)}
+.cand-ctrl-btn:hover{border-color:var(--teal);color:#7dd3d3}
+.cand-video-wrap{width:100%;max-width:460px;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;position:relative;border:2px solid var(--db);margin:0 auto}
+.cand-video-wrap video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:none}
+
+/* Interviewer right panel — premium */
+.iv-cockpit{width:480px;flex-shrink:0;background:#040d0d;border-left:1px solid rgba(13,115,115,.25);display:flex;flex-direction:column;overflow:hidden}
+.iv-section{border-bottom:1px solid rgba(13,115,115,.15);flex-shrink:0}
+.iv-ctrl-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 14px;border-radius:10px;font-size:9px;font-weight:800;letter-spacing:.05em;cursor:pointer;transition:all .2s;min-width:58px;border:2px solid}
+.iv-ctrl-btn.active{background:rgba(13,115,115,.3);border-color:var(--teal);color:#7dd3d3}
+.iv-ctrl-btn.muted{background:rgba(239,68,68,.18);border-color:#ef4444;color:#fca5a5}
+.iv-ctrl-btn.inactive{background:rgba(13,115,115,.08);border-color:rgba(13,115,115,.3);color:#3a7272}
+.qq-btn{padding:5px 10px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;transition:all .2s;border:2px solid rgba(13,115,115,.25);background:rgba(13,115,115,.08);color:#3a7272}
+.qq-btn:hover{border-color:var(--teal);color:#7dd3d3;background:rgba(13,115,115,.2)}
+.qq-btn.active{border-color:var(--teal);background:rgba(13,115,115,.4);color:#7dd3d3;box-shadow:0 0 12px rgba(13,115,115,.3)}
+.chat-bubble-mine{background:rgba(13,115,115,.4);border-radius:12px 12px 2px 12px;padding:6px 11px;font-size:11px;color:#e0f2f2;line-height:1.5;max-width:85%;word-break:break-word}
+.chat-bubble-other{background:rgba(255,255,255,.06);border-radius:12px 12px 12px 2px;padding:6px 11px;font-size:11px;color:#c9e8e8;line-height:1.5;max-width:85%;word-break:break-word}
 
 </style>
 
@@ -230,11 +250,10 @@ textarea{resize:vertical}
         var mine = val.role==='cand';
         var div = document.createElement('div');
         div.style.cssText='display:flex;flex-direction:column;align-items:'+(mine?'flex-end':'flex-start');
-        div.innerHTML='<div style="max-width:85%;background:'+(mine?'rgba(13,115,115,.35)':'rgba(255,255,255,.07)')+';border-radius:10px;padding:5px 10px;font-size:11px;color:#e0f2f2;line-height:1.4">'+val.text+'</div>'
+        div.innerHTML='<div class="'+(mine?'chat-bubble-mine':'chat-bubble-other')+'">'+val.text+'</div>'
           +'<span style="font-size:9px;color:#4a8a8a;margin-top:2px">'+(mine?'Tú':val.nombre||'Entrevistador')+'</span>';
         container.appendChild(div);
         container.scrollTop=container.scrollHeight;
-        // badge siempre visible si es mensaje del entrevistador
         var badge = document.getElementById('cand-chat-badge');
         if(badge && !mine) badge.style.display='inline';
       });
@@ -258,7 +277,7 @@ textarea{resize:vertical}
           var mine = val.role==='iv';
           var div = document.createElement('div');
           div.style.cssText='display:flex;flex-direction:column;align-items:'+(mine?'flex-end':'flex-start');
-          div.innerHTML='<div style="max-width:85%;background:'+(mine?'rgba(13,115,115,.35)':'rgba(255,255,255,.07)')+';border-radius:10px;padding:5px 10px;font-size:11px;color:#e0f2f2;line-height:1.4">'+val.text+'</div>'
+          div.innerHTML='<div class="'+(mine?'chat-bubble-mine':'chat-bubble-other')+'">'+val.text+'</div>'
             +'<span style="font-size:9px;color:#4a8a8a;margin-top:2px">'+(mine?'Tú':val.nombre||'Candidato')+'</span>';
           container.appendChild(div);
           container.scrollTop=container.scrollHeight;
@@ -1062,130 +1081,120 @@ textarea{resize:vertical}
         </div>
       </div>
 
-      <!-- RIGHT: Video + Active Q + audio panel -->
-      <div style="width:420px;background:var(--s1);border-left:1px solid var(--db);padding:12px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex-shrink:0">
+      <!-- ═══ COCKPIT ENTREVISTADOR (derecha) ═══ -->
+      <div class="iv-cockpit" id="webrtc-panel">
 
-        <!-- SALA DE VIDEO — Teams-like -->
-        <div id="webrtc-panel" style="background:#0a1616;border:1px solid var(--db);border-radius:12px;overflow:hidden">
-
-          <!-- Header bar -->
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:rgba(0,0,0,.4)">
-            <div style="display:flex;align-items:center;gap:6px">
-              <span id="webrtc-status-dot" style="width:7px;height:7px;border-radius:50%;background:#eab308;flex-shrink:0;display:inline-block"></span>
-              <span id="webrtc-status-txt" style="font-size:10px;color:#7dd3d3;font-weight:600">Sin candidato</span>
+        <!-- ── 1. SALA DE VIDEO ── -->
+        <div class="iv-section" style="flex-shrink:0">
+          <!-- Status bar -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 14px;background:rgba(0,0,0,.5)">
+            <div style="display:flex;align-items:center;gap:7px">
+              <span id="webrtc-status-dot" style="width:8px;height:8px;border-radius:50%;background:#eab308;display:inline-block;flex-shrink:0"></span>
+              <span id="webrtc-status-txt" style="font-size:11px;color:#7dd3d3;font-weight:700">Sin candidato</span>
             </div>
-            <span style="font-size:10px;color:#3a7272;font-weight:700;letter-spacing:1px">SALA VIRTUAL</span>
+            <span style="font-size:9px;color:#1a4a4a;font-weight:800;letter-spacing:2px;text-transform:uppercase">● SALA VIRTUAL</span>
           </div>
-
-          <!-- Candidato: video grande (16:9) con PIP del entrevistador -->
-          <div style="position:relative;width:100%;aspect-ratio:16/9;background:#060d0d">
-            <!-- Video candidato (full size) -->
-            <video id="iv-remote-video" autoplay playsinline style="width:100%;height:100%;object-fit:cover;display:block"></video>
-            <!-- Placeholder cuando no hay candidato -->
-            <div id="iv-video-ph" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#2a5050;background:#060d0d">
-              <div style="width:56px;height:56px;border-radius:50%;background:#0d2d2d;display:flex;align-items:center;justify-content:center;font-size:28px">👤</div>
-              <span style="font-size:11px;color:#2a5050">Esperando al candidato…</span>
-            </div>
-            <!-- Label candidato -->
-            <div style="position:absolute;bottom:8px;left:10px;background:rgba(0,0,0,.7);border-radius:4px;padding:2px 8px;font-size:10px;color:#7dd3d3;font-weight:700;pointer-events:none">CANDIDATO</div>
-            <!-- Botón unmute candidato -->
-            <button id="iv-unmute-btn" onclick="(function(){var v=document.getElementById('iv-remote-video');v.muted=false;v.play();this.style.display='none';}).call(this)" style="display:none;position:absolute;bottom:8px;right:10px;background:rgba(0,0,0,.8);border:1px solid #7dd3d3;color:#7dd3d3;padding:3px 10px;border-radius:10px;font-size:10px;font-weight:700;cursor:pointer">🔊 Activar audio</button>
-            <!-- PIP: mi cámara (esquina superior derecha) -->
-            <div style="position:absolute;top:8px;right:8px;width:96px;aspect-ratio:4/3;background:#0a1616;border-radius:8px;overflow:hidden;border:2px solid rgba(13,115,115,.5);box-shadow:0 2px 12px rgba(0,0,0,.5)">
-              <video id="iv-local-video" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;display:none;transform:scaleX(-1)"></video>
-              <div id="iv-local-ph" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#2a5050">
-                <span style="font-size:16px">🎙</span><span style="font-size:8px">Yo</span>
+          <!-- Área de video: candidato grande + PIP yo -->
+          <div style="position:relative;width:100%;aspect-ratio:16/9;background:#02080a">
+            <video id="iv-remote-video" autoplay playsinline style="width:100%;height:100%;object-fit:cover;display:block;opacity:1"></video>
+            <div id="iv-video-ph" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:linear-gradient(135deg,#02080a,#040f0f)">
+              <div style="width:64px;height:64px;border-radius:50%;background:rgba(13,115,115,.15);border:2px solid rgba(13,115,115,.3);display:flex;align-items:center;justify-content:center;font-size:28px">👤</div>
+              <div style="text-align:center">
+                <div style="font-size:12px;color:#2a5050;font-weight:700">Sin video del candidato</div>
+                <div style="font-size:10px;color:#1a3a3a;margin-top:3px">El candidato debe activar su cámara</div>
               </div>
-              <div style="position:absolute;bottom:2px;left:4px;background:rgba(0,0,0,.7);border-radius:2px;padding:1px 5px;font-size:8px;color:#7dd3d3;font-weight:700">YO</div>
+            </div>
+            <div style="position:absolute;bottom:10px;left:12px;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);border-radius:6px;padding:3px 10px;font-size:10px;color:#7dd3d3;font-weight:800;letter-spacing:.5px">CANDIDATO</div>
+            <button id="iv-unmute-btn" onclick="(function(b){var v=document.getElementById('iv-remote-video');v.muted=false;v.play();b.style.display='none';})(this)" style="display:none;position:absolute;bottom:10px;right:12px;background:rgba(239,68,68,.85);border:none;color:#fff;padding:5px 12px;border-radius:20px;font-size:10px;font-weight:800;cursor:pointer;backdrop-filter:blur(4px)">🔊 Activar audio</button>
+            <!-- PIP: Yo (esquina superior derecha) -->
+            <div style="position:absolute;top:10px;right:10px;width:108px;aspect-ratio:16/9;background:#01060a;border-radius:10px;overflow:hidden;border:2px solid rgba(13,115,115,.6);box-shadow:0 4px 20px rgba(0,0,0,.6)">
+              <video id="iv-local-video" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;display:none;transform:scaleX(-1)"></video>
+              <div id="iv-local-ph" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#1a4a4a;background:#01060a">
+                <span style="font-size:18px">📷</span>
+                <span style="font-size:8px;font-weight:700;letter-spacing:.5px;color:#1a4a4a">MI CÁMARA</span>
+              </div>
+              <div style="position:absolute;bottom:3px;left:5px;background:rgba(0,0,0,.8);border-radius:3px;padding:1px 6px;font-size:8px;color:#5eead4;font-weight:800">YO</div>
             </div>
           </div>
-
-          <!-- Barra de controles Teams-like -->
-          <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:8px 12px;background:rgba(0,0,0,.5);border-top:1px solid rgba(13,115,115,.2)">
-            <button id="iv-mic-btn" onclick="toggleIvMic()" style="display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(13,115,115,.2);border:1px solid var(--teal);color:#7dd3d3;padding:6px 12px;border-radius:8px;font-size:9px;font-weight:700;cursor:pointer;min-width:54px">
-              <span style="font-size:16px">🎙</span>Mic ON
+          <!-- Controles AV -->
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;background:rgba(0,0,0,.6)">
+            <button id="iv-mic-btn" onclick="toggleIvMic()" class="iv-ctrl-btn active">
+              <span style="font-size:18px">🎙</span>MIC ON
             </button>
-            <button onclick="toggleIvCam()" id="iv-cam-btn" style="display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(13,115,115,.2);border:1px solid var(--teal);color:#7dd3d3;padding:6px 12px;border-radius:8px;font-size:9px;font-weight:700;cursor:pointer;min-width:54px">
-              <span style="font-size:16px">📹</span>Cámara
+            <button id="iv-cam-btn" onclick="toggleIvCam()" class="iv-ctrl-btn inactive">
+              <span style="font-size:18px">📹</span>CÁMARA
             </button>
             <div style="flex:1"></div>
-            <div id="iv-speaking-dot" style="display:none;align-items:center;gap:4px;font-size:10px;color:#22c55e">
-              <span style="width:6px;height:6px;border-radius:50%;background:#22c55e;animation:pulse-teal 1s infinite"></span>Hablando
-            </div>
-          </div>
-
-          <!-- Chat siempre visible -->
-          <div style="border-top:1px solid rgba(13,115,115,.25);display:flex;flex-direction:column">
-            <div style="padding:5px 10px;display:flex;align-items:center;gap:6px;background:rgba(13,115,115,.08)">
-              <span style="font-size:10px;color:#7dd3d3;font-weight:700;text-transform:uppercase;letter-spacing:1px">💬 Chat</span>
-              <span id="iv-chat-badge" onclick="this.style.display='none'" style="display:none;background:#ef4444;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;cursor:pointer">!</span>
-            </div>
-            <div id="iv-chat-msgs" style="height:100px;overflow-y:auto;padding:6px 10px;display:flex;flex-direction:column;gap:5px;font-size:11px;background:rgba(0,0,0,.15)"></div>
-            <div style="display:flex;gap:5px;padding:6px 8px;border-top:1px solid rgba(13,115,115,.2)">
-              <input id="iv-chat-input" placeholder="Escribe un mensaje…" style="flex:1;background:rgba(13,115,115,.1);border:1px solid var(--db);border-radius:6px;padding:5px 8px;color:#e0f2f2;font-size:11px" onkeydown="if(event.key==='Enter')sendIvChat()">
-              <button onclick="sendIvChat()" style="background:var(--teal);border:none;color:#fff;padding:5px 12px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:700">➤</button>
+            <div id="iv-speaking-dot" style="display:none;align-items:center;gap:5px;font-size:10px;color:#22c55e;font-weight:700">
+              <span style="width:7px;height:7px;border-radius:50%;background:#22c55e;animation:pulse-teal 1s infinite;display:inline-block"></span>HABLANDO
             </div>
           </div>
         </div>
 
-        <h3 style="color:var(--tl);font-size:11px;text-transform:uppercase;letter-spacing:1px">Pregunta Activa</h3>
-        <div id="active-q-box" style="background:rgba(13,115,115,.2);border:2px solid var(--teal);border-radius:10px;padding:14px;display:none">
-          <div style="color:var(--tl);font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">PREGUNTA SELECCIONADA</div>
-          <p id="active-q-text" style="font-size:13px;line-height:1.6;font-weight:500;margin:0"></p>
-        </div>
-        <div id="no-q-box" style="background:var(--s2);border-radius:10px;padding:14px;text-align:center;color:#4a8a8a;font-size:12px">
-          Ninguna activa. Selecciona una pregunta en la lista.
+        <!-- ── 2. PREGUNTA ACTIVA (referencia del entrevistador) ── -->
+        <div class="iv-section" style="padding:10px 14px">
+          <div style="font-size:9px;color:#2a5a5a;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px">▶ Pregunta enviada al candidato</div>
+          <div id="active-q-box" style="display:none;background:linear-gradient(135deg,rgba(13,115,115,.2),rgba(4,22,22,.8));border:1px solid rgba(13,115,115,.5);border-radius:10px;padding:12px 14px">
+            <p id="active-q-text" style="font-size:12px;line-height:1.65;font-weight:600;color:#c9e8e8;margin:0"></p>
+          </div>
+          <div id="no-q-box" style="font-size:11px;color:#1e4a4a;text-align:center;padding:10px 0">
+            Activa una pregunta con los botones de abajo ↓
+          </div>
         </div>
 
-        <!-- TTS -->
-        <div style="background:var(--s2);border-radius:8px;padding:10px">
-          <div style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">🔊 Lectura en Voz Alta</div>
+        <!-- ── 3. ACTIVACIÓN RÁPIDA DE PREGUNTAS ── -->
+        <div class="iv-section" style="padding:8px 14px 10px">
+          <div style="font-size:9px;color:#2a5a5a;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px">Activar pregunta</div>
+          <div id="quick-q-btns" style="display:flex;flex-wrap:wrap;gap:5px">
+            <span style="font-size:11px;color:#1a4a4a;font-style:italic">Selecciona un perfil para ver las preguntas</span>
+          </div>
+        </div>
+
+        <!-- ── 4. GRABACIÓN ── -->
+        <div class="iv-section" style="padding:10px 14px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span id="rec-dot" style="width:9px;height:9px;border-radius:50%;background:#3a7272;flex-shrink:0"></span>
+            <span id="rec-status-txt" style="font-size:11px;color:#4a8a8a;font-weight:600">Listo para grabar</span>
+            <span style="flex:1"></span>
+            <span id="rec-timer" style="font-size:11px;color:#3a7272;font-family:'IBM Plex Mono',monospace">00:00</span>
+          </div>
+          <div class="waveform" id="waveform" style="margin-bottom:8px;justify-content:center;height:24px">
+            <div class="wave-bar" style="height:3px"></div><div class="wave-bar" style="height:7px"></div>
+            <div class="wave-bar" style="height:3px"></div><div class="wave-bar" style="height:11px"></div>
+            <div class="wave-bar" style="height:5px"></div><div class="wave-bar" style="height:3px"></div>
+            <div class="wave-bar" style="height:9px"></div><div class="wave-bar" style="height:3px"></div>
+          </div>
           <div style="display:flex;gap:6px">
-            <button onclick="readQuestion()" style="flex:1;background:var(--teal);border:none;color:#fff;padding:8px;border-radius:8px;font-size:12px;font-weight:700">▶ Leer Pregunta</button>
-            <button onclick="stopReading()" style="background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.4);color:#fca5a5;padding:8px 10px;border-radius:8px;font-size:12px">■ Stop</button>
-          </div>
-          <div style="display:flex;gap:6px;margin-top:6px;align-items:center">
-            <label style="font-size:10px;color:#4a8a8a;white-space:nowrap">Velocidad:</label>
-            <input type="range" id="tts-rate" min="0.5" max="2" step="0.1" value="0.9" style="flex:1;background:var(--db);height:4px;border:none">
-            <span id="tts-rate-val" style="font-size:10px;color:#7dd3d3;min-width:28px">0.9x</span>
+            <button id="btn-rec-start" onclick="startRecording()" style="flex:1;background:linear-gradient(135deg,#dc2626,#ef4444);border:none;color:#fff;padding:9px;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">⏺ Grabar</button>
+            <button id="btn-rec-stop" onclick="stopRecording()" disabled style="flex:1;background:rgba(13,115,115,.1);border:1px solid rgba(13,115,115,.25);color:#3a7272;padding:9px;border-radius:9px;font-size:12px;font-weight:800;cursor:not-allowed">⏹ Detener</button>
           </div>
         </div>
 
-        <!-- AUDIO CAPTURE -->
-        <div style="background:rgba(13,115,115,.12);border:1px solid rgba(13,115,115,.35);border-radius:10px;padding:12px">
-          <div style="font-size:10px;color:#7dd3d3;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:700">🎙 Captura de Respuesta</div>
-          <div id="audio-status" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px;color:#4a8a8a">
-            <span id="rec-dot" style="width:10px;height:10px;border-radius:50%;background:#4a8a8a;flex-shrink:0"></span>
-            <span id="rec-status-txt">Listo para grabar</span>
+        <!-- ── 5. TRANSCRIPCIÓN ── -->
+        <div class="iv-section" style="padding:8px 14px">
+          <div style="font-size:9px;color:#2a5a5a;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px">Transcripción en vivo</div>
+          <div style="min-height:36px;max-height:70px;overflow-y:auto;background:rgba(0,0,0,.2);border-radius:8px;padding:7px 10px">
+            <span id="transcript-final" style="font-size:11px;color:#a8dede"></span>
+            <span id="transcript-interim" style="font-size:11px;color:#5a9898;font-style:italic"></span>
           </div>
-          <!-- Waveform -->
-          <div class="waveform" id="waveform" style="margin-bottom:8px;justify-content:center">
-            <div class="wave-bar" style="height:4px"></div>
-            <div class="wave-bar" style="height:8px"></div>
-            <div class="wave-bar" style="height:4px"></div>
-            <div class="wave-bar" style="height:12px"></div>
-            <div class="wave-bar" style="height:6px"></div>
-            <div class="wave-bar" style="height:4px"></div>
-            <div class="wave-bar" style="height:10px"></div>
-            <div class="wave-bar" style="height:4px"></div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-            <button id="btn-rec-start" onclick="startRecording()" style="background:#ef4444;border:none;color:#fff;padding:8px;border-radius:8px;font-size:12px;font-weight:700">⏺ Grabar</button>
-            <button id="btn-rec-stop" onclick="stopRecording()" disabled style="background:var(--s2);border:1px solid var(--db);color:#4a8a8a;padding:8px;border-radius:8px;font-size:12px">⏹ Detener</button>
-          </div>
-          <div style="margin-top:8px;font-size:10px;color:#3a7272;text-align:center" id="rec-timer">00:00</div>
+          <button onclick="sendToEval()" style="margin-top:8px;width:100%;background:linear-gradient(135deg,rgba(13,115,115,.35),rgba(13,115,115,.2));border:1px solid rgba(13,115,115,.5);color:#7dd3d3;padding:9px;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s" onmouseover="this.style.background='rgba(13,115,115,.5)'" onmouseout="this.style.background='linear-gradient(135deg,rgba(13,115,115,.35),rgba(13,115,115,.2))'">
+            📤 Enviar al Evaluador STAR →
+          </button>
         </div>
 
-        <!-- Live transcript -->
-        <div style="background:var(--s2);border-radius:8px;padding:10px;min-height:60px">
-          <div style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Transcripción en vivo</div>
-          <span id="transcript-final" style="font-size:12px;color:#a8dede"></span>
-          <span id="transcript-interim" style="font-size:12px;color:#7dd3d3;font-style:italic"></span>
+        <!-- ── 6. CHAT ── -->
+        <div style="flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden">
+          <div style="padding:7px 14px;display:flex;align-items:center;gap:7px;background:rgba(13,115,115,.08);border-bottom:1px solid rgba(13,115,115,.15);flex-shrink:0">
+            <span style="font-size:10px;color:#5eead4;font-weight:800;letter-spacing:1px;text-transform:uppercase">💬 Chat</span>
+            <span id="iv-chat-badge" onclick="this.style.display='none'" style="display:none;background:#ef4444;color:#fff;border-radius:10px;padding:1px 8px;font-size:10px;font-weight:800;cursor:pointer;animation:blink 1s 3">!</span>
+          </div>
+          <div id="iv-chat-msgs" style="flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;min-height:0"></div>
+          <div style="display:flex;gap:6px;padding:8px 10px;border-top:1px solid rgba(13,115,115,.15);flex-shrink:0">
+            <input id="iv-chat-input" placeholder="Escribe un mensaje…" style="flex:1;background:rgba(13,115,115,.08);border:1px solid rgba(13,115,115,.3);border-radius:10px;padding:7px 12px;color:#e0f2f2;font-size:12px" onkeydown="if(event.key==='Enter')sendIvChat()">
+            <button onclick="sendIvChat()" style="background:var(--teal);border:none;color:#fff;padding:7px 14px;border-radius:10px;font-size:14px;cursor:pointer;font-weight:800;transition:opacity .2s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">➤</button>
+          </div>
         </div>
 
-        <button onclick="sendToEval()" style="background:rgba(13,115,115,.3);border:1px solid var(--teal);color:var(--tl);padding:10px;border-radius:8px;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px">
-          📤 Enviar al Evaluador STAR →
-        </button>
       </div>
     </div>
 
@@ -2295,11 +2304,23 @@ function renderQuestions(){
             ${activeQ===q?'✓ Activa':'▶ Activar'}
           </button>
           <button onclick="toggleEditQ(${i})" id="q-edit-btn-${i}" title="Editar pregunta" style="background:rgba(13,115,115,.15);border:1px solid rgba(13,115,115,.3);color:#7dd3d3;padding:4px 8px;border-radius:6px;font-size:11px">✏️</button>
-          <button onclick="readQuestionText('${q.replace(/'/g,"\\'")}',${i})" style="background:rgba(13,115,115,.15);border:1px solid rgba(13,115,115,.3);color:#7dd3d3;padding:4px 8px;border-radius:6px;font-size:11px">🔊</button>
         </div>
       </div>
     </div>
   `).join('');
+  renderQuickQBtns();
+}
+
+function renderQuickQBtns(){
+  const div = document.getElementById('quick-q-btns');
+  if(!div) return;
+  if(!currentProf?.qs?.length){
+    div.innerHTML = '<span style="font-size:11px;color:#1a4a4a;font-style:italic">Selecciona un perfil para ver las preguntas</span>';
+    return;
+  }
+  div.innerHTML = currentProf.qs.map((q,i)=>
+    `<button class="qq-btn${activeQ===q?' active':''}" onclick="setActiveQEdited(${i})">Q${i+1}</button>`
+  ).join('');
 }
 
 function toggleEditQ(idx){
@@ -3143,13 +3164,20 @@ function broadcastQuestion(){
   const qIdx=currentProf?.qs.indexOf(activeQ)??-1;
   const payload={type:'question', q:activeQ, qNum:qIdx+1, profName:currentProf?.name||''};
   if(bc) bc.postMessage(payload);
-  if(typeof window._fbBroadcastQuestion === 'function' && window._activeSalaId)
-    window._fbBroadcastQuestion(window._activeSalaId, activeQ, qIdx+1, currentProf?.name||'');
+  const sid = window._activeSalaId
+    || document.getElementById('_sala-id-store')?.value
+    || localStorage.getItem('ane_sala_id');
+  if(sid && !window._activeSalaId){ window._activeSalaId = sid; }
+  if(typeof window._fbBroadcastQuestion === 'function' && sid)
+    window._fbBroadcastQuestion(sid, activeQ, qIdx+1, currentProf?.name||'');
 }
 function broadcastClear(){
   if(bc) bc.postMessage({type:'clear'});
-  if(typeof window._fbBroadcastClear === 'function' && window._activeSalaId)
-    window._fbBroadcastClear(window._activeSalaId);
+  const sid = window._activeSalaId
+    || document.getElementById('_sala-id-store')?.value
+    || localStorage.getItem('ane_sala_id');
+  if(typeof window._fbBroadcastClear === 'function' && sid)
+    window._fbBroadcastClear(sid);
 }
 function pingCandidateView(){ if(bc) bc.postMessage({type:'ping'}); }
 
@@ -3158,6 +3186,7 @@ function openCandidateView(){
   const salaId = Math.random().toString(36).slice(2,8).toUpperCase();
   window._activeSalaId = salaId;
   const s = document.getElementById('_sala-id-store'); if(s) s.value = salaId;
+  try{ localStorage.setItem('ane_sala_id', salaId); }catch(e){}
   const base = window.location.href.split('?')[0];
   const url = base + '?vista=candidato&sala=' + salaId;
   window._candidateViewUrl = url;
