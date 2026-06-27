@@ -322,6 +322,7 @@ textarea{resize:vertical}
         ]};
         ivPC = new RTCPeerConnection(cfg);
         window._ivPC = ivPC;
+        var ivIceQueue = [];
         ivPC.onicecandidate = function(e){
           if(e.candidate) db.ref('salas/'+sid+'/ice-iv').push(e.candidate.toJSON());
         };
@@ -350,11 +351,17 @@ textarea{resize:vertical}
           if(ivPC.connectionState==='connected'){ dot.style.background='#22c55e'; txt.textContent='Conectado'; }
           if(ivPC.connectionState==='disconnected'||ivPC.connectionState==='failed'){ dot.style.background='#ef4444'; txt.textContent='Desconectado'; }
         };
+        function flushIvIce(){
+          while(ivIceQueue.length){
+            ivPC.addIceCandidate(new RTCIceCandidate(ivIceQueue.shift())).catch(function(){});
+          }
+        }
         // Esperar offer del candidato
         db.ref('salas/'+sid+'/webrtc-offer').on('value', function(snap){
           var offer = snap.val();
           if(!offer || ivPC.remoteDescription) return;
           ivPC.setRemoteDescription(new RTCSessionDescription(offer)).then(function(){
+            flushIvIce();
             return ivPC.createAnswer();
           }).then(function(ans){
             return ivPC.setLocalDescription(ans);
@@ -362,16 +369,19 @@ textarea{resize:vertical}
             db.ref('salas/'+sid+'/webrtc-answer').set(ivPC.localDescription.toJSON());
           }).catch(function(e){ console.warn('WebRTC answer error:', e); });
         });
-        // ICE candidatos del candidato
+        // ICE candidatos del candidato — queued hasta tener remoteDescription
         db.ref('salas/'+sid+'/ice-cand').on('child_added', function(snap){
-          var c = snap.val();
-          if(c && ivPC.remoteDescription) ivPC.addIceCandidate(new RTCIceCandidate(c)).catch(function(){});
+          var c = snap.val(); if(!c) return;
+          if(ivPC.remoteDescription) ivPC.addIceCandidate(new RTCIceCandidate(c)).catch(function(){});
+          else ivIceQueue.push(c);
         });
         // Renegociación: recibir reanswer del candidato cuando el entrevistador activa cámara
         db.ref('salas/'+sid+'/webrtc-reanswer').on('value', function(snap){
           var ans = snap.val();
-          if(!ans || !ivPC.pendingLocalDescription) return;
-          ivPC.setRemoteDescription(new RTCSessionDescription(ans)).catch(function(e){ console.warn('WebRTC reanswer error:', e); });
+          if(!ans) return;
+          if(ivPC.signalingState === 'have-local-offer'){
+            ivPC.setRemoteDescription(new RTCSessionDescription(ans)).catch(function(e){ console.warn('WebRTC reanswer error:', e); });
+          }
         });
         // Mostrar panel de video
         var wp = document.getElementById('webrtc-panel');
@@ -389,39 +399,55 @@ textarea{resize:vertical}
         ]};
         candPC = new RTCPeerConnection(cfg);
         stream.getTracks().forEach(function(t){ candPC.addTrack(t, stream); });
+        var candIceQueue = [];
         candPC.onicecandidate = function(e){
           if(e.candidate) db.ref('salas/'+salaId+'/ice-cand').push(e.candidate.toJSON());
         };
+        candPC.onconnectionstatechange = function(){
+          var dot = document.getElementById('bc-dot');
+          var txt = document.getElementById('bc-txt');
+          if(!dot||!txt) return;
+          if(candPC.connectionState==='connected'){ dot.style.background='#22c55e'; txt.textContent='Conectado con el entrevistador'; }
+          if(candPC.connectionState==='disconnected'||candPC.connectionState==='failed'){ dot.style.background='#ef4444'; txt.textContent='Conexión perdida'; }
+        };
         // Recibir video+audio del entrevistador cuando renegocia
         candPC.ontrack = function(e){
-          var stream = e.streams && e.streams[0];
-          if(!stream) return;
-          // Si trae video, mostrarlo en cand-iv-video
+          var s = e.streams && e.streams[0];
+          if(!s) return;
           var vid = document.getElementById('cand-iv-video');
           var ph  = document.getElementById('cand-iv-ph');
           var aud = document.getElementById('iv-audio-out');
           if(e.track.kind === 'video' && vid){
-            vid.srcObject = stream;
+            vid.srcObject = s;
             if(ph) ph.style.display='none';
             vid.play().catch(function(){ vid.muted=true; vid.play().catch(function(){}); });
           }
           if(e.track.kind === 'audio' && aud){
-            if(!aud.srcObject) aud.srcObject = stream;
+            aud.srcObject = s;
             aud.play().catch(function(){});
           }
         };
+        function flushCandIce(){
+          while(candIceQueue.length){
+            candPC.addIceCandidate(new RTCIceCandidate(candIceQueue.shift())).catch(function(){});
+          }
+        }
         // Escuchar answer del entrevistador
         db.ref('salas/'+salaId+'/webrtc-answer').on('value', function(snap){
           var ans = snap.val();
           if(!ans || candPC.remoteDescription) return;
-          candPC.setRemoteDescription(new RTCSessionDescription(ans)).catch(function(e){ console.warn('WebRTC setRemote error:', e); });
+          candPC.setRemoteDescription(new RTCSessionDescription(ans)).then(function(){
+            flushCandIce();
+          }).catch(function(e){ console.warn('WebRTC setRemote error:', e); });
         });
-        // ICE candidatos del entrevistador
+        // ICE candidatos del entrevistador — queued hasta tener remoteDescription
         db.ref('salas/'+salaId+'/ice-iv').on('child_added', function(snap){
-          var c = snap.val();
-          if(c && candPC.remoteDescription) candPC.addIceCandidate(new RTCIceCandidate(c)).catch(function(){});
+          var c = snap.val(); if(!c) return;
+          if(candPC.remoteDescription) candPC.addIceCandidate(new RTCIceCandidate(c)).catch(function(){});
+          else candIceQueue.push(c);
         });
         // Crear offer inicial (candidato → entrevistador)
+        // offerToReceiveAudio/Video false porque el candidato solo envía; el entrevistador renegocia para enviar
         candPC.createOffer({ offerToReceiveVideo: false, offerToReceiveAudio: false }).then(function(offer){
           return candPC.setLocalDescription(offer);
         }).then(function(){
@@ -430,7 +456,7 @@ textarea{resize:vertical}
         // Renegociación cuando el entrevistador activa su cámara
         db.ref('salas/'+salaId+'/webrtc-reoffer').on('value', function(snap){
           var offer = snap.val();
-          if(!offer) return;
+          if(!offer || candPC.signalingState === 'have-remote-offer') return;
           candPC.setRemoteDescription(new RTCSessionDescription(offer)).then(function(){
             return candPC.createAnswer();
           }).then(function(ans){
@@ -3756,7 +3782,41 @@ function solicitarEntrada(){
 
 // ── CÁMARA + MIC DEL ENTREVISTADOR ─────────────
 let ivCamStream = null;
+let ivMicStream = null;
+let ivMicOn     = false;
 let ivMicMuted  = false;
+
+async function toggleIvMic(){
+  const btn = document.getElementById('iv-mic-btn');
+  if(!ivMicOn){
+    try{
+      ivMicStream = await navigator.mediaDevices.getUserMedia({audio:true, video:false});
+      ivMicOn = true; ivMicMuted = false;
+      // Agregar pista de audio al canal WebRTC si ya está activo
+      var ivPC = window._ivPC;
+      var sid  = window._activeSalaId || document.getElementById('_sala-id-store')?.value || localStorage.getItem('ane_sala_id');
+      if(ivPC && sid && typeof firebase !== 'undefined'){
+        ivMicStream.getAudioTracks().forEach(function(t){ ivPC.addTrack(t, ivMicStream); });
+        ivPC.createOffer().then(function(o){ return ivPC.setLocalDescription(o); }).then(function(){
+          firebase.database().ref('salas/'+sid+'/webrtc-reoffer').set(ivPC.localDescription.toJSON());
+        }).catch(function(){});
+      }
+      if(btn){ btn.className='iv-ctrl-btn active'; btn.innerHTML='<span style="font-size:18px">🎙</span>MIC ON'; }
+    }catch(e){
+      showToast('No se pudo acceder al micrófono: '+e.message,'#ef4444');
+    }
+  } else {
+    ivMicMuted = !ivMicMuted;
+    if(ivMicStream) ivMicStream.getAudioTracks().forEach(t=>{ t.enabled = !ivMicMuted; });
+    if(ivCamStream) ivCamStream.getAudioTracks().forEach(t=>{ t.enabled = !ivMicMuted; });
+    if(btn){
+      btn.className = 'iv-ctrl-btn ' + (ivMicMuted ? 'muted' : 'active');
+      btn.innerHTML = ivMicMuted
+        ? '<span style="font-size:18px">🔇</span>MIC OFF'
+        : '<span style="font-size:18px">🎙</span>MIC ON';
+    }
+  }
+}
 
 async function toggleIvCam(){
   const btn = document.getElementById('iv-cam-btn');
@@ -3766,15 +3826,15 @@ async function toggleIvCam(){
     ivCamStream.getTracks().forEach(t=>t.stop());
     ivCamStream=null;
     if(vid){vid.srcObject=null;vid.style.display='none';} if(ph) ph.style.display='';
-    if(btn) btn.innerHTML='<span style="font-size:16px">📹</span>Cámara';
+    if(btn){ btn.className='iv-ctrl-btn inactive'; btn.innerHTML='<span style="font-size:18px">📹</span>CÁMARA'; }
   } else {
     try{
-      ivCamStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:true});
+      ivCamStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},audio:true});
       if(vid){vid.srcObject=ivCamStream;vid.style.display='block';} if(ph) ph.style.display='none';
-      if(btn) btn.innerHTML='<span style="font-size:16px">📹</span>Cámara OFF';
+      if(btn){ btn.className='iv-ctrl-btn active'; btn.innerHTML='<span style="font-size:18px">📹</span>CAM ON'; }
       // Renegociar WebRTC para enviar audio+video al candidato
       var ivPC = window._ivPC;
-      var sid  = window._activeSalaId;
+      var sid  = window._activeSalaId || document.getElementById('_sala-id-store')?.value || localStorage.getItem('ane_sala_id');
       if(ivPC && sid && typeof firebase !== 'undefined'){
         ivCamStream.getTracks().forEach(function(t){ ivPC.addTrack(t, ivCamStream); });
         ivPC.createOffer().then(function(offer){
@@ -3784,22 +3844,6 @@ async function toggleIvCam(){
         }).catch(function(e){ console.warn('WebRTC reoffer error:', e); });
       }
     }catch(e){ showToast('No se pudo acceder a la cámara: '+e.message,'#ef4444'); }
-  }
-}
-
-function toggleIvMic(){
-  const btn = document.getElementById('iv-mic-btn');
-  ivMicMuted = !ivMicMuted;
-  if(ivCamStream){
-    ivCamStream.getAudioTracks().forEach(t=>{ t.enabled = !ivMicMuted; });
-  }
-  if(btn){
-    btn.style.background = ivMicMuted ? 'rgba(239,68,68,.3)' : 'rgba(13,115,115,.2)';
-    btn.style.borderColor = ivMicMuted ? '#ef4444' : 'var(--teal)';
-    btn.style.color = ivMicMuted ? '#fca5a5' : '#7dd3d3';
-    btn.innerHTML = ivMicMuted
-      ? '<span style="font-size:16px">🔇</span>Mic OFF'
-      : '<span style="font-size:16px">🎙</span>Mic ON';
   }
 }
 
@@ -3863,11 +3907,14 @@ function admitirCandidato(){
   // Firebase (cross-device) + BroadcastChannel (mismo navegador)
   if(typeof window._fbAdmitir === 'function' && salaId) window._fbAdmitir(salaId);
   if(bc) bc.postMessage({type:'admit'});
-  // Cerrar modal y abrir Panel Entrevistador
+  // Cerrar modal — el entrevistador ya está en v-app
   closeSalaModal();
-  showView('entrevista');
   // Iniciar WebRTC para recibir video del candidato
-  if(typeof window._initWebRTCInterviewer === 'function' && salaId) window._initWebRTCInterviewer(salaId);
+  if(typeof window._initWebRTCInterviewer === 'function' && salaId){
+    window._initWebRTCInterviewer(salaId);
+    // Auto-activar micrófono del entrevistador al admitir (candidato lo escucha de inmediato)
+    setTimeout(function(){ if(typeof toggleIvMic==='function') toggleIvMic(); }, 800);
+  }
   // Toast de confirmación
   const t = document.createElement('div');
   t.textContent = '✅ Candidato admitido — ya puede ver las preguntas';
