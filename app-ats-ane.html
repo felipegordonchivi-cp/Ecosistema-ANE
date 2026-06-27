@@ -404,6 +404,28 @@
   .tc-date{font-size:.74rem;color:var(--g-50);margin-bottom:16px}
   .tc-footer{margin-top:22px;padding-top:16px;border-top:1px solid var(--hair);font-size:.78rem;color:var(--g-50)}
 
+  /* ── Mobile responsive ── */
+  @media(max-width:480px){
+    .wrap{padding:0 14px}
+    .wrow{grid-template-columns:1fr!important}
+    .wrow .wname{font-weight:800;font-size:.9rem}
+    .drow,.drow-s,.drow-t{grid-template-columns:1fr!important}
+    .g2,.g3{grid-template-columns:1fr}
+    .cand-body{grid-template-columns:1fr}
+    .cand-head{flex-wrap:wrap}
+    .rank-table th:nth-child(3),.rank-table td:nth-child(3){display:none}
+    .btn.lg{width:100%;justify-content:center}
+    h1{font-size:clamp(1.6rem,8vw,2.2rem)}
+    .hero-lede{font-size:.9rem}
+    .step-btn .lab b{font-size:.8rem}
+    .masthead .inner{padding-top:14px;padding-bottom:14px}
+  }
+  @media(max-width:390px){
+    .wrow{grid-template-columns:1fr!important}
+    .step-btn{padding:10px 8px}
+    .step-btn .num{width:26px;height:26px;font-size:.8rem}
+  }
+
 </style>
 
 
