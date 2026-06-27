@@ -405,25 +405,69 @@
   .tc-footer{margin-top:22px;padding-top:16px;border-top:1px solid var(--hair);font-size:.78rem;color:var(--g-50)}
 
   /* ── Mobile responsive ── */
-  @media(max-width:480px){
-    .wrap{padding:0 14px}
-    .wrow{grid-template-columns:1fr!important}
-    .wrow .wname{font-weight:800;font-size:.9rem}
-    .drow,.drow-s,.drow-t{grid-template-columns:1fr!important}
-    .g2,.g3{grid-template-columns:1fr}
-    .cand-body{grid-template-columns:1fr}
-    .cand-head{flex-wrap:wrap}
-    .rank-table th:nth-child(3),.rank-table td:nth-child(3){display:none}
-    .btn.lg{width:100%;justify-content:center}
-    h1{font-size:clamp(1.6rem,8vw,2.2rem)}
-    .hero-lede{font-size:.9rem}
-    .step-btn .lab b{font-size:.8rem}
-    .masthead .inner{padding-top:14px;padding-bottom:14px}
+
+  /* 680px ya existía para .g2/.g3 y .drow.kw/lang/filtro;
+     extendemos para cubrir .drow.cert y reducir padding general */
+  @media(max-width:680px){
+    .drow.cert{grid-template-columns:1fr 40px}
+    .wrap{padding:0 16px}
+    .privacy .wrap{padding:8px 16px}
+    section.block{padding:36px 0}
+    .secthead .idx{font-size:1.8rem;min-width:36px}
+    .secthead .meta h2{font-size:1.4rem}
+    .panel{padding:16px}
   }
-  @media(max-width:390px){
+
+  /* Teléfonos medianos 481–600px */
+  @media(max-width:600px){
+    .masthead .wrap{padding-top:16px;padding-bottom:14px;gap:12px}
+    .emblem{width:46px;height:46px}
+    .brandtext .agency{font-size:1.1rem}
+    nav.stepper a,.step-btn{padding:11px 8px;gap:8px;justify-content:center}
+    nav.stepper a .lab small,.step-btn .lab small{display:none}
+    nav.stepper a .num,.step-btn .num{width:26px;height:26px;font-size:.82rem}
+    .wrow{grid-template-columns:120px 1fr 54px!important}
+    .rank-table{font-size:.78rem}
+    .rank-table th,.rank-table td{padding:9px 8px}
+  }
+
+  /* iPhone y teléfonos ≤480px */
+  @media(max-width:480px){
+    .wrap{padding:0 12px}
+    .privacy .wrap{padding:7px 12px;flex-wrap:wrap;gap:8px}
+    .privacy button{margin-left:0}
+    section.block{padding:28px 0}
+    .secthead{gap:10px}
+    .secthead .idx{font-size:1.5rem;min-width:28px}
+    .secthead .meta h2{font-size:1.25rem}
+    .secthead .meta p{font-size:.85rem}
+    .panel{padding:14px}
+    .masthead .wrap{padding-top:13px;padding-bottom:11px;gap:10px}
+    .emblem{width:40px;height:40px}
+    .brandtext .agency{font-size:1rem}
+    /* drow: todos los variants apilados */
+    .drow{grid-template-columns:1fr!important}
+    .drow .iconbtn{width:100%;height:38px}
+    /* pesos */
     .wrow{grid-template-columns:1fr!important}
-    .step-btn{padding:10px 8px}
-    .step-btn .num{width:26px;height:26px;font-size:.8rem}
+    .wrow .wval{text-align:left}
+    /* grids (ya cubiertos a 680px pero reforzamos) */
+    .g2,.g3{grid-template-columns:1fr!important}
+    .cand-body{grid-template-columns:1fr!important}
+    .cand-head{flex-wrap:wrap;gap:10px}
+    /* tabla: scroll horizontal */
+    #resultsBody{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .rank-table{min-width:460px}
+    /* botones */
+    .btn.lg{width:100%;justify-content:center}
+    h1,h2{font-size:clamp(1.3rem,7vw,1.8rem)}
+    /* stepper más compacto */
+    nav.stepper a,.step-btn{padding:9px 6px}
+    nav.stepper a .num,.step-btn .num{width:24px;height:24px;font-size:.78rem}
+  }
+
+  @media(max-width:390px){
+    .brandtext .sub{display:none}
   }
 
 </style>
