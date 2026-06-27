@@ -233,6 +233,11 @@ textarea{resize:vertical}
         if(val === 'admitido'){
           document.getElementById('sala-espera').style.display = 'none';
           document.getElementById('sala-entrevista-body').style.display = 'flex';
+          // Auto-activar cámara+mic al entrar (como Teams)
+          if(typeof toggleCandCam === 'function' && !window._candAutoStarted){
+            window._candAutoStarted = true;
+            toggleCandCam();
+          }
         }
       });
       window._fbOn('salas/'+salaId+'/pregunta', function(val){
@@ -314,7 +319,7 @@ textarea{resize:vertical}
 
       // ── WebRTC: entrevistador recibe video del candidato ──
       var ivPC = null;
-      window._initWebRTCInterviewer = function(sid){
+      window._initWebRTCInterviewer = function(sid, ivStream){
         window._ivPC = null;
         var cfg = { iceServers: [
           { urls: 'stun:stun.l.google.com:19302' },
@@ -351,6 +356,9 @@ textarea{resize:vertical}
           if(ivPC.connectionState==='connected'){ dot.style.background='#22c55e'; txt.textContent='Conectado'; }
           if(ivPC.connectionState==='disconnected'||ivPC.connectionState==='failed'){ dot.style.background='#ef4444'; txt.textContent='Desconectado'; }
         };
+        // Si llega stream del entrevistador, añadir tracks ya (para incluirlos en el answer)
+        if(ivStream) ivStream.getTracks().forEach(function(t){ ivPC.addTrack(t, ivStream); });
+
         function flushIvIce(){
           while(ivIceQueue.length){
             ivPC.addIceCandidate(new RTCIceCandidate(ivIceQueue.shift())).catch(function(){});
@@ -446,9 +454,8 @@ textarea{resize:vertical}
           if(candPC.remoteDescription) candPC.addIceCandidate(new RTCIceCandidate(c)).catch(function(){});
           else candIceQueue.push(c);
         });
-        // Crear offer inicial (candidato → entrevistador)
-        // offerToReceiveAudio/Video false porque el candidato solo envía; el entrevistador renegocia para enviar
-        candPC.createOffer({ offerToReceiveVideo: false, offerToReceiveAudio: false }).then(function(offer){
+        // Crear offer inicial — negociar envío Y recepción en ambas direcciones desde el inicio
+        candPC.createOffer({ offerToReceiveVideo: true, offerToReceiveAudio: true }).then(function(offer){
           return candPC.setLocalDescription(offer);
         }).then(function(){
           db.ref('salas/'+salaId+'/webrtc-offer').set(candPC.localDescription.toJSON());
@@ -3635,7 +3642,7 @@ async function toggleCandCam(){
   }
 }
 function toggleCandMic(){
-  if(!candCamStream){ alert('Activa la cámara primero.'); return; }
+  if(!candCamStream){ toggleCandCam(); return; }
   candMicOn=!candMicOn;
   candCamStream.getAudioTracks().forEach(t=>{ t.enabled=candMicOn; });
   updateCandButtons();
@@ -3786,64 +3793,36 @@ let ivMicStream = null;
 let ivMicOn     = false;
 let ivMicMuted  = false;
 
-async function toggleIvMic(){
+function toggleIvMic(){
   const btn = document.getElementById('iv-mic-btn');
-  if(!ivMicOn){
-    try{
-      ivMicStream = await navigator.mediaDevices.getUserMedia({audio:true, video:false});
-      ivMicOn = true; ivMicMuted = false;
-      // Agregar pista de audio al canal WebRTC si ya está activo
-      var ivPC = window._ivPC;
-      var sid  = window._activeSalaId || document.getElementById('_sala-id-store')?.value || localStorage.getItem('ane_sala_id');
-      if(ivPC && sid && typeof firebase !== 'undefined'){
-        ivMicStream.getAudioTracks().forEach(function(t){ ivPC.addTrack(t, ivMicStream); });
-        ivPC.createOffer().then(function(o){ return ivPC.setLocalDescription(o); }).then(function(){
-          firebase.database().ref('salas/'+sid+'/webrtc-reoffer').set(ivPC.localDescription.toJSON());
-        }).catch(function(){});
-      }
-      if(btn){ btn.className='iv-ctrl-btn active'; btn.innerHTML='<span style="font-size:18px">🎙</span>MIC ON'; }
-    }catch(e){
-      showToast('No se pudo acceder al micrófono: '+e.message,'#ef4444');
-    }
-  } else {
-    ivMicMuted = !ivMicMuted;
-    if(ivMicStream) ivMicStream.getAudioTracks().forEach(t=>{ t.enabled = !ivMicMuted; });
-    if(ivCamStream) ivCamStream.getAudioTracks().forEach(t=>{ t.enabled = !ivMicMuted; });
-    if(btn){
-      btn.className = 'iv-ctrl-btn ' + (ivMicMuted ? 'muted' : 'active');
-      btn.innerHTML = ivMicMuted
-        ? '<span style="font-size:18px">🔇</span>MIC OFF'
-        : '<span style="font-size:18px">🎙</span>MIC ON';
-    }
+  ivMicMuted = !ivMicMuted;
+  // Silenciar/activar en cualquier stream activo
+  [ivCamStream, ivMicStream].forEach(function(s){
+    if(s) s.getAudioTracks().forEach(function(t){ t.enabled = !ivMicMuted; });
+  });
+  if(btn){
+    btn.className = 'iv-ctrl-btn ' + (ivMicMuted ? 'muted' : 'active');
+    btn.innerHTML = ivMicMuted
+      ? '<span style="font-size:18px">🔇</span>MIC OFF'
+      : '<span style="font-size:18px">🎙</span>MIC ON';
   }
 }
 
-async function toggleIvCam(){
+function toggleIvCam(){
   const btn = document.getElementById('iv-cam-btn');
   const vid = document.getElementById('iv-local-video');
   const ph  = document.getElementById('iv-local-ph');
-  if(ivCamStream){
-    ivCamStream.getTracks().forEach(t=>t.stop());
-    ivCamStream=null;
-    if(vid){vid.srcObject=null;vid.style.display='none';} if(ph) ph.style.display='';
-    if(btn){ btn.className='iv-ctrl-btn inactive'; btn.innerHTML='<span style="font-size:18px">📹</span>CÁMARA'; }
+  if(!ivCamStream){ showToast('La cámara se activa automáticamente al admitir al candidato','#0d7373'); return; }
+  // Toggle visibilidad del video (la pista sigue activa para WebRTC)
+  const tracks = ivCamStream.getVideoTracks();
+  const enabled = tracks.length ? tracks[0].enabled : false;
+  tracks.forEach(function(t){ t.enabled = !enabled; });
+  if(!enabled){
+    if(vid){ vid.style.display='block'; } if(ph) ph.style.display='none';
+    if(btn){ btn.className='iv-ctrl-btn active'; btn.innerHTML='<span style="font-size:18px">📹</span>CAM ON'; }
   } else {
-    try{
-      ivCamStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},audio:true});
-      if(vid){vid.srcObject=ivCamStream;vid.style.display='block';} if(ph) ph.style.display='none';
-      if(btn){ btn.className='iv-ctrl-btn active'; btn.innerHTML='<span style="font-size:18px">📹</span>CAM ON'; }
-      // Renegociar WebRTC para enviar audio+video al candidato
-      var ivPC = window._ivPC;
-      var sid  = window._activeSalaId || document.getElementById('_sala-id-store')?.value || localStorage.getItem('ane_sala_id');
-      if(ivPC && sid && typeof firebase !== 'undefined'){
-        ivCamStream.getTracks().forEach(function(t){ ivPC.addTrack(t, ivCamStream); });
-        ivPC.createOffer().then(function(offer){
-          return ivPC.setLocalDescription(offer);
-        }).then(function(){
-          firebase.database().ref('salas/'+sid+'/webrtc-reoffer').set(ivPC.localDescription.toJSON());
-        }).catch(function(e){ console.warn('WebRTC reoffer error:', e); });
-      }
-    }catch(e){ showToast('No se pudo acceder a la cámara: '+e.message,'#ef4444'); }
+    if(vid){ vid.style.display='none'; } if(ph) ph.style.display='';
+    if(btn){ btn.className='iv-ctrl-btn inactive'; btn.innerHTML='<span style="font-size:18px">📹</span>CAM OFF'; }
   }
 }
 
@@ -3909,11 +3888,37 @@ function admitirCandidato(){
   if(bc) bc.postMessage({type:'admit'});
   // Cerrar modal — el entrevistador ya está en v-app
   closeSalaModal();
-  // Iniciar WebRTC para recibir video del candidato
+  // Iniciar AV del entrevistador + WebRTC simultáneamente (como Teams)
   if(typeof window._initWebRTCInterviewer === 'function' && salaId){
-    window._initWebRTCInterviewer(salaId);
-    // Auto-activar micrófono del entrevistador al admitir (candidato lo escucha de inmediato)
-    setTimeout(function(){ if(typeof toggleIvMic==='function') toggleIvMic(); }, 800);
+    navigator.mediaDevices.getUserMedia({
+      video: { facingMode:'user', width:{ideal:1280}, height:{ideal:720} },
+      audio: true
+    }).then(function(stream){
+      // Mostrar cámara local del entrevistador en PIP
+      ivCamStream = stream;
+      var vid = document.getElementById('iv-local-video');
+      var ph  = document.getElementById('iv-local-ph');
+      if(vid){ vid.srcObject = stream; vid.style.display = 'block'; }
+      if(ph)  ph.style.display = 'none';
+      var btn = document.getElementById('iv-cam-btn');
+      if(btn){ btn.className='iv-ctrl-btn active'; btn.innerHTML='<span style="font-size:18px">📹</span>CAM ON'; }
+      ivMicOn = true; ivMicMuted = false;
+      var mb = document.getElementById('iv-mic-btn');
+      if(mb){ mb.className='iv-ctrl-btn active'; mb.innerHTML='<span style="font-size:18px">🎙</span>MIC ON'; }
+      // Iniciar WebRTC con el stream ya listo
+      window._initWebRTCInterviewer(salaId, stream);
+    }).catch(function(){
+      // Si no hay cámara, intentar solo audio
+      navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(function(aStream){
+        ivMicStream = aStream; ivMicOn = true; ivMicMuted = false;
+        var mb = document.getElementById('iv-mic-btn');
+        if(mb){ mb.className='iv-ctrl-btn active'; mb.innerHTML='<span style="font-size:18px">🎙</span>MIC ON'; }
+        window._initWebRTCInterviewer(salaId, aStream);
+      }).catch(function(){
+        // Sin medios — iniciar WebRTC de todas formas para recibir al candidato
+        window._initWebRTCInterviewer(salaId, null);
+      });
+    });
   }
   // Toast de confirmación
   const t = document.createElement('div');
