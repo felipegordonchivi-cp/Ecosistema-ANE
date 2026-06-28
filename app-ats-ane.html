@@ -406,12 +406,6 @@
 
   /* ── Mobile responsive ── */
 
-  /* En móvil el IntersectionObserver de iOS Safari no dispara → .reveal
-     quedaría invisible. Se fuerza visible directamente. */
-  @media(max-width:768px){
-    .reveal{opacity:1!important;transform:none!important;transition:none!important}
-  }
-
   /* 680px ya existía para .g2/.g3 y .drow.kw/lang/filtro;
      extendemos para cubrir .drow.cert y reducir padding general */
   @media(max-width:680px){
@@ -485,26 +479,6 @@
 </style>
 </head>
 <body>
-<!-- Fix animaciones .reveal en iOS: parchear IntersectionObserver antes del JS principal -->
-<script>
-(function(){
-  if(!('ontouchstart' in window) && navigator.maxTouchPoints < 1) return;
-  // Parchar IntersectionObserver: disparar callback inmediatamente con isIntersecting=true
-  // El JS obfuscado crea un IO para animar .reveal — así lo engañamos para que
-  // todos los elementos sean "visibles" desde el inicio, sin depender de scroll.
-  var _OrigIO = window.IntersectionObserver;
-  window.IntersectionObserver = function(cb, opts){
-    var io = new _OrigIO(cb, opts);
-    var _obs = io.observe.bind(io);
-    io.observe = function(el){
-      _obs(el);
-      try{ cb([{isIntersecting:true,intersectionRatio:1,target:el}], io); }catch(e){}
-    };
-    return io;
-  };
-  window.IntersectionObserver.prototype = _OrigIO.prototype;
-})();
-</script>
 <a href="#sec1" class="skip">Saltar al contenido</a>
 
 <!-- ======================= CABECERA ======================= -->
@@ -541,7 +515,7 @@
 <!-- ======================= 1. CONFIGURACIÓN ======================= -->
 <section class="block" id="sec1">
   <div class="wrap">
-    <div class="secthead reveal">
+    <div class="secthead">
       <div class="idx">1</div>
       <div class="meta">
         <span class="kicker">Panel del profesional de RR. HH.</span>
@@ -550,7 +524,7 @@
       </div>
     </div>
 
-    <div class="card reveal">
+    <div class="card">
       <!-- Datos del puesto -->
       <div class="panel">
         <div class="panel-title"><span class="tagnum">A</span> Datos de la vacante</div>
@@ -709,7 +683,7 @@
 <!-- ======================= 2. BANDEJA DE CV ======================= -->
 <section class="block" id="sec2">
   <div class="wrap">
-    <div class="secthead reveal">
+    <div class="secthead">
       <div class="idx">2</div>
       <div class="meta">
         <span class="kicker">Carga de candidaturas</span>
@@ -718,7 +692,7 @@
       </div>
     </div>
 
-    <div class="card reveal">
+    <div class="card">
       <div class="panel">
         <div class="cv-input-mode" role="tablist" aria-label="Modo de carga">
           <button class="btn primary" id="modeFile" role="tab" aria-selected="true">Adjuntar archivo</button>
@@ -772,7 +746,7 @@
 <!-- ======================= 3. EVALUACIÓN ======================= -->
 <section class="block" id="sec3" style="border-bottom:none">
   <div class="wrap">
-    <div class="secthead reveal">
+    <div class="secthead">
       <div class="idx">3</div>
       <div class="meta">
         <span class="kicker">Resultado del análisis</span>
