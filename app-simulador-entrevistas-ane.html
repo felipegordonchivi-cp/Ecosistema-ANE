@@ -505,14 +505,45 @@ function escHtml(s){
           : '⚠️ Firebase sin conexión — verifica tu internet';
       });
 
-      // Test if database rules allow writes (needed for knock flow)
+      // Test if database rules allow reads+writes on salas/ path
       window._fbTestRules = function(callback){
-        db.ref('__ane_ping__').set({ts: Date.now()}).then(function(){
-          db.ref('__ane_ping__').remove();
+        var testPath = 'salas/__ane_test__/ping';
+        db.ref(testPath).set({ts: Date.now()}).then(function(){
+          return db.ref(testPath).remove();
+        }).then(function(){
           if(callback) callback(null);
         }).catch(function(err){
           if(callback) callback(err);
         });
+      };
+
+      // Polling backup: reads knock every 3s in case real-time listener fails
+      var _knockPollInterval = null;
+      window._startKnockPolling = function(id){
+        if(_knockPollInterval) clearInterval(_knockPollInterval);
+        _knockPollInterval = setInterval(function(){
+          db.ref('salas/'+id+'/knock').once('value').then(function(snap){
+            var val = snap.val();
+            if(!val) return;
+            // Only activate if button is still disabled (not yet approved)
+            var btnAprobar = document.getElementById('btn-aprobar-sala');
+            if(btnAprobar && !btnAprobar.disabled) return;
+            var nn = document.getElementById('knock-notify');
+            var nb = document.getElementById('knock-nombre');
+            if(nn && nb){
+              nb.textContent = val.nombre || 'Candidato';
+              nn.style.display = 'block';
+              nn.style.borderColor = '';
+              nn.dataset.sala = id;
+            }
+            if(typeof activarBtnAprobar === 'function') activarBtnAprobar(val.nombre || 'Candidato');
+          }).catch(function(err){
+            console.warn('[ANE] Poll knock error:', err.code);
+          });
+        }, 3000);
+      };
+      window._stopKnockPolling = function(){
+        if(_knockPollInterval){ clearInterval(_knockPollInterval); _knockPollInterval = null; }
       };
 
       // ── WebRTC: entrevistador recibe video del candidato ──
@@ -1127,7 +1158,7 @@ function escHtml(s){
       <div id="fb-error-banner" style="display:none;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.4);border-radius:10px;padding:14px;margin-bottom:10px">
         <div style="font-size:12px;font-weight:800;color:#fca5a5;margin-bottom:8px">⚠️ Firebase PERMISSION_DENIED — sala de espera inactiva</div>
         <div style="font-size:11px;color:#9a5a5a;line-height:1.6;margin-bottom:10px">Las reglas de la base de datos Firebase han vencido (caducan a los 30 días en modo de prueba). Debes actualizarlas en la consola:</div>
-        <div style="background:rgba(0,0,0,.3);border-radius:8px;padding:10px;font-family:monospace;font-size:10px;color:#e0f2f2;margin-bottom:10px;white-space:pre">{"rules": {"salas": {".read": true, ".write": true}, "__ane_ping__": {".read": true, ".write": true}}}</div>
+        <div style="background:rgba(0,0,0,.3);border-radius:8px;padding:10px;font-family:monospace;font-size:10px;color:#e0f2f2;margin-bottom:10px;white-space:pre">{"rules": {"salas": {".read": true, ".write": true}}}</div>
         <button onclick="window.open('https://console.firebase.google.com/project/simulador-de-entrevista-a883d/database/simulador-de-entrevista-a883d-default-rtdb/rules','_blank')" style="width:100%;background:#ef4444;border:none;color:#fff;padding:9px;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer">🔗 Abrir Firebase Console → Reglas</button>
       </div>
       <!-- Estado conexión BC -->
@@ -3516,9 +3547,10 @@ function openCandidateView(){
     window._fbRemove('salas/'+salaId+'/estado');
     window._fbRemove('salas/'+salaId+'/knock');
   }
-  // Escuchar knock via Firebase para esta sala
+  // Escuchar knock via Firebase para esta sala (real-time + polling backup)
   if(typeof window._fbEscucharSala === 'function'){
     window._fbEscucharSala(salaId);
+    if(typeof window._startKnockPolling === 'function') window._startKnockPolling(salaId);
     // Update status to show Firebase is listening
     var dot = document.getElementById('bc-conn-dot');
     var txt = document.getElementById('bc-conn-txt');
@@ -4283,6 +4315,7 @@ function admitirCandidato(){
   const salaId = nn?.dataset?.sala || window._activeSalaId;
   if(nn) nn.style.display='none';
   desactivarBtnAprobar();
+  if(typeof window._stopKnockPolling === 'function') window._stopKnockPolling();
   // Firebase (cross-device) + BroadcastChannel (mismo navegador)
   if(typeof window._fbAdmitir === 'function' && salaId) window._fbAdmitir(salaId);
   if(bc) bc.postMessage({type:'admit'});
