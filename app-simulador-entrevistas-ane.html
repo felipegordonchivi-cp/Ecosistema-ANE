@@ -356,6 +356,7 @@ function escHtml(s){
 
     window._fbSet    = function(path, val){ return db.ref(path).set(val); };
     window._fbRemove = function(path){ return db.ref(path).remove(); };
+    window._fbOff    = function(path){ db.ref(path).off(); };
     window._fbOn     = function(path, cb, errCb){
       db.ref(path).on('value', function(snap){ cb(snap.val()); }, function(err){
         console.error('[ANE Firebase]', path, err.code, err.message);
@@ -420,6 +421,15 @@ function escHtml(s){
     if(!esCand){
       // Entrevistador: escuchar knocks cuando se abre sala
       window._fbEscucharSala = function(id){
+        // Detach stale listeners from any previous sala before attaching new ones
+        var lastId = window._fbEscucharSala._lastId;
+        if(lastId && lastId !== id){
+          window._fbOff('salas/'+lastId+'/knock');
+          window._fbOff('salas/'+lastId+'/chat');
+          window._fbOff('salas/'+lastId+'/transcript');
+        }
+        window._fbEscucharSala._lastId = id;
+
         window._fbOn('salas/'+id+'/knock', function(val){
           if(!val) return;
           var nn = document.getElementById('knock-notify');
@@ -539,6 +549,16 @@ function escHtml(s){
             if(typeof activarBtnAprobar === 'function') activarBtnAprobar(val.nombre || 'Candidato');
           }).catch(function(err){
             console.warn('[ANE] Poll knock error:', err.code);
+            if(err.code === 'PERMISSION_DENIED'){
+              // Stop polling — it won't work until rules are fixed
+              if(_knockPollInterval){ clearInterval(_knockPollInterval); _knockPollInterval = null; }
+              var dot  = document.getElementById('fb-status-dot');
+              var txt  = document.getElementById('fb-status-txt');
+              var ban  = document.getElementById('fb-error-banner');
+              if(dot) dot.style.background = '#ef4444';
+              if(txt) txt.textContent = '⚠️ PERMISSION_DENIED — actualiza las reglas de Firebase para usar la sala de espera';
+              if(ban) ban.style.display = 'block';
+            }
           });
         }, 3000);
       };
