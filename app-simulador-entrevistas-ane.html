@@ -356,7 +356,12 @@ function escHtml(s){
 
     window._fbSet    = function(path, val){ return db.ref(path).set(val); };
     window._fbRemove = function(path){ return db.ref(path).remove(); };
-    window._fbOn     = function(path, cb){ db.ref(path).on('value', function(snap){ cb(snap.val()); }); };
+    window._fbOn     = function(path, cb, errCb){
+      db.ref(path).on('value', function(snap){ cb(snap.val()); }, function(err){
+        console.error('[ANE Firebase]', path, err.code, err.message);
+        if(errCb) errCb(err);
+      });
+    };
 
     var params    = new URLSearchParams(window.location.search);
     var salaId    = params.get('sala');
@@ -366,21 +371,34 @@ function escHtml(s){
       // Candidato: escuchar admit y preguntas
       window._fbOn('salas/'+salaId+'/estado', function(val){
         if(val === 'admitido'){
-          document.getElementById('sala-espera').style.display = 'none';
-          document.getElementById('sala-entrevista-body').style.display = 'flex';
+          var se = document.getElementById('sala-espera');
+          var sb = document.getElementById('sala-entrevista-body');
+          if(se) se.style.display = 'none';
+          if(sb) sb.style.display = 'flex';
           // Auto-activar cámara+mic al entrar (como Teams)
           if(typeof toggleCandCam === 'function' && !window._candAutoStarted){
             window._candAutoStarted = true;
             toggleCandCam();
           }
         }
+      }, function(err){
+        var status = document.getElementById('sala-espera-status');
+        if(status) status.innerHTML = '⚠️ Error de conexión Firebase ('+err.code+'). Recarga la página e intenta de nuevo.';
+        if(status) status.style.display = 'block';
       });
       window._fbOn('salas/'+salaId+'/pregunta', function(val){
         if(val && val.q){ if(typeof showCandQuestion==='function') showCandQuestion(val.q, val.qNum, val.profName); }
         else { if(typeof hideCandQuestion==='function') hideCandQuestion(); }
       });
       window._fbSolicitarEntrada = function(nombre){
-        window._fbSet('salas/'+salaId+'/knock', { nombre: nombre, ts: Date.now() });
+        window._fbSet('salas/'+salaId+'/knock', { nombre: nombre, ts: Date.now() })
+          .catch(function(err){
+            console.error('[ANE] Firebase knock write error:', err.code, err.message);
+            var status = document.getElementById('sala-espera-status');
+            if(status){ status.innerHTML = '⚠️ Error al enviar solicitud ('+err.code+'). Verifica tu conexión e intenta de nuevo.'; status.style.display='block'; }
+            var btn = document.getElementById('sala-espera-btn');
+            if(btn){ btn.disabled=false; btn.style.opacity='1'; }
+          });
       };
       // Chat en tiempo real — candidato recibe mensajes del entrevistador
       db.ref('salas/'+salaId+'/chat').on('child_added', function(snap){
@@ -406,8 +424,33 @@ function escHtml(s){
           if(!val) return;
           var nn = document.getElementById('knock-notify');
           var nb = document.getElementById('knock-nombre');
-          if(nn && nb){ nb.textContent = val.nombre || 'Candidato'; nn.style.display = 'block'; nn.dataset.sala = id; }
+          if(nn && nb){
+            nb.textContent = val.nombre || 'Candidato';
+            nn.style.display = 'block';
+            nn.style.borderColor = '';  // reset any error border
+            nn.dataset.sala = id;
+          }
           if(typeof activarBtnAprobar === 'function') activarBtnAprobar(val.nombre || 'Candidato');
+        }, function(err){
+          // Surfacing Firebase permission errors — previously these were silently dropped
+          console.error('[ANE] Firebase knock listener error:', err.code, err.message);
+          var dot = document.getElementById('bc-conn-dot');
+          var txt = document.getElementById('bc-conn-txt');
+          var dot2 = document.getElementById('bc-conn-dot2');
+          var txt2 = document.getElementById('bc-conn-txt2');
+          var msg = '⚠️ Firebase: '+err.code+' — sala de espera no disponible. Verifica las reglas de la base de datos.';
+          if(dot) dot.style.background='#ef4444';
+          if(txt) txt.textContent=msg;
+          if(dot2) dot2.style.background='#ef4444';
+          if(txt2) txt2.textContent=msg;
+          // Also surface in notify area so interviewer sees it
+          var nn = document.getElementById('knock-notify');
+          if(nn){
+            var nb = document.getElementById('knock-nombre');
+            if(nb) nb.textContent = 'Error: '+err.code;
+            nn.style.display = 'block';
+            nn.style.borderColor = '#ef4444';
+          }
         });
         // Chat en tiempo real — entrevistador recibe mensajes del candidato
         db.ref('salas/'+id+'/chat').on('child_added', function(snap){
@@ -3380,8 +3423,9 @@ let candRecognition=null, isCandRecording=false;
 let candRecTimer=null, candRecSecs=0, candFinalTranscript='';
 let candQHistory=[];
 
+let _bcBaseHandler = null;
 if(bc){
-  bc.onmessage=(ev)=>{
+  _bcBaseHandler = (ev)=>{
     const d=ev.data;
     if(d.type==='question') showCandQuestion(d.q, d.qNum, d.profName);
     if(d.type==='clear') hideCandQuestion();
@@ -3394,6 +3438,7 @@ if(bc){
       activarBtnAprobar(d.nombre||'Candidato');
     }
   };
+  bc.onmessage=_bcBaseHandler;
 }
 
 function broadcastQuestion(){
@@ -3435,7 +3480,24 @@ function openCandidateView(){
     window._fbRemove('salas/'+salaId+'/knock');
   }
   // Escuchar knock via Firebase para esta sala
-  if(typeof window._fbEscucharSala === 'function') window._fbEscucharSala(salaId);
+  if(typeof window._fbEscucharSala === 'function'){
+    window._fbEscucharSala(salaId);
+    // Update status to show Firebase is listening
+    var dot = document.getElementById('bc-conn-dot');
+    var txt = document.getElementById('bc-conn-txt');
+    var dot2 = document.getElementById('bc-conn-dot2');
+    var txt2 = document.getElementById('bc-conn-txt2');
+    if(dot) dot.style.background='#eab308';
+    if(txt) txt.textContent='Sala '+salaId+' activa — esperando candidato…';
+    if(dot2) dot2.style.background='#eab308';
+    if(txt2) txt2.textContent='Sala '+salaId+' activa — esperando candidato…';
+  } else {
+    console.error('[ANE] _fbEscucharSala no disponible — Firebase no inicializó correctamente');
+    var dot = document.getElementById('bc-conn-dot');
+    var txt = document.getElementById('bc-conn-txt');
+    if(dot) dot.style.background='#ef4444';
+    if(txt) txt.textContent='⚠️ Firebase no disponible — recarga la página';
+  }
   // Mostrar el enlace en un toast copiable
   const toast = document.createElement('div');
   toast.id = 'sala-link-toast';
@@ -3787,7 +3849,8 @@ function updateBcStatus(){
     if(dot2) dot2.style.background='#3a7272';
     if(txt2) txt2.textContent='Vista Candidato: no abierta en este navegador';
   },1500);
-  const prev=bc.onmessage;
+  // Always restore to the original base handler to prevent stacking on repeated calls
+  const base = _bcBaseHandler || bc.onmessage;
   bc.onmessage=(ev)=>{
     if(ev.data.type==='pong'){
       clearTimeout(timeout);
@@ -3796,8 +3859,8 @@ function updateBcStatus(){
       if(dot2){ dot2.style.background='#22c55e'; }
       if(txt2){ txt2.textContent='✓ Vista Candidato conectada y sincronizada'; }
     }
-    if(prev) prev(ev);
-    bc.onmessage=prev;
+    if(base) base(ev);
+    bc.onmessage=base;
   };
 }
 
