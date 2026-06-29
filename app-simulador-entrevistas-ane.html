@@ -74,6 +74,8 @@ textarea{resize:vertical}
 .teal-pulse{animation:pulse-teal 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 .blink{animation:blink 1s infinite}
+@keyframes knock-pulse{0%,100%{box-shadow:0 8px 32px rgba(0,0,0,.6),0 0 0 0 rgba(34,197,94,.7)}70%{box-shadow:0 8px 32px rgba(0,0,0,.6),0 0 0 16px rgba(34,197,94,0)}}
+.knock-alert{animation:knock-pulse .9s infinite}
 
 /* SECTOR TAGS */
 .sector-tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;letter-spacing:.5px}
@@ -432,14 +434,7 @@ function escHtml(s){
 
         window._fbOn('salas/'+id+'/knock', function(val){
           if(!val) return;
-          var nn = document.getElementById('knock-notify');
-          var nb = document.getElementById('knock-nombre');
-          if(nn && nb){
-            nb.textContent = val.nombre || 'Candidato';
-            nn.style.display = 'block';
-            nn.style.borderColor = '';  // reset any error border
-            nn.dataset.sala = id;
-          }
+          if(typeof mostrarKnockNotify === 'function') mostrarKnockNotify(val.nombre, id);
           if(typeof activarBtnAprobar === 'function') activarBtnAprobar(val.nombre || 'Candidato');
         }, function(err){
           // Surfacing Firebase permission errors — previously these were silently dropped
@@ -538,14 +533,7 @@ function escHtml(s){
             // Only activate if button is still disabled (not yet approved)
             var btnAprobar = document.getElementById('btn-aprobar-sala');
             if(btnAprobar && !btnAprobar.disabled) return;
-            var nn = document.getElementById('knock-notify');
-            var nb = document.getElementById('knock-nombre');
-            if(nn && nb){
-              nb.textContent = val.nombre || 'Candidato';
-              nn.style.display = 'block';
-              nn.style.borderColor = '';
-              nn.dataset.sala = id;
-            }
+            if(typeof mostrarKnockNotify === 'function') mostrarKnockNotify(val.nombre, id);
             if(typeof activarBtnAprobar === 'function') activarBtnAprobar(val.nombre || 'Candidato');
           }).catch(function(err){
             console.warn('[ANE] Poll knock error:', err.code);
@@ -1039,12 +1027,12 @@ function escHtml(s){
 </div><!-- end v-candidato -->
 
 <!-- NOTIFICACIÓN DE LLAMADO (panel entrevistador) -->
-<div id="knock-notify" style="display:none;position:fixed;bottom:24px;right:24px;z-index:9999;background:#0b3d52;border:2px solid var(--teal);border-radius:14px;padding:20px 24px;min-width:300px;box-shadow:0 8px 32px rgba(0,0,0,.5)">
-  <div style="font-size:13px;font-weight:800;color:#7dd3d3;margin-bottom:4px">🔔 Candidato en sala de espera</div>
-  <div id="knock-nombre" style="font-size:15px;color:#e0f2f2;font-weight:700;margin-bottom:16px"></div>
+<div id="knock-notify" style="display:none;position:fixed;top:20px;right:20px;z-index:9999;background:#0b3d52;border:3px solid #22c55e;border-radius:14px;padding:20px 24px;min-width:300px;box-shadow:0 8px 32px rgba(0,0,0,.6)">
+  <div style="font-size:14px;font-weight:800;color:#4ade80;margin-bottom:4px">🔔 Candidato en sala de espera</div>
+  <div id="knock-nombre" style="font-size:16px;color:#e0f2f2;font-weight:700;margin-bottom:16px"></div>
   <div style="display:flex;gap:10px">
-    <button onclick="admitirCandidato()" style="flex:1;background:var(--teal);border:none;color:#fff;padding:10px;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer">✅ Admitir</button>
-    <button onclick="document.getElementById('knock-notify').style.display='none'" style="background:var(--s2);border:1px solid var(--db);color:#7dd3d3;padding:10px 16px;border-radius:8px;font-size:13px;cursor:pointer">✕</button>
+    <button onclick="admitirCandidato()" style="flex:1;background:linear-gradient(135deg,#16a34a,#15803d);border:none;color:#fff;padding:10px;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer">✅ Admitir</button>
+    <button onclick="ocultarKnockNotify()" style="background:var(--s2);border:1px solid var(--db);color:#7dd3d3;padding:10px 16px;border-radius:8px;font-size:13px;cursor:pointer">✕</button>
   </div>
 </div>
 
@@ -3520,9 +3508,7 @@ if(bc){
     if(d.type==='ping') bc.postMessage({type:'pong'});
     if(d.type==='pong'){ const el=document.getElementById('bc-iv-txt'); if(el) el.textContent='✓ Vista Candidato conectada'; }
     if(d.type==='knock'){
-      const nn=document.getElementById('knock-notify');
-      const nb=document.getElementById('knock-nombre');
-      if(nn&&nb){ nb.textContent=d.nombre||'Candidato'; nn.style.display='block'; nn.dataset.sala=window._activeSalaId||''; }
+      if(typeof mostrarKnockNotify === 'function') mostrarKnockNotify(d.nombre, window._activeSalaId||'');
       activarBtnAprobar(d.nombre||'Candidato');
     }
   };
@@ -4302,6 +4288,36 @@ function sendCandChat(){
   document.getElementById('cand-chat-badge').style.display='none';
 }
 
+function playKnockSound(){
+  try{
+    var ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [0,0.18].forEach(function(delay){
+      var osc=ctx.createOscillator(),g=ctx.createGain();
+      osc.connect(g);g.connect(ctx.destination);
+      osc.frequency.value=880;
+      g.gain.setValueAtTime(0.4,ctx.currentTime+delay);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+0.25);
+      osc.start(ctx.currentTime+delay);osc.stop(ctx.currentTime+delay+0.25);
+    });
+  }catch(e){}
+}
+function mostrarKnockNotify(nombre,salaId){
+  var nn=document.getElementById('knock-notify');
+  var nb=document.getElementById('knock-nombre');
+  if(!nn||!nb) return;
+  nb.textContent=nombre||'Candidato';
+  nn.style.display='block';
+  nn.style.borderColor='';
+  nn.classList.add('knock-alert');
+  if(salaId) nn.dataset.sala=salaId;
+  playKnockSound();
+}
+function ocultarKnockNotify(){
+  var nn=document.getElementById('knock-notify');
+  if(!nn) return;
+  nn.style.display='none';
+  nn.classList.remove('knock-alert');
+}
 function activarBtnAprobar(nombre){
   ['btn-aprobar-sala','btn-aprobar-sala2','btn-aprobar-sala3'].forEach(function(id){
     var b = document.getElementById(id);
@@ -4333,7 +4349,7 @@ function desactivarBtnAprobar(){
 function admitirCandidato(){
   const nn = document.getElementById('knock-notify');
   const salaId = nn?.dataset?.sala || window._activeSalaId;
-  if(nn) nn.style.display='none';
+  ocultarKnockNotify();
   desactivarBtnAprobar();
   if(typeof window._stopKnockPolling === 'function') window._stopKnockPolling();
   // Firebase (cross-device) + BroadcastChannel (mismo navegador)
