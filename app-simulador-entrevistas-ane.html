@@ -2367,7 +2367,11 @@ function switchPanel(n){
     document.getElementById('tab'+i)?.classList.toggle('active',i===n);
     document.getElementById('panel'+i)?.classList.toggle('active',i===n);
   });
-  if(n===2){ updateEvalCtx(); if(activeQ) renderStarGuide(activeQ); }
+  if(n===2){
+    updateEvalCtx();
+    updateStarDisplay();
+    if(activeQ) renderStarGuide(activeQ);
+  }
   if(n===3) renderHistList();
 }
 
