@@ -2952,6 +2952,11 @@ Sé específico, constructivo y objetivo. Considera el contexto del mercado labo
     });
 
     const data = await response.json();
+    if(!response.ok){
+      const errMsg = data.error?.message || `Error HTTP ${response.status}`;
+      if(result){ result.textContent='❌ Error de API Gemini: '+errMsg; result.style.display='block'; }
+      return null;
+    }
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No se obtuvo respuesta del análisis.';
 
     if(result){ result.textContent=text; result.style.display='block'; }
