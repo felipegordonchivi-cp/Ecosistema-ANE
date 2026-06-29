@@ -3836,69 +3836,83 @@ async function switchCamera(deviceId){
 }
 
 // ── GRABACIÓN DE VOZ — CANDIDATO ───────────────
+let _candFbTimer=null;
+
+function _candSRSession(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  try{ if(candRecognition){ candRecognition.onend=null; candRecognition.abort(); } }catch(e){}
+  candRecognition=new SR();
+  candRecognition.lang='es-CR';
+  candRecognition.continuous=true;
+  candRecognition.interimResults=true;
+  candRecognition.maxAlternatives=1;
+
+  const params=new URLSearchParams(window.location.search);
+  const sid=params.get('sala');
+
+  candRecognition.onresult=(e)=>{
+    let interim='';
+    const prevFinal=candFinalTranscript;
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal) candFinalTranscript+=e.results[i][0].transcript+' ';
+      else interim+=e.results[i][0].transcript;
+    }
+    const f=document.getElementById('cand-transcript-final');
+    const it=document.getElementById('cand-transcript-interim');
+    if(f) f.textContent=candFinalTranscript;
+    if(it) it.textContent=interim;
+    if(sid && typeof window._fbSet==='function'){
+      clearTimeout(_candFbTimer);
+      if(candFinalTranscript!==prevFinal){
+        // Texto final nuevo: escribir de inmediato
+        window._fbSet('salas/'+sid+'/transcript',{final:candFinalTranscript,interim:interim,ts:Date.now()});
+      } else {
+        // Solo interim: debounce 500ms para no saturar Firebase
+        _candFbTimer=setTimeout(()=>{
+          window._fbSet('salas/'+sid+'/transcript',{final:candFinalTranscript,interim:interim,ts:Date.now()});
+        },500);
+      }
+    }
+  };
+  candRecognition.onerror=(e)=>{
+    console.warn('cand SR:',e.error);
+    // no-speech y aborted son normales en móvil — no parar
+    if(e.error==='no-speech'||e.error==='aborted'||e.error==='network') return;
+    stopCandRecording();
+  };
+  candRecognition.onend=()=>{
+    clearTimeout(_candFbTimer);
+    if(!isCandRecording) return;
+    // En móvil continuous se corta: reiniciar sesión SR sin resetear UI ni timer
+    setTimeout(()=>{ if(isCandRecording) _candSRSession(); }, 200);
+  };
+  try{ candRecognition.start(); }catch(ex){ stopCandRecording(); }
+}
+
 function startCandRecording(){
   if(!('webkitSpeechRecognition' in window)&&!('SpeechRecognition' in window)){
     alert('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.');
     return;
   }
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  candRecognition=new SR();
-  candRecognition.lang='es-CR'; candRecognition.continuous=true; candRecognition.interimResults=true;
-  candRecognition.maxAlternatives=1;
-  let local='';
-  let fbWriteTimer=null;
-
-  function scheduleFbWrite(sid, finalTxt, interimTxt){
-    if(!sid || typeof window._fbSet!=='function') return;
-    clearTimeout(fbWriteTimer);
-    // Escribir inmediatamente si hay texto final nuevo; debounce 500ms para interim
-    if(finalTxt !== candFinalTranscript){
-      window._fbSet('salas/'+sid+'/transcript',{final:finalTxt,interim:interimTxt,ts:Date.now()});
-    } else {
-      fbWriteTimer=setTimeout(()=>{
-        window._fbSet('salas/'+sid+'/transcript',{final:finalTxt,interim:interimTxt,ts:Date.now()});
-      },500);
-    }
-  }
-
-  candRecognition.onstart=()=>{
-    isCandRecording=true; setCandRecStatus(true); startCandRecTimerFn(); animCandWave(true);
-    document.getElementById('cand-transcript-ph').style.display='none';
-  };
-  candRecognition.onresult=(e)=>{
-    let interim='';
-    for(let i=e.resultIndex;i<e.results.length;i++){
-      if(e.results[i].isFinal) local+=e.results[i][0].transcript+' ';
-      else interim+=e.results[i][0].transcript;
-    }
-    const f=document.getElementById('cand-transcript-final'); const it=document.getElementById('cand-transcript-interim');
-    if(f) f.textContent=local; if(it) it.textContent=interim;
-    const params=new URLSearchParams(window.location.search);
-    const sid=params.get('sala');
-    scheduleFbWrite(sid, local, interim);
-    candFinalTranscript=local;
-  };
-  candRecognition.onerror=(e)=>{
-    console.warn('cand SR error:',e.error);
-    // Guardar lo acumulado antes de parar
-    candFinalTranscript=local;
-    if(e.error==='no-speech') return; // Móvil: ignorar silencio, no detener
-    stopCandRecording();
-  };
-  candRecognition.onend=()=>{
-    clearTimeout(fbWriteTimer);
-    if(!isCandRecording) return;
-    // En móvil el reconocimiento se corta solo — intentar reiniciar
-    if(local) candFinalTranscript=local; // preservar lo grabado
-    try{ candRecognition.start(); } catch(ex){ stopCandRecording(); }
-  };
-  candRecognition.start();
+  candFinalTranscript='';
+  isCandRecording=true;
+  setCandRecStatus(true);
+  startCandRecTimerFn();
+  animCandWave(true);
+  const ph=document.getElementById('cand-transcript-ph');
+  if(ph) ph.style.display='none';
+  _candSRSession();
 }
+
 function stopCandRecording(){
   isCandRecording=false;
-  try{ if(candRecognition) candRecognition.stop(); } catch(ex){}
-  setCandRecStatus(false); stopCandRecTimerFn(); animCandWave(false);
-  // Escribir estado final en Firebase
+  clearTimeout(_candFbTimer);
+  try{ if(candRecognition){ candRecognition.onend=null; candRecognition.abort(); } }catch(e){}
+  candRecognition=null;
+  setCandRecStatus(false);
+  stopCandRecTimerFn();
+  animCandWave(false);
+  // Escribir transcripción final en Firebase
   const params=new URLSearchParams(window.location.search);
   const sid=params.get('sala');
   if(sid && typeof window._fbSet==='function'){
