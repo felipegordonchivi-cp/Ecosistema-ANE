@@ -1322,12 +1322,25 @@ if('serviceWorker' in navigator){
         const nw = reg.installing;
         nw.addEventListener('statechange', ()=>{
           if(nw.state==='installed' && navigator.serviceWorker.controller){
-            showToast('Nueva versión disponible — recarga para actualizar');
+            showUpdateBanner();
           }
         });
       });
     }).catch(e=> console.warn('[ANE] SW no registrado:', e));
+    // Auto-reload when new SW takes control (skipWaiting already fired)
+    navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+      window.location.reload();
+    });
   });
+}
+function showUpdateBanner(){
+  let banner = document.getElementById('sw-update-banner');
+  if(banner) return;
+  banner = document.createElement('div');
+  banner.id = 'sw-update-banner';
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:999999;background:#0d7373;color:#fff;text-align:center;padding:10px 16px;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:12px';
+  banner.innerHTML = '🔄 Nueva versión disponible <button onclick="window.location.reload()" style="background:#fff;color:#0d7373;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:800;cursor:pointer">Actualizar ahora</button>';
+  document.body.prepend(banner);
 }
 
 // ── PWA Install Prompt ───────────────────────────────
