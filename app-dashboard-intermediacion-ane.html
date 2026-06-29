@@ -712,6 +712,7 @@ button.tab-dup.active{ background: #fff3ed !important; color: #c2410c !important
               <button class="btn-ghost small" data-goto="team">Ver equipo completo →</button>
             </div>
             <div id="miniLeaderboard"></div>
+            <div style="background:rgba(13,115,115,.06);border:1px solid rgba(13,115,115,.2);border-radius:8px;padding:10px 12px;margin-top:10px;font-size:12px;color:#7dd3d3;line-height:1.5">📊 Los rankings deben interpretarse considerando volumen, complejidad de casos, región, calidad de datos y carga operativa. No deben utilizarse como único mecanismo de evaluación de desempeño.</div>
           </div>
           <div class="panel">
             <div class="panel-head">
@@ -936,6 +937,65 @@ button.tab-dup.active{ background: #fff3ed !important; color: #c2410c !important
 
 
 <a class="ane-help-btn" href="manual-dashboard-intermediacion-ane.html" target="_blank" rel="noopener">❔ Manual y FAQ</a>
+
+<!-- ANE CONSENT MODAL — reutilizable -->
+<style>
+.ane-consent-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.82);display:none;align-items:center;justify-content:center;z-index:99999;padding:20px}
+.ane-consent-card{width:min(680px,100%);background:#0e1f2e;color:#e0f2f2;border:2px solid #0d7373;border-radius:20px;box-shadow:0 24px 80px rgba(0,0,0,.5);padding:28px 32px;font-family:inherit}
+.ane-consent-card h2{margin:0 0 12px;font-size:20px;color:#7dd3d3}
+.ane-consent-card p{line-height:1.6;margin:10px 0;color:#c8e8e8;font-size:14px}
+.ane-consent-list{margin:14px 0;padding-left:20px;color:#c8e8e8;font-size:14px;line-height:1.7}
+.ane-consent-check-row{display:flex;gap:10px;align-items:flex-start;margin-top:16px;padding:12px 14px;background:rgba(13,115,115,.15);border:1px solid rgba(13,115,115,.4);border-radius:10px}
+.ane-consent-check-row input{margin-top:3px;width:18px;height:18px;flex-shrink:0;cursor:pointer;accent-color:#0d7373}
+.ane-consent-check-row label{font-size:14px;font-weight:700;color:#e0f2f2;cursor:pointer}
+.ane-consent-small{font-size:11px;color:#4a8a8a;margin-top:8px}
+.ane-consent-actions{display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap;margin-top:20px}
+.ane-btn-consent-ok{background:#0d7373;color:#fff;border:none;border-radius:10px;padding:11px 22px;font-weight:800;font-size:14px;cursor:pointer}
+.ane-btn-consent-cancel{background:transparent;color:#7dd3d3;border:1px solid #3a6a6a;border-radius:10px;padding:11px 18px;font-size:13px;cursor:pointer}
+</style>
+<div id="aneConsentBackdrop" class="ane-consent-backdrop" role="dialog" aria-modal="true" aria-labelledby="aneConsentTitle">
+  <div class="ane-consent-card">
+    <h2 id="aneConsentTitle">🔒 Consentimiento informado requerido</h2>
+    <p>Antes de procesar CV, entrevistas, audio, transcripciones o diagnósticos, confirme que la persona candidata fue informada y autorizó el uso de sus datos para orientación laboral, evaluación asistida y seguimiento institucional.</p>
+    <ul class="ane-consent-list">
+      <li>El resultado es orientativo y requiere revisión humana.</li>
+      <li>Los datos deben usarse solo para el fin informado.</li>
+      <li>La grabación/transcripción requiere autorización expresa.</li>
+      <li>Si se usa IA externa o sala virtual, debe informarse previamente.</li>
+    </ul>
+    <div class="ane-consent-check-row">
+      <input id="aneConsentCheck" type="checkbox">
+      <label for="aneConsentCheck">Confirmo que cuento con autorización informada de la persona candidata.</label>
+    </div>
+    <p class="ane-consent-small">Registro local: esta confirmación se guarda en este navegador para la sesión del módulo.</p>
+    <div class="ane-consent-actions">
+      <button class="ane-btn-consent-cancel" onclick="closeANEConsent(false)">Cancelar</button>
+      <button class="ane-btn-consent-ok" onclick="closeANEConsent(true)">Continuar →</button>
+    </div>
+  </div>
+</div>
+<script>
+var _aneConsentResolve=null;
+function requireANEConsent(moduleName){
+  moduleName=moduleName||'general';
+  var key='ane_consent_'+moduleName+'_'+new Date().toISOString().slice(0,10);
+  if(typeof localStorage!=='undefined'&&localStorage.getItem(key)==='ok') return Promise.resolve(true);
+  var el=document.getElementById('aneConsentCheck');
+  if(el) el.checked=false;
+  var bd=document.getElementById('aneConsentBackdrop');
+  if(bd) bd.style.display='flex';
+  return new Promise(function(resolve){ _aneConsentResolve={resolve:resolve,key:key}; });
+}
+function closeANEConsent(accept){
+  var check=document.getElementById('aneConsentCheck');
+  if(accept&&check&&!check.checked){ alert('Debe confirmar la autorización informada para continuar.'); return; }
+  var bd=document.getElementById('aneConsentBackdrop');
+  if(bd) bd.style.display='none';
+  if(accept&&_aneConsentResolve){ try{localStorage.setItem(_aneConsentResolve.key,'ok');}catch(e){} _aneConsentResolve.resolve(true); }
+  else if(_aneConsentResolve){ _aneConsentResolve.resolve(false); }
+  _aneConsentResolve=null;
+}
+</script>
 </body>
 </html>
 <script>
@@ -2291,6 +2351,35 @@ document.getElementById('btnProcesar').addEventListener('click', async () => {
     const selAsesor = document.getElementById('selAsesor');
     selAsesor.innerHTML = '<option value="">Todo el equipo</option>' + C.ROSTER.map(a=>`<option value="${U.esc(a.corto)}">${U.esc(a.corto)}</option>`).join('');
 
+    // === 6a: Data quality check ===
+    let dqWarnings = [], dqErrors = [];
+    const cedulas = control.map(r=>r.cedula).filter(Boolean);
+    const dupCedulas = cedulas.filter((c,i)=>cedulas.indexOf(c)!==i);
+    if(dupCedulas.length>0) dqWarnings.push(`${dupCedulas.length} cédula(s) duplicada(s) encontrada(s)`);
+    const emptyAsesores = control.filter(r=>!r.agente||!r.agente.trim()).length;
+    if(emptyAsesores>0) dqWarnings.push(`${emptyAsesores} registro(s) sin asesor asignado`);
+    const emptyCedulas = control.filter(r=>!r.cedula||!String(r.cedula).trim()).length;
+    if(emptyCedulas>0) dqErrors.push(`${emptyCedulas} registro(s) sin cédula`);
+    if(badDates&&badDates.length>0) dqWarnings.push(`${badDates.length} fecha(s) inválida(s) detectada(s)`);
+
+    let dqLevel = dqErrors.length>0?'rojo':dqWarnings.length>0?'amarillo':'verde';
+    let dqEmoji = dqLevel==='verde'?'🟢':dqLevel==='amarillo'?'🟡':'🔴';
+    let dqDesc = dqLevel==='verde'?'Datos consistentes':dqLevel==='amarillo'?'Advertencias moderadas':'Errores críticos — interpretar con precaución';
+    let dqMessages = [...dqErrors, ...dqWarnings];
+
+    STATE._dataQuality = { level: dqLevel, emoji: dqEmoji, desc: dqDesc, messages: dqMessages };
+
+    // === 6c: Actionable alerts (cases without follow-up, duplicates, missing asesor) ===
+    const now = new Date();
+    const staleThreshold = 15 * 24 * 60 * 60 * 1000; // 15 days
+    const staleAlerts = control.filter(r => {
+      if(!r.fechaCita) return false;
+      const d = r.fechaCita instanceof Date ? r.fechaCita : null;
+      if(!d || isNaN(d)) return false;
+      return (now - d) > staleThreshold;
+    });
+    STATE._actionableAlerts = { stale: staleAlerts.length, dups: dupCedulas.length, emptyAsesor: emptyAsesores };
+
     showUploadStatus(`Listo: ${U.fmt(control.length)} casos en Control · ${U.fmt(ventanilla.length)} de Ventanilla · ${U.fmt(orientacion.length)} de Orientación.`, 'success');
 
     setTimeout(() => {
@@ -2299,6 +2388,8 @@ document.getElementById('btnProcesar').addEventListener('click', async () => {
       updateAdvisorPill();
       switchView('overview');
       recomputeAndRender();
+      // Render data quality panel
+      renderDataQualityPanel();
     }, 550);
   }catch(err){
     console.error(err);
@@ -2306,6 +2397,46 @@ document.getElementById('btnProcesar').addEventListener('click', async () => {
     btn.disabled = false;
   }
 });
+
+/* ====================================================================
+   CALIDAD DE DATOS Y ALERTAS — ANE Phase 6
+   ==================================================================== */
+function renderDataQualityPanel(){
+  const dq = STATE._dataQuality;
+  const alerts = STATE._actionableAlerts;
+  if(!dq) return;
+  
+  // Create or update the DQ panel
+  let panel = document.getElementById('ane-dq-panel');
+  if(!panel){
+    panel = document.createElement('div');
+    panel.id = 'ane-dq-panel';
+    panel.style.cssText = 'position:fixed;top:60px;right:16px;z-index:1000;width:min(340px,90vw);background:#0d2d2d;border:2px solid rgba(13,115,115,.5);border-radius:14px;padding:16px 18px;box-shadow:0 8px 32px rgba(0,0,0,.4);font-family:inherit;font-size:12px;color:#c8e8e8';
+    document.body.appendChild(panel);
+  }
+  
+  const dqColor = dq.level==='verde'?'#16a34a':dq.level==='amarillo'?'#ca8a04':'#dc2626';
+  let html = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+    <span style="font-size:18px">${dq.emoji}</span>
+    <div><strong style="color:#7dd3d3;font-size:13px">Calidad de datos</strong><br>
+    <span style="color:${dqColor};font-weight:700">${dq.desc}</span></div>
+    <button onclick="document.getElementById('ane-dq-panel').style.display='none'" style="margin-left:auto;background:none;border:none;color:#7dd3d3;cursor:pointer;font-size:18px;line-height:1">×</button>
+  </div>`;
+  
+  if(dq.messages.length>0){
+    html += '<ul style="margin:0 0 10px;padding-left:16px;line-height:1.7">' + dq.messages.map(m=>`<li>${m}</li>`).join('') + '</ul>';
+  }
+  
+  if(alerts && (alerts.stale>0 || alerts.dups>0 || alerts.emptyAsesor>0)){
+    html += '<div style="border-top:1px solid rgba(13,115,115,.3);padding-top:10px;margin-top:4px"><strong style="color:#7dd3d3">Alertas accionables</strong><ul style="margin:6px 0 0;padding-left:16px;line-height:1.7">';
+    if(alerts.stale>0) html += `<li>⏰ ${alerts.stale} caso(s) sin seguimiento en los últimos 15 días</li>`;
+    if(alerts.dups>0) html += `<li>⚠️ ${alerts.dups} cédula(s) duplicada(s)</li>`;
+    if(alerts.emptyAsesor>0) html += `<li>👤 ${alerts.emptyAsesor} registro(s) sin asesor asignado</li>`;
+    html += '</ul></div>';
+  }
+  
+  panel.innerHTML = html;
+}
 
 /* ====================================================================
    NAVEGACIÓN Y FILTROS GLOBALES
