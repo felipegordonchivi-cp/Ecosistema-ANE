@@ -2607,8 +2607,9 @@ function startRecording(){
   recognition.lang = 'es-CR';
   recognition.continuous = true;
   recognition.interimResults = true;
+  recognition.maxAlternatives = 1;
   finalTranscript = '';
-  
+
   recognition.onstart = ()=>{
     isRecording = true;
     setRecStatus(true);
@@ -2626,15 +2627,20 @@ function startRecording(){
   };
   recognition.onerror = (e)=>{
     console.warn('Speech error:', e.error);
+    if(e.error === 'no-speech') return; // Móvil: ignorar silencio
     stopRecording();
   };
-  recognition.onend = ()=>{ if(isRecording) stopRecording(); };
+  recognition.onend = ()=>{
+    if(!isRecording) return;
+    // En móvil el reconocimiento se corta solo — reiniciar automáticamente
+    try{ recognition.start(); } catch(ex){ stopRecording(); }
+  };
   recognition.start();
 }
 
 function stopRecording(){
-  if(recognition) recognition.stop();
   isRecording = false;
+  try{ if(recognition) recognition.stop(); } catch(ex){}
   setRecStatus(false);
   stopRecTimer();
   animateWaveform(false);
@@ -3832,42 +3838,71 @@ async function switchCamera(deviceId){
 // ── GRABACIÓN DE VOZ — CANDIDATO ───────────────
 function startCandRecording(){
   if(!('webkitSpeechRecognition' in window)&&!('SpeechRecognition' in window)){
-    alert('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge en escritorio.');
+    alert('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.');
     return;
   }
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   candRecognition=new SR();
   candRecognition.lang='es-CR'; candRecognition.continuous=true; candRecognition.interimResults=true;
+  candRecognition.maxAlternatives=1;
   let local='';
-  candRecognition.onstart=()=>{ isCandRecording=true; setCandRecStatus(true); startCandRecTimerFn(); animCandWave(true); document.getElementById('cand-transcript-ph').style.display='none'; };
+  let fbWriteTimer=null;
+
+  function scheduleFbWrite(sid, finalTxt, interimTxt){
+    if(!sid || typeof window._fbSet!=='function') return;
+    clearTimeout(fbWriteTimer);
+    // Escribir inmediatamente si hay texto final nuevo; debounce 500ms para interim
+    if(finalTxt !== candFinalTranscript){
+      window._fbSet('salas/'+sid+'/transcript',{final:finalTxt,interim:interimTxt,ts:Date.now()});
+    } else {
+      fbWriteTimer=setTimeout(()=>{
+        window._fbSet('salas/'+sid+'/transcript',{final:finalTxt,interim:interimTxt,ts:Date.now()});
+      },500);
+    }
+  }
+
+  candRecognition.onstart=()=>{
+    isCandRecording=true; setCandRecStatus(true); startCandRecTimerFn(); animCandWave(true);
+    document.getElementById('cand-transcript-ph').style.display='none';
+  };
   candRecognition.onresult=(e)=>{
     let interim='';
     for(let i=e.resultIndex;i<e.results.length;i++){
       if(e.results[i].isFinal) local+=e.results[i][0].transcript+' ';
       else interim+=e.results[i][0].transcript;
     }
-    candFinalTranscript=local;
     const f=document.getElementById('cand-transcript-final'); const it=document.getElementById('cand-transcript-interim');
     if(f) f.textContent=local; if(it) it.textContent=interim;
-    // Enviar transcripción al entrevistador via Firebase
     const params=new URLSearchParams(window.location.search);
     const sid=params.get('sala');
-    if(sid && typeof window._fbSet==='function'){
-      window._fbSet('salas/'+sid+'/transcript', { final: local, interim: interim, ts: Date.now() });
-    }
+    scheduleFbWrite(sid, local, interim);
+    candFinalTranscript=local;
   };
-  candRecognition.onerror=(e)=>{ console.warn('cand SR',e.error); stopCandRecording(); };
-  candRecognition.onend=()=>{ if(isCandRecording) stopCandRecording(); };
+  candRecognition.onerror=(e)=>{
+    console.warn('cand SR error:',e.error);
+    // Guardar lo acumulado antes de parar
+    candFinalTranscript=local;
+    if(e.error==='no-speech') return; // Móvil: ignorar silencio, no detener
+    stopCandRecording();
+  };
+  candRecognition.onend=()=>{
+    clearTimeout(fbWriteTimer);
+    if(!isCandRecording) return;
+    // En móvil el reconocimiento se corta solo — intentar reiniciar
+    if(local) candFinalTranscript=local; // preservar lo grabado
+    try{ candRecognition.start(); } catch(ex){ stopCandRecording(); }
+  };
   candRecognition.start();
 }
 function stopCandRecording(){
-  if(candRecognition) candRecognition.stop();
-  isCandRecording=false; setCandRecStatus(false); stopCandRecTimerFn(); animCandWave(false);
-  // Limpiar interim en Firebase (mantener final)
+  isCandRecording=false;
+  try{ if(candRecognition) candRecognition.stop(); } catch(ex){}
+  setCandRecStatus(false); stopCandRecTimerFn(); animCandWave(false);
+  // Escribir estado final en Firebase
   const params=new URLSearchParams(window.location.search);
   const sid=params.get('sala');
-  if(sid && typeof window._fbSet==='function' && candFinalTranscript){
-    window._fbSet('salas/'+sid+'/transcript', { final: candFinalTranscript, interim: '', ts: Date.now() });
+  if(sid && typeof window._fbSet==='function'){
+    window._fbSet('salas/'+sid+'/transcript',{final:candFinalTranscript||'',interim:'',ts:Date.now()});
   }
 }
 function setCandRecStatus(on){
