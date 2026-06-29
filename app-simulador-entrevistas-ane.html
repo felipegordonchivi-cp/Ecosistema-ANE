@@ -493,6 +493,28 @@ function escHtml(s){
         window._fbRemove('salas/'+sid+'/pregunta');
       };
 
+      // ── Firebase connection monitor ──
+      window._fbConnected = false;
+      db.ref('.info/connected').on('value', function(snap){
+        window._fbConnected = !!snap.val();
+        var dot = document.getElementById('fb-status-dot');
+        var txt = document.getElementById('fb-status-txt');
+        if(dot) dot.style.background = window._fbConnected ? '#22c55e' : '#ef4444';
+        if(txt) txt.textContent = window._fbConnected
+          ? '✓ Firebase conectado'
+          : '⚠️ Firebase sin conexión — verifica tu internet';
+      });
+
+      // Test if database rules allow writes (needed for knock flow)
+      window._fbTestRules = function(callback){
+        db.ref('__ane_ping__').set({ts: Date.now()}).then(function(){
+          db.ref('__ane_ping__').remove();
+          if(callback) callback(null);
+        }).catch(function(err){
+          if(callback) callback(err);
+        });
+      };
+
       // ── WebRTC: entrevistador recibe video del candidato ──
       var ivPC = null;
       window._initWebRTCInterviewer = function(sid, ivStream){
@@ -1093,7 +1115,22 @@ function escHtml(s){
           </div>
         </div>
       </div>
-      <!-- Estado conexión -->
+      <!-- Firebase status -->
+      <div id="fb-status-row" style="background:var(--s2);border:1px solid var(--db);border-radius:10px;padding:11px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
+        <span id="fb-status-dot" style="width:10px;height:10px;border-radius:50%;background:#eab308;flex-shrink:0"></span>
+        <div style="flex:1">
+          <span id="fb-status-txt" style="font-size:12px;font-weight:700;color:#5a9898">Verificando Firebase…</span>
+        </div>
+        <button onclick="verificarFirebaseConInstrucciones()" style="background:rgba(13,115,115,.2);border:1px solid var(--db);color:#7dd3d3;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer">Probar</button>
+      </div>
+      <!-- Error Firebase banner (oculto por defecto) -->
+      <div id="fb-error-banner" style="display:none;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.4);border-radius:10px;padding:14px;margin-bottom:10px">
+        <div style="font-size:12px;font-weight:800;color:#fca5a5;margin-bottom:8px">⚠️ Firebase PERMISSION_DENIED — sala de espera inactiva</div>
+        <div style="font-size:11px;color:#9a5a5a;line-height:1.6;margin-bottom:10px">Las reglas de la base de datos Firebase han vencido (caducan a los 30 días en modo de prueba). Debes actualizarlas en la consola:</div>
+        <div style="background:rgba(0,0,0,.3);border-radius:8px;padding:10px;font-family:monospace;font-size:10px;color:#e0f2f2;margin-bottom:10px;white-space:pre">{"rules": {"salas": {".read": true, ".write": true}, "__ane_ping__": {".read": true, ".write": true}}}</div>
+        <button onclick="window.open('https://console.firebase.google.com/project/simulador-de-entrevista-a883d/database/simulador-de-entrevista-a883d-default-rtdb/rules','_blank')" style="width:100%;background:#ef4444;border:none;color:#fff;padding:9px;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer">🔗 Abrir Firebase Console → Reglas</button>
+      </div>
+      <!-- Estado conexión BC -->
       <div style="background:var(--s2);border:1px solid var(--db);border-radius:10px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:12px">
         <span id="bc-conn-dot" style="width:10px;height:10px;border-radius:50%;background:#3a7272;flex-shrink:0"></span>
         <div style="flex:1">
@@ -3528,6 +3565,7 @@ function showSalaModal(){
   document.getElementById('sala-modal').classList.remove('hidden');
   setSalaTab('remota');
   setTimeout(updateBcStatus,400);
+  setTimeout(verificarFirebaseConInstrucciones,600);
 }
 function closeSalaModal(){ document.getElementById('sala-modal').classList.add('hidden'); }
 function setSalaTab(tab){
@@ -3538,6 +3576,30 @@ function setSalaTab(tab){
   document.getElementById('sala-tab-presencial').style.borderColor=!isRemota?'var(--teal)':'var(--db)';
   document.getElementById('sala-content-remota').classList.toggle('hidden',!isRemota);
   document.getElementById('sala-content-presencial').classList.toggle('hidden',isRemota);
+}
+function verificarFirebaseConInstrucciones(){
+  const dot = document.getElementById('fb-status-dot');
+  const txt = document.getElementById('fb-status-txt');
+  const banner = document.getElementById('fb-error-banner');
+  if(dot) dot.style.background='#eab308';
+  if(txt) txt.textContent='Probando escritura en Firebase…';
+  if(banner) banner.style.display='none';
+
+  if(typeof window._fbTestRules !== 'function'){
+    if(dot) dot.style.background='#ef4444';
+    if(txt) txt.textContent='⚠️ Firebase no inicializó — recarga la página';
+    return;
+  }
+  window._fbTestRules(function(err){
+    if(!err){
+      if(dot) dot.style.background='#22c55e';
+      if(txt) txt.textContent='✓ Firebase OK — la sala de espera funcionará correctamente';
+    } else {
+      if(dot) dot.style.background='#ef4444';
+      if(txt) txt.textContent='⚠️ '+err.code+' — reglas de Firebase deben actualizarse';
+      if(banner) banner.style.display='block';
+    }
+  });
 }
 function copyCandUrl(){
   const url=window.location.href.split('?')[0]+'?vista=candidato';
