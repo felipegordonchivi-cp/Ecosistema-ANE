@@ -544,7 +544,7 @@ function escHtml(s){
               var txt  = document.getElementById('fb-status-txt');
               var ban  = document.getElementById('fb-error-banner');
               if(dot) dot.style.background = '#ef4444';
-              if(txt) txt.textContent = '⚠️ PERMISSION_DENIED — actualiza las reglas de Firebase para usar la sala de espera';
+              if(txt) txt.textContent = '⚠️ Sala virtual no disponible. Use modo presencial/mismo equipo o solicite configuración institucional.';
               if(ban) ban.style.display = 'block';
             }
           });
@@ -1133,6 +1133,15 @@ function escHtml(s){
 
     <!-- CONTENIDO MODO REMOTA -->
     <div id="sala-content-remota">
+      <!-- Modos de uso -->
+      <div style="background:rgba(13,115,115,.06);border:1px solid rgba(13,115,115,.2);border-radius:10px;padding:14px;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:800;color:#7dd3d3;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Modos de entrevista disponibles</div>
+        <div style="display:grid;gap:8px;font-size:12px;color:#c8e8e8">
+          <div><b style="color:#7dd3d3">Modo presencial/local:</b> Misma computadora o pantalla compartida.</div>
+          <div><b style="color:#7dd3d3">Modo videollamada:</b> Teams, Meet o Zoom compartiendo Vista Candidato.</div>
+          <div><b style="color:#fbbf24">Modo sala virtual:</b> Requiere Firebase configurado institucionalmente.</div>
+        </div>
+      </div>
       <div style="background:rgba(13,115,115,.08);border:1px solid rgba(13,115,115,.25);border-radius:12px;padding:16px;margin-bottom:14px">
         <div style="font-size:11px;font-weight:800;color:#7dd3d3;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Cómo funciona la sala virtual</div>
         <div style="display:grid;gap:10px">
@@ -1164,7 +1173,7 @@ function escHtml(s){
       </div>
       <!-- Error Firebase banner (oculto por defecto) -->
       <div id="fb-error-banner" style="display:none;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.4);border-radius:10px;padding:14px;margin-bottom:10px">
-        <div style="font-size:12px;font-weight:800;color:#fca5a5;margin-bottom:8px">⚠️ Firebase PERMISSION_DENIED — sala de espera inactiva</div>
+        <div style="font-size:12px;font-weight:800;color:#fca5a5;margin-bottom:8px">⚠️ Sala virtual no disponible. Use modo presencial/mismo equipo o solicite configuración institucional.</div>
         <div style="font-size:11px;color:#9a5a5a;line-height:1.6;margin-bottom:10px">Las reglas de la base de datos Firebase han vencido (caducan a los 30 días en modo de prueba). Debes actualizarlas en la consola:</div>
         <div style="background:rgba(0,0,0,.3);border-radius:8px;padding:10px;font-family:monospace;font-size:10px;color:#e0f2f2;margin-bottom:10px;white-space:pre">{"rules": {"salas": {".read": true, ".write": true}}}</div>
         <button onclick="window.open('https://console.firebase.google.com/project/simulador-de-entrevista-a883d/database/simulador-de-entrevista-a883d-default-rtdb/rules','_blank')" style="width:100%;background:#ef4444;border:none;color:#fff;padding:9px;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer">🔗 Abrir Firebase Console → Reglas</button>
@@ -1544,6 +1553,7 @@ function escHtml(s){
             <h4>⭐ Evaluación STAR
               <span id="star-pct-badge" style="margin-left:auto;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);border-radius:999px;padding:2px 10px;font-size:12px;color:#86efac;font-weight:900">0%</span>
             </h4>
+            <div style="background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.3);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:#e0a800;line-height:1.5">⚠️ Evaluación asistida. Requiere revisión y validación humana. No constituye decisión automática de contratación.</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="star-grid"></div>
           </div>
         </div>
@@ -1584,6 +1594,7 @@ function escHtml(s){
                 <button onclick="clearApiKey()" style="background:rgba(200,50,50,.2);border:1px solid rgba(200,50,50,.4);color:#ff8888;padding:6px 10px;border-radius:6px;font-size:11px">🗑</button>
               </div>
               <p id="api-key-status" style="color:#4a8a8a;font-size:10px;margin-top:4px"></p>
+              <p style="color:#e0a800;font-size:11px;margin-top:6px;line-height:1.5">⚠️ IA externa opcional. No ingrese datos sensibles sin autorización institucional. El uso de API externa debe estar validado por la institución.</p>
             </div>
 
             <div style="display:flex;gap:6px;margin-bottom:10px">
@@ -2724,7 +2735,9 @@ function stopReading(){
 // ============================================================
 // AUDIO / SPEECH RECOGNITION
 // ============================================================
-function startRecording(){
+async function startRecording(){
+  const allowed = await requireANEConsent('grabacion');
+  if (!allowed) return;
   if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){
     (function(msg){ const t=document.createElement('div'); t.textContent=msg; Object.assign(t.style,{position:'fixed',bottom:'24px',left:'50%',transform:'translateX(-50%)',background:'#1e293b',color:'#fff',padding:'10px 20px',borderRadius:'10px',fontWeight:'600',fontSize:'13px',zIndex:'9999',boxShadow:'0 4px 16px rgba(0,0,0,.3)',transition:'opacity .4s',maxWidth:'90vw',textAlign:'center'}); document.body.appendChild(t); setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),500);},4000); })('⚠️ Reconocimiento de voz no disponible en este navegador. Usa Chrome o Edge, o escribe tu respuesta manualmente.');
     return;
@@ -3311,6 +3324,65 @@ function doPrintPDF(){
     @media print{@page{margin:1.5cm;size:A4}}
   </style>
 </head><body>${content}
+
+<!-- ANE CONSENT MODAL — reutilizable -->
+<style>
+.ane-consent-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.82);display:none;align-items:center;justify-content:center;z-index:99999;padding:20px}
+.ane-consent-card{width:min(680px,100%);background:#0e1f2e;color:#e0f2f2;border:2px solid #0d7373;border-radius:20px;box-shadow:0 24px 80px rgba(0,0,0,.5);padding:28px 32px;font-family:inherit}
+.ane-consent-card h2{margin:0 0 12px;font-size:20px;color:#7dd3d3}
+.ane-consent-card p{line-height:1.6;margin:10px 0;color:#c8e8e8;font-size:14px}
+.ane-consent-list{margin:14px 0;padding-left:20px;color:#c8e8e8;font-size:14px;line-height:1.7}
+.ane-consent-check-row{display:flex;gap:10px;align-items:flex-start;margin-top:16px;padding:12px 14px;background:rgba(13,115,115,.15);border:1px solid rgba(13,115,115,.4);border-radius:10px}
+.ane-consent-check-row input{margin-top:3px;width:18px;height:18px;flex-shrink:0;cursor:pointer;accent-color:#0d7373}
+.ane-consent-check-row label{font-size:14px;font-weight:700;color:#e0f2f2;cursor:pointer}
+.ane-consent-small{font-size:11px;color:#4a8a8a;margin-top:8px}
+.ane-consent-actions{display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap;margin-top:20px}
+.ane-btn-consent-ok{background:#0d7373;color:#fff;border:none;border-radius:10px;padding:11px 22px;font-weight:800;font-size:14px;cursor:pointer}
+.ane-btn-consent-cancel{background:transparent;color:#7dd3d3;border:1px solid #3a6a6a;border-radius:10px;padding:11px 18px;font-size:13px;cursor:pointer}
+</style>
+<div id="aneConsentBackdrop" class="ane-consent-backdrop" role="dialog" aria-modal="true" aria-labelledby="aneConsentTitle">
+  <div class="ane-consent-card">
+    <h2 id="aneConsentTitle">🔒 Consentimiento informado requerido</h2>
+    <p>Antes de procesar CV, entrevistas, audio, transcripciones o diagnósticos, confirme que la persona candidata fue informada y autorizó el uso de sus datos para orientación laboral, evaluación asistida y seguimiento institucional.</p>
+    <ul class="ane-consent-list">
+      <li>El resultado es orientativo y requiere revisión humana.</li>
+      <li>Los datos deben usarse solo para el fin informado.</li>
+      <li>La grabación/transcripción requiere autorización expresa.</li>
+      <li>Si se usa IA externa o sala virtual, debe informarse previamente.</li>
+    </ul>
+    <div class="ane-consent-check-row">
+      <input id="aneConsentCheck" type="checkbox">
+      <label for="aneConsentCheck">Confirmo que cuento con autorización informada de la persona candidata.</label>
+    </div>
+    <p class="ane-consent-small">Registro local: esta confirmación se guarda en este navegador para la sesión del módulo.</p>
+    <div class="ane-consent-actions">
+      <button class="ane-btn-consent-cancel" onclick="closeANEConsent(false)">Cancelar</button>
+      <button class="ane-btn-consent-ok" onclick="closeANEConsent(true)">Continuar →</button>
+    </div>
+  </div>
+</div>
+<script>
+var _aneConsentResolve=null;
+function requireANEConsent(moduleName){
+  moduleName=moduleName||'general';
+  var key='ane_consent_'+moduleName+'_'+new Date().toISOString().slice(0,10);
+  if(typeof localStorage!=='undefined'&&localStorage.getItem(key)==='ok') return Promise.resolve(true);
+  var el=document.getElementById('aneConsentCheck');
+  if(el) el.checked=false;
+  var bd=document.getElementById('aneConsentBackdrop');
+  if(bd) bd.style.display='flex';
+  return new Promise(function(resolve){ _aneConsentResolve={resolve:resolve,key:key}; });
+}
+function closeANEConsent(accept){
+  var check=document.getElementById('aneConsentCheck');
+  if(accept&&check&&!check.checked){ alert('Debe confirmar la autorización informada para continuar.'); return; }
+  var bd=document.getElementById('aneConsentBackdrop');
+  if(bd) bd.style.display='none';
+  if(accept&&_aneConsentResolve){ try{localStorage.setItem(_aneConsentResolve.key,'ok');}catch(e){} _aneConsentResolve.resolve(true); }
+  else if(_aneConsentResolve){ _aneConsentResolve.resolve(false); }
+  _aneConsentResolve=null;
+}
+</script>
 </body></html>`);
   win.document.close();
   setTimeout(()=>{ win.focus(); win.print(); },500);
@@ -4496,5 +4568,64 @@ document.addEventListener('keydown', e=>{
 
 
 <a class="ane-help-btn" href="manual-simulador-entrevistas-ane.html" target="_blank" rel="noopener">❔ Manual y FAQ</a>
+
+<!-- ANE CONSENT MODAL — reutilizable -->
+<style>
+.ane-consent-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.82);display:none;align-items:center;justify-content:center;z-index:99999;padding:20px}
+.ane-consent-card{width:min(680px,100%);background:#0e1f2e;color:#e0f2f2;border:2px solid #0d7373;border-radius:20px;box-shadow:0 24px 80px rgba(0,0,0,.5);padding:28px 32px;font-family:inherit}
+.ane-consent-card h2{margin:0 0 12px;font-size:20px;color:#7dd3d3}
+.ane-consent-card p{line-height:1.6;margin:10px 0;color:#c8e8e8;font-size:14px}
+.ane-consent-list{margin:14px 0;padding-left:20px;color:#c8e8e8;font-size:14px;line-height:1.7}
+.ane-consent-check-row{display:flex;gap:10px;align-items:flex-start;margin-top:16px;padding:12px 14px;background:rgba(13,115,115,.15);border:1px solid rgba(13,115,115,.4);border-radius:10px}
+.ane-consent-check-row input{margin-top:3px;width:18px;height:18px;flex-shrink:0;cursor:pointer;accent-color:#0d7373}
+.ane-consent-check-row label{font-size:14px;font-weight:700;color:#e0f2f2;cursor:pointer}
+.ane-consent-small{font-size:11px;color:#4a8a8a;margin-top:8px}
+.ane-consent-actions{display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap;margin-top:20px}
+.ane-btn-consent-ok{background:#0d7373;color:#fff;border:none;border-radius:10px;padding:11px 22px;font-weight:800;font-size:14px;cursor:pointer}
+.ane-btn-consent-cancel{background:transparent;color:#7dd3d3;border:1px solid #3a6a6a;border-radius:10px;padding:11px 18px;font-size:13px;cursor:pointer}
+</style>
+<div id="aneConsentBackdrop" class="ane-consent-backdrop" role="dialog" aria-modal="true" aria-labelledby="aneConsentTitle">
+  <div class="ane-consent-card">
+    <h2 id="aneConsentTitle">🔒 Consentimiento informado requerido</h2>
+    <p>Antes de procesar CV, entrevistas, audio, transcripciones o diagnósticos, confirme que la persona candidata fue informada y autorizó el uso de sus datos para orientación laboral, evaluación asistida y seguimiento institucional.</p>
+    <ul class="ane-consent-list">
+      <li>El resultado es orientativo y requiere revisión humana.</li>
+      <li>Los datos deben usarse solo para el fin informado.</li>
+      <li>La grabación/transcripción requiere autorización expresa.</li>
+      <li>Si se usa IA externa o sala virtual, debe informarse previamente.</li>
+    </ul>
+    <div class="ane-consent-check-row">
+      <input id="aneConsentCheck" type="checkbox">
+      <label for="aneConsentCheck">Confirmo que cuento con autorización informada de la persona candidata.</label>
+    </div>
+    <p class="ane-consent-small">Registro local: esta confirmación se guarda en este navegador para la sesión del módulo.</p>
+    <div class="ane-consent-actions">
+      <button class="ane-btn-consent-cancel" onclick="closeANEConsent(false)">Cancelar</button>
+      <button class="ane-btn-consent-ok" onclick="closeANEConsent(true)">Continuar →</button>
+    </div>
+  </div>
+</div>
+<script>
+var _aneConsentResolve=null;
+function requireANEConsent(moduleName){
+  moduleName=moduleName||'general';
+  var key='ane_consent_'+moduleName+'_'+new Date().toISOString().slice(0,10);
+  if(typeof localStorage!=='undefined'&&localStorage.getItem(key)==='ok') return Promise.resolve(true);
+  var el=document.getElementById('aneConsentCheck');
+  if(el) el.checked=false;
+  var bd=document.getElementById('aneConsentBackdrop');
+  if(bd) bd.style.display='flex';
+  return new Promise(function(resolve){ _aneConsentResolve={resolve:resolve,key:key}; });
+}
+function closeANEConsent(accept){
+  var check=document.getElementById('aneConsentCheck');
+  if(accept&&check&&!check.checked){ alert('Debe confirmar la autorización informada para continuar.'); return; }
+  var bd=document.getElementById('aneConsentBackdrop');
+  if(bd) bd.style.display='none';
+  if(accept&&_aneConsentResolve){ try{localStorage.setItem(_aneConsentResolve.key,'ok');}catch(e){} _aneConsentResolve.resolve(true); }
+  else if(_aneConsentResolve){ _aneConsentResolve.resolve(false); }
+  _aneConsentResolve=null;
+}
+</script>
 </body>
 </html>

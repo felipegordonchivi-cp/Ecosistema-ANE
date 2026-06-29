@@ -787,7 +787,7 @@ a { color: inherit; }
 
       <div class="sidecard">
         <b>Ecosistema ANE <span style="font-size:10px;opacity:.6;font-weight:400">v2.0</span></b>
-        <p>4/4 módulos · 100% offline · <span id="backup-date" style="color:var(--mint)">Sin backup</span></p>
+        <p>4/4 módulos activos · Procesamiento local por defecto · Revisión humana requerida · <span id="backup-date" style="color:var(--mint)">Sin backup</span></p>
         <div id="storage-bar-wrap" style="margin-top:6px;display:none">
           <div style="font-size:10px;color:var(--amber);margin-bottom:3px" id="storage-label"></div>
           <div style="height:4px;border-radius:2px;background:rgba(125,211,211,.15);overflow:hidden"><div id="storage-bar" style="height:100%;background:var(--teal2);transition:width .4s"></div></div>
@@ -866,7 +866,7 @@ a { color: inherit; }
         <div class="kpi-grid">
           <div class="kpi"><small>Módulos integrados</small><b>4/4</b><span>100% operativo</span></div>
           <div class="kpi"><small>Flujo candidato</small><b>360°</b><span>CV · STAR · Seguimiento</span></div>
-          <div class="kpi"><small>Marco de competencias</small><b>ESCO-CR</b><span>2 000 perfiles</span></div>
+          <div class="kpi"><small>Marco de competencias</small><b>ESCO-CR</b><span>expansión proyectada a 2.000 perfiles ocupacionales</span></div>
           <div class="kpi"><small>Procesamiento</small><b>Local</b><span>Privacidad por diseño</span></div>
         </div>
 
@@ -945,7 +945,7 @@ a { color: inherit; }
             <div class="mod-tags">
               <span class="mod-tag">Recomendación responsable</span>
               <span class="mod-tag">Confianza calibrada</span>
-              <span class="mod-tag">ESCO-CR 2000 perfiles</span>
+              <span class="mod-tag">ESCO-CR v1.0 · 500 competencias priorizadas</span>
               <span class="mod-tag">Oferta académica CR</span>
             </div>
             <div class="mod-cta">
@@ -953,6 +953,38 @@ a { color: inherit; }
               <a class="mod-manual" href="manual-laboratorio-ia-ane.html" target="_blank" rel="noopener" onclick="event.stopPropagation()">📘 Manual</a>
             </div>
           </div>
+        </div>
+
+        <!-- ESTADO TÉCNICO -->
+        <section class="ane-status-grid" aria-label="Estado técnico del ecosistema" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:22px 0 0">
+          <div style="border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:14px;background:rgba(255,255,255,.06)">
+            <strong style="display:block;margin-bottom:8px;font-size:14px">ATS ANE</strong>
+            <span style="display:inline-block;background:#dcfce7;color:#166534;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:800">Local por defecto</span>
+            <p style="font-size:12px;margin:8px 0 0;opacity:.85;line-height:1.4;color:var(--muted)">Analiza CV en navegador. Requiere consentimiento y revisión humana.</p>
+          </div>
+          <div style="border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:14px;background:rgba(255,255,255,.06)">
+            <strong style="display:block;margin-bottom:8px;font-size:14px">Simulador STAR</strong>
+            <span style="display:inline-block;background:#fef3c7;color:#92400e;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:800">Conectividad opcional</span>
+            <p style="font-size:12px;margin:8px 0 0;opacity:.85;line-height:1.4;color:var(--muted)">Presencial disponible. Sala virtual requiere Firebase. Grabación requiere consentimiento.</p>
+          </div>
+          <div style="border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:14px;background:rgba(255,255,255,.06)">
+            <strong style="display:block;margin-bottom:8px;font-size:14px">Centro de Control</strong>
+            <span style="display:inline-block;background:#dcfce7;color:#166534;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:800">Excel local</span>
+            <p style="font-size:12px;margin:8px 0 0;opacity:.85;line-height:1.4;color:var(--muted)">Indicadores desde archivos del asesor. Requiere validación de calidad de datos.</p>
+          </div>
+          <div style="border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:14px;background:rgba(255,255,255,.06)">
+            <strong style="display:block;margin-bottom:8px;font-size:14px">Laboratorio IA</strong>
+            <span style="display:inline-block;background:#fef3c7;color:#92400e;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:800">IA opcional</span>
+            <p style="font-size:12px;margin:8px 0 0;opacity:.85;line-height:1.4;color:var(--muted)">ESCO-CR v1.0 · 500 competencias. IA externa bajo config. institucional.</p>
+          </div>
+        </section>
+        <p style="font-size:12px;color:rgba(255,255,255,.5);text-align:center;margin:10px 0 20px">Prototipo funcional · Resultados orientativos · Revisión humana obligatoria · Ningún módulo reemplaza la decisión del asesor.</p>
+
+        <!-- NOTA INSTITUCIONAL -->
+        <div style="margin:24px 0 28px;padding:18px 22px;background:rgba(13,115,115,.10);border:2px solid rgba(13,115,115,.35);border-radius:16px;color:var(--muted)">
+          <p style="margin:0;font-size:13px;line-height:1.7;color:#c8e8e8">
+            <strong style="color:#7dd3d3">Prototipo funcional · Uso orientativo</strong> — Este ecosistema es un prototipo funcional de apoyo a la intermediación laboral. Sus resultados son orientativos y requieren validación humana por parte del asesor o equipo técnico responsable. Ningún módulo debe utilizarse como mecanismo único de selección, descarte, contratación, elegibilidad o admisión académica.
+          </p>
         </div>
 
         <!-- Flow -->
@@ -1005,7 +1037,7 @@ a { color: inherit; }
         <div class="hero-home" style="margin-bottom:22px">
           <div class="eyebrow">ℹ Ecosistema ANE</div>
           <h1>Acerca <span>del ecosistema</span></h1>
-          <p class="hero-lead">Suite de herramientas digitales para la Agencia Nacional del Empleo de Costa Rica. Procesamiento 100% local — sin servidores externos, sin envío de datos.</p>
+          <p class="hero-lead">Suite de herramientas digitales para la Agencia Nacional del Empleo de Costa Rica. Procesamiento local por defecto · Conectividad opcional según módulo · Revisión humana requerida.</p>
         </div>
 
         <div class="audit-grid" style="margin-bottom:20px">
@@ -1030,7 +1062,7 @@ a { color: inherit; }
           <div class="audit-card">
             <div class="score-desc" style="padding:4px 0">
               <b class="status-ok" style="font-size:15px">Laboratorio IA</b>
-              <p style="margin:6px 0 0;font-size:13px;color:var(--muted)">Diagnóstico de perfil ocupacional con base en 2 000 perfiles ESCO-CR. Recomendaciones de familias laborales y rutas académicas en Costa Rica.</p>
+              <p style="margin:6px 0 0;font-size:13px;color:var(--muted)">Diagnóstico de perfil ocupacional con base en ESCO-CR v1.0 · 500 competencias priorizadas (expansión proyectada a 2.000 perfiles). Recomendaciones de familias laborales y rutas académicas en Costa Rica.</p>
             </div>
           </div>
         </div>
@@ -1071,7 +1103,7 @@ a { color: inherit; }
           <h3>🔒 Privacidad y uso de datos</h3>
           <p style="font-size:13px;color:var(--muted);line-height:1.7">Todo el procesamiento ocurre en el navegador del asesor — ningún dato se envía a servidores externos. Los CV, audios y diagnósticos permanecen en tu dispositivo. Esta herramienta no toma decisiones automatizadas vinculantes; todo resultado requiere revisión humana.</p>
           <div class="tag-row" style="margin-top:10px">
-            <span class="atag ok">✓ Sin servidores externos</span>
+            <span class="atag ok">✓ Conectividad opcional según módulo</span>
             <span class="atag ok">✓ Datos en tu dispositivo</span>
             <span class="atag ok">✓ Revisión humana requerida</span>
             <span class="atag ok">✓ Ley 8968 CR</span>
