@@ -883,6 +883,9 @@ function escHtml(s){
       <div style="font-size:52px;margin-bottom:12px">🚪</div>
       <div style="font-size:20px;font-weight:800;color:#7dd3d3;margin-bottom:6px">Sala de Espera</div>
       <div style="font-size:13px;color:#4a7a7a;margin-bottom:28px">Ingresa tu nombre y solicita entrada al entrevistador</div>
+      <div id="sala-inapp-warning" style="display:none;background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.35);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:#fbbf24;text-align:left">
+        ⚠️ <b>Parece que abriste este enlace dentro de WhatsApp/Instagram/Facebook.</b> Esos navegadores integrados a veces bloquean la conexión en tiempo real. Toca el botón "•••" o "Abrir en el navegador" y ábrelo en Safari o Chrome para evitar problemas.
+      </div>
       <div style="background:var(--s1);border:1px solid var(--db);border-radius:14px;padding:28px;display:flex;flex-direction:column;gap:16px">
         <div style="text-align:left">
           <label style="font-size:12px;color:#7dd3d3;font-weight:700;display:block;margin-bottom:6px">Tu nombre</label>
@@ -4227,6 +4230,15 @@ function animCandWave(on){
       document.title='Vista Candidato · ANE';
       if(salaEsp) salaEsp.style.display='flex';
       if(salaBody) salaBody.style.display='none';
+      // Detectar navegador integrado (in-app browser) de apps de mensajería —
+      // suelen bloquear/degradar WebSocket y romper la conexión en tiempo real.
+      var ua = navigator.userAgent || '';
+      var isInApp = /FBAN|FBAV|Instagram|Line\/|MicroMessenger|TikTok|Snapchat/i.test(ua)
+        || (/(iPhone|iPad|iPod)/.test(ua) && !/Safari/.test(ua) && !/CriOS/.test(ua) && !/FxiOS/.test(ua));
+      if(isInApp){
+        var w = document.getElementById('sala-inapp-warning');
+        if(w) w.style.display = 'block';
+      }
       const ivBtns=document.querySelectorAll('#v-candidato .hdr button');
       ivBtns.forEach(b=>{ if(b.textContent.includes('Vista Candidato')||b.textContent.includes('Inicio')) b.style.display='none'; });
       if(bc){
