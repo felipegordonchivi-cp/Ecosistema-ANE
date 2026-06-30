@@ -357,6 +357,20 @@ function escHtml(s){
     var db = firebase.database();
 
     window._fbSet    = function(path, val){ return db.ref(path).set(val); };
+    // Escritura "best-effort" por las dos vías a la vez (SDK + REST) — para
+    // datos frecuentes (ej. transcripción en vivo) donde no tiene sentido
+    // esperar 8s por intento; si el WebSocket está bloqueado, el REST igual
+    // entrega el dato por HTTPS normal.
+    window._fbSetReliable = function(path, val){
+      try{ window._fbSet(path, val); }catch(e){}
+      try{
+        fetch(firebaseConfig.databaseURL + '/' + path + '.json', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(val)
+        }).catch(function(){});
+      }catch(e){}
+    };
     window._fbRemove = function(path){ return db.ref(path).remove(); };
     window._fbOff    = function(path){ db.ref(path).off(); };
     window._fbOn     = function(path, cb, errCb){
@@ -4187,15 +4201,15 @@ function _candSRSession(){
     const it=document.getElementById('cand-transcript-interim');
     if(f) f.textContent=candFinalTranscript;
     if(it) it.textContent=interim;
-    if(sid && typeof window._fbSet==='function'){
+    if(sid && typeof window._fbSetReliable==='function'){
       clearTimeout(_candFbTimer);
       if(candFinalTranscript!==prevFinal){
         // Texto final nuevo: escribir de inmediato
-        window._fbSet('salas/'+sid+'/transcript',{final:candFinalTranscript,interim:interim,ts:Date.now()});
+        window._fbSetReliable('salas/'+sid+'/transcript',{final:candFinalTranscript,interim:interim,ts:Date.now()});
       } else {
         // Solo interim: debounce 500ms para no saturar Firebase
         _candFbTimer=setTimeout(()=>{
-          window._fbSet('salas/'+sid+'/transcript',{final:candFinalTranscript,interim:interim,ts:Date.now()});
+          window._fbSetReliable('salas/'+sid+'/transcript',{final:candFinalTranscript,interim:interim,ts:Date.now()});
         },500);
       }
     }
@@ -4248,8 +4262,8 @@ function stopCandRecording(){
   // Escribir transcripción final en Firebase
   const params=new URLSearchParams(window.location.search);
   const sid=params.get('sala');
-  if(sid && typeof window._fbSet==='function'){
-    window._fbSet('salas/'+sid+'/transcript',{final:candFinalTranscript||'',interim:'',ts:Date.now()});
+  if(sid && typeof window._fbSetReliable==='function'){
+    window._fbSetReliable('salas/'+sid+'/transcript',{final:candFinalTranscript||'',interim:'',ts:Date.now()});
   }
 }
 function setCandRecStatus(on){
@@ -4481,14 +4495,20 @@ function admitirCandidato(){
       if(mb){ mb.className='iv-ctrl-btn active'; mb.innerHTML='<span style="font-size:18px">🎙</span>MIC ON'; }
       // Iniciar WebRTC con el stream ya listo
       window._initWebRTCInterviewer(salaId, stream);
-    }).catch(function(){
+    }).catch(function(err){
+      console.error('[ANE] No se pudo activar cámara+mic del entrevistador:', err && err.name, err && err.message);
       // Si no hay cámara, intentar solo audio
       navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(function(aStream){
         ivMicStream = aStream; ivMicOn = true; ivMicMuted = false;
         var mb = document.getElementById('iv-mic-btn');
         if(mb){ mb.className='iv-ctrl-btn active'; mb.innerHTML='<span style="font-size:18px">🎙</span>MIC ON'; }
+        var ph2 = document.getElementById('iv-local-ph');
+        if(ph2) ph2.innerHTML = '<span style="font-size:18px">⚠️</span><span style="font-size:8px;font-weight:700;letter-spacing:.5px;color:#eab308;text-align:center;padding:0 4px">SIN CÁMARA — revisa permisos</span>';
         window._initWebRTCInterviewer(salaId, aStream);
-      }).catch(function(){
+      }).catch(function(err2){
+        console.error('[ANE] No se pudo activar ni cámara ni mic del entrevistador:', err2 && err2.name, err2 && err2.message);
+        var ph3 = document.getElementById('iv-local-ph');
+        if(ph3) ph3.innerHTML = '<span style="font-size:18px">⚠️</span><span style="font-size:8px;font-weight:700;letter-spacing:.5px;color:#ef4444;text-align:center;padding:0 4px">SIN CÁMARA/MIC — revisa permisos del navegador</span>';
         // Sin medios — iniciar WebRTC de todas formas para recibir al candidato
         window._initWebRTCInterviewer(salaId, null);
       });
