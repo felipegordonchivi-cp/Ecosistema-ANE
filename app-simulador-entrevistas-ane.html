@@ -4515,6 +4515,15 @@ function admitirCandidato(){
         window._initWebRTCInterviewer(salaId, null);
       });
     });
+  } else {
+    console.error('[ANE] Cámara del entrevistador no iniciada — _initWebRTCInterviewer:', typeof window._initWebRTCInterviewer, 'salaId:', salaId);
+    var phMissing = document.getElementById('iv-local-ph');
+    if(phMissing){
+      var why = (typeof window._initWebRTCInterviewer !== 'function')
+        ? 'Firebase no inicializó en esta página'
+        : 'falta el ID de la sala — recarga y genera el enlace de nuevo';
+      phMissing.innerHTML = '<span style="font-size:18px">⚠️</span><span style="font-size:8px;font-weight:700;letter-spacing:.5px;color:#ef4444;text-align:center;padding:0 4px">CÁMARA NO INICIADA — '+escHtml(why)+'</span>';
+    }
   }
   // Toast de confirmación
   const t = document.createElement('div');
