@@ -3324,65 +3324,6 @@ function doPrintPDF(){
     @media print{@page{margin:1.5cm;size:A4}}
   </style>
 </head><body>${content}
-
-<!-- ANE CONSENT MODAL — reutilizable -->
-<style>
-.ane-consent-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.82);display:none;align-items:center;justify-content:center;z-index:99999;padding:20px}
-.ane-consent-card{width:min(680px,100%);background:#0e1f2e;color:#e0f2f2;border:2px solid #0d7373;border-radius:20px;box-shadow:0 24px 80px rgba(0,0,0,.5);padding:28px 32px;font-family:inherit}
-.ane-consent-card h2{margin:0 0 12px;font-size:20px;color:#7dd3d3}
-.ane-consent-card p{line-height:1.6;margin:10px 0;color:#c8e8e8;font-size:14px}
-.ane-consent-list{margin:14px 0;padding-left:20px;color:#c8e8e8;font-size:14px;line-height:1.7}
-.ane-consent-check-row{display:flex;gap:10px;align-items:flex-start;margin-top:16px;padding:12px 14px;background:rgba(13,115,115,.15);border:1px solid rgba(13,115,115,.4);border-radius:10px}
-.ane-consent-check-row input{margin-top:3px;width:18px;height:18px;flex-shrink:0;cursor:pointer;accent-color:#0d7373}
-.ane-consent-check-row label{font-size:14px;font-weight:700;color:#e0f2f2;cursor:pointer}
-.ane-consent-small{font-size:11px;color:#4a8a8a;margin-top:8px}
-.ane-consent-actions{display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap;margin-top:20px}
-.ane-btn-consent-ok{background:#0d7373;color:#fff;border:none;border-radius:10px;padding:11px 22px;font-weight:800;font-size:14px;cursor:pointer}
-.ane-btn-consent-cancel{background:transparent;color:#7dd3d3;border:1px solid #3a6a6a;border-radius:10px;padding:11px 18px;font-size:13px;cursor:pointer}
-</style>
-<div id="aneConsentBackdrop" class="ane-consent-backdrop" role="dialog" aria-modal="true" aria-labelledby="aneConsentTitle">
-  <div class="ane-consent-card">
-    <h2 id="aneConsentTitle">🔒 Consentimiento informado requerido</h2>
-    <p>Antes de procesar CV, entrevistas, audio, transcripciones o diagnósticos, confirme que la persona candidata fue informada y autorizó el uso de sus datos para orientación laboral, evaluación asistida y seguimiento institucional.</p>
-    <ul class="ane-consent-list">
-      <li>El resultado es orientativo y requiere revisión humana.</li>
-      <li>Los datos deben usarse solo para el fin informado.</li>
-      <li>La grabación/transcripción requiere autorización expresa.</li>
-      <li>Si se usa IA externa o sala virtual, debe informarse previamente.</li>
-    </ul>
-    <div class="ane-consent-check-row">
-      <input id="aneConsentCheck" type="checkbox">
-      <label for="aneConsentCheck">Confirmo que cuento con autorización informada de la persona candidata.</label>
-    </div>
-    <p class="ane-consent-small">Registro local: esta confirmación se guarda en este navegador para la sesión del módulo.</p>
-    <div class="ane-consent-actions">
-      <button class="ane-btn-consent-cancel" onclick="closeANEConsent(false)">Cancelar</button>
-      <button class="ane-btn-consent-ok" onclick="closeANEConsent(true)">Continuar →</button>
-    </div>
-  </div>
-</div>
-<script>
-var _aneConsentResolve=null;
-function requireANEConsent(moduleName){
-  moduleName=moduleName||'general';
-  var key='ane_consent_'+moduleName+'_'+new Date().toISOString().slice(0,10);
-  if(typeof localStorage!=='undefined'&&localStorage.getItem(key)==='ok') return Promise.resolve(true);
-  var el=document.getElementById('aneConsentCheck');
-  if(el) el.checked=false;
-  var bd=document.getElementById('aneConsentBackdrop');
-  if(bd) bd.style.display='flex';
-  return new Promise(function(resolve){ _aneConsentResolve={resolve:resolve,key:key}; });
-}
-function closeANEConsent(accept){
-  var check=document.getElementById('aneConsentCheck');
-  if(accept&&check&&!check.checked){ alert('Debe confirmar la autorización informada para continuar.'); return; }
-  var bd=document.getElementById('aneConsentBackdrop');
-  if(bd) bd.style.display='none';
-  if(accept&&_aneConsentResolve){ try{localStorage.setItem(_aneConsentResolve.key,'ok');}catch(e){} _aneConsentResolve.resolve(true); }
-  else if(_aneConsentResolve){ _aneConsentResolve.resolve(false); }
-  _aneConsentResolve=null;
-}
-</script>
 </body></html>`);
   win.document.close();
   setTimeout(()=>{ win.focus(); win.print(); },500);
