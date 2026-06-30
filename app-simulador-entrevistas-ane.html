@@ -365,6 +365,24 @@ function escHtml(s){
         if(errCb) errCb(err);
       });
     };
+    // Respaldo por REST (HTTPS simple, sin conexión persistente) para rutas
+    // críticas del candidato — algunas redes bloquean el WebSocket/long-polling
+    // del SDK (.on/.once) pero sí permiten peticiones HTTPS normales. Sondea
+    // por polling y solo invoca cb cuando el valor cambia.
+    window._fbPollBackup = function(path, intervalMs, cb){
+      var url = firebaseConfig.databaseURL + '/' + path + '.json';
+      var last;
+      function tick(){
+        fetch(url).then(function(r){ return r.ok ? r.json() : undefined; }).then(function(val){
+          var json = JSON.stringify(val);
+          if(json === last) return;
+          last = json;
+          cb(val);
+        }).catch(function(){});
+      }
+      tick();
+      return setInterval(tick, intervalMs);
+    };
 
     var params    = new URLSearchParams(window.location.search);
     var salaId    = params.get('sala');
@@ -372,8 +390,10 @@ function escHtml(s){
 
     if(esCand && salaId){
       // Candidato: escuchar admit y preguntas
-      window._fbOn('salas/'+salaId+'/estado', function(val){
+      var estadoPollId = null;
+      function handleEstado(val){
         if(val === 'admitido'){
+          if(estadoPollId){ clearInterval(estadoPollId); estadoPollId = null; }
           var se = document.getElementById('sala-espera');
           var sb = document.getElementById('sala-entrevista-body');
           if(se) se.style.display = 'none';
@@ -384,15 +404,22 @@ function escHtml(s){
             toggleCandCam();
           }
         }
-      }, function(err){
+      }
+      window._fbOn('salas/'+salaId+'/estado', handleEstado, function(err){
         var status = document.getElementById('sala-espera-status');
         if(status) status.innerHTML = '⚠️ Error de conexión Firebase ('+err.code+'). Recarga la página e intenta de nuevo.';
         if(status) status.style.display = 'block';
       });
-      window._fbOn('salas/'+salaId+'/pregunta', function(val){
+      // Respaldo por REST: si el WebSocket está bloqueado en esta red, el .on()
+      // de arriba nunca dispara aunque el entrevistador sí admita al candidato.
+      estadoPollId = window._fbPollBackup('salas/'+salaId+'/estado', 3000, handleEstado);
+
+      function handlePregunta(val){
         if(val && val.q){ if(typeof showCandQuestion==='function') showCandQuestion(val.q, val.qNum, val.profName); }
         else { if(typeof hideCandQuestion==='function') hideCandQuestion(); }
-      });
+      }
+      window._fbOn('salas/'+salaId+'/pregunta', handlePregunta);
+      window._fbPollBackup('salas/'+salaId+'/pregunta', 3000, handlePregunta);
       window._fbSolicitarEntrada = function(nombre){
         var settled = false;
         var sdkDone = false, restDone = false;
