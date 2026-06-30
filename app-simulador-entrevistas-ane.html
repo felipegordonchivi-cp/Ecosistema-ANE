@@ -394,8 +394,31 @@ function escHtml(s){
         else { if(typeof hideCandQuestion==='function') hideCandQuestion(); }
       });
       window._fbSolicitarEntrada = function(nombre){
+        var settled = false;
+        // Si la escritura no se confirma en 8s, la conexión probablemente está
+        // bloqueada (firewall/red restrictiva) — Firebase no falla, solo se queda
+        // colgado esperando reconexión, y el candidato nunca se entera.
+        var timeoutId = setTimeout(function(){
+          if(settled) return;
+          settled = true;
+          var status = document.getElementById('sala-espera-status');
+          if(status){
+            status.innerHTML = '⚠️ No se pudo confirmar el envío. Tu red puede estar bloqueando la conexión en tiempo real. Intenta con otra red (datos móviles) o avisa al asesor por chat/teléfono.';
+            status.style.display = 'block';
+          }
+          var btn = document.getElementById('sala-espera-btn');
+          if(btn){ btn.disabled=false; btn.style.opacity='1'; }
+        }, 8000);
         window._fbSet('salas/'+salaId+'/knock', { nombre: nombre, ts: Date.now() })
+          .then(function(){
+            if(settled) return;
+            settled = true;
+            clearTimeout(timeoutId);
+          })
           .catch(function(err){
+            if(settled) return;
+            settled = true;
+            clearTimeout(timeoutId);
             console.error('[ANE] Firebase knock write error:', err.code, err.message);
             var status = document.getElementById('sala-espera-status');
             if(status){ status.innerHTML = '⚠️ Error al enviar solicitud ('+err.code+'). Verifica tu conexión e intenta de nuevo.'; status.style.display='block'; }
