@@ -4496,19 +4496,21 @@ function admitirCandidato(){
       // Iniciar WebRTC con el stream ya listo
       window._initWebRTCInterviewer(salaId, stream);
     }).catch(function(err){
-      console.error('[ANE] No se pudo activar cámara+mic del entrevistador:', err && err.name, err && err.message);
+      var errName = err && err.name || 'Error';
+      console.error('[ANE] No se pudo activar cámara+mic del entrevistador:', errName, err && err.message);
       // Si no hay cámara, intentar solo audio
       navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(function(aStream){
         ivMicStream = aStream; ivMicOn = true; ivMicMuted = false;
         var mb = document.getElementById('iv-mic-btn');
         if(mb){ mb.className='iv-ctrl-btn active'; mb.innerHTML='<span style="font-size:18px">🎙</span>MIC ON'; }
         var ph2 = document.getElementById('iv-local-ph');
-        if(ph2) ph2.innerHTML = '<span style="font-size:18px">⚠️</span><span style="font-size:8px;font-weight:700;letter-spacing:.5px;color:#eab308;text-align:center;padding:0 4px">SIN CÁMARA — revisa permisos</span>';
+        if(ph2) ph2.innerHTML = '<span style="font-size:18px">⚠️</span><span style="font-size:8px;font-weight:700;letter-spacing:.5px;color:#eab308;text-align:center;padding:0 4px">SIN CÁMARA ('+escHtml(errName)+')</span>';
         window._initWebRTCInterviewer(salaId, aStream);
       }).catch(function(err2){
-        console.error('[ANE] No se pudo activar ni cámara ni mic del entrevistador:', err2 && err2.name, err2 && err2.message);
+        var errName2 = err2 && err2.name || 'Error';
+        console.error('[ANE] No se pudo activar ni cámara ni mic del entrevistador:', errName2, err2 && err2.message);
         var ph3 = document.getElementById('iv-local-ph');
-        if(ph3) ph3.innerHTML = '<span style="font-size:18px">⚠️</span><span style="font-size:8px;font-weight:700;letter-spacing:.5px;color:#ef4444;text-align:center;padding:0 4px">SIN CÁMARA/MIC — revisa permisos del navegador</span>';
+        if(ph3) ph3.innerHTML = '<span style="font-size:18px">⚠️</span><span style="font-size:8px;font-weight:700;letter-spacing:.5px;color:#ef4444;text-align:center;padding:0 4px">SIN CÁMARA/MIC ('+escHtml(errName)+'/'+escHtml(errName2)+')</span>';
         // Sin medios — iniciar WebRTC de todas formas para recibir al candidato
         window._initWebRTCInterviewer(salaId, null);
       });
