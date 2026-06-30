@@ -2373,10 +2373,11 @@ document.getElementById('btnProcesar').addEventListener('click', async () => {
     const now = new Date();
     const staleThreshold = 15 * 24 * 60 * 60 * 1000; // 15 days
     const staleAlerts = control.filter(r => {
-      if(!r.fechaCita) return false;
-      const d = r.fechaCita instanceof Date ? r.fechaCita : null;
-      if(!d || isNaN(d)) return false;
-      return (now - d) > staleThreshold;
+      if(r.statusFinal) return false; // caso cerrado, no alertar
+      const dates = [r.fS1, r.fS2, r.fS3, r.fAdic].filter(d => d instanceof Date && !isNaN(d));
+      if(!dates.length) return false;
+      const lastDate = new Date(Math.max(...dates.map(d => d.getTime())));
+      return (now - lastDate) > staleThreshold;
     });
     STATE._actionableAlerts = { stale: staleAlerts.length, dups: dupCedulas.length, emptyAsesor: emptyAsesores };
 
@@ -2429,7 +2430,7 @@ function renderDataQualityPanel(){
   
   if(alerts && (alerts.stale>0 || alerts.dups>0 || alerts.emptyAsesor>0)){
     html += '<div style="border-top:1px solid rgba(13,115,115,.3);padding-top:10px;margin-top:4px"><strong style="color:#7dd3d3">Alertas accionables</strong><ul style="margin:6px 0 0;padding-left:16px;line-height:1.7">';
-    if(alerts.stale>0) html += `<li>⏰ ${alerts.stale} caso(s) sin seguimiento en los últimos 15 días</li>`;
+    if(alerts.stale>0) html += `<li>⏰ ${alerts.stale} caso(s) abierto(s) sin sesión en los últimos 15 días</li>`;
     if(alerts.dups>0) html += `<li>⚠️ ${alerts.dups} cédula(s) duplicada(s)</li>`;
     if(alerts.emptyAsesor>0) html += `<li>👤 ${alerts.emptyAsesor} registro(s) sin asesor asignado</li>`;
     html += '</ul></div>';
