@@ -395,36 +395,66 @@ function escHtml(s){
       });
       window._fbSolicitarEntrada = function(nombre){
         var settled = false;
-        // Si la escritura no se confirma en 8s, la conexión probablemente está
-        // bloqueada (firewall/red restrictiva) — Firebase no falla, solo se queda
-        // colgado esperando reconexión, y el candidato nunca se entera.
-        var timeoutId = setTimeout(function(){
-          if(settled) return;
-          settled = true;
+        var sdkDone = false, restDone = false;
+        var payload = { nombre: nombre, ts: Date.now() };
+        var restUrl = firebaseConfig.databaseURL + '/salas/' + encodeURIComponent(salaId) + '/knock.json';
+
+        function showStatus(html){
           var status = document.getElementById('sala-espera-status');
-          if(status){
-            status.innerHTML = '⚠️ No se pudo confirmar el envío. Tu red puede estar bloqueando la conexión en tiempo real. Intenta con otra red (datos móviles) o avisa al asesor por chat/teléfono.';
-            status.style.display = 'block';
-          }
+          if(status){ status.innerHTML = html; status.style.display = 'block'; }
+        }
+        function reEnableBtn(){
           var btn = document.getElementById('sala-espera-btn');
           if(btn){ btn.disabled=false; btn.style.opacity='1'; }
+        }
+        function succeed(){
+          if(settled) return;
+          settled = true;
+          clearTimeout(timeoutId);
+        }
+        function maybeFail(reason){
+          if(settled) return;
+          if(sdkDone && restDone){
+            settled = true;
+            clearTimeout(timeoutId);
+            console.error('[ANE] Firebase knock write failed por ambas vías (SDK y REST):', reason);
+            showStatus('⚠️ No se pudo enviar la solicitud. Verifica tu conexión a internet o avisa al asesor por chat/teléfono.');
+            reEnableBtn();
+          }
+        }
+
+        // Si tras 8s ninguna de las dos vías respondió aún, avisamos que seguimos
+        // intentando — algunas redes bloquean el WebSocket persistente del SDK
+        // pero sí permiten peticiones HTTPS normales (la vía REST de abajo).
+        var timeoutId = setTimeout(function(){
+          if(settled) return;
+          showStatus('⏳ Tu conexión está tardando más de lo normal. Seguimos intentando enviar la solicitud en segundo plano — espera unos segundos más antes de avisar al asesor.');
         }, 8000);
-        window._fbSet('salas/'+salaId+'/knock', { nombre: nombre, ts: Date.now() })
-          .then(function(){
-            if(settled) return;
-            settled = true;
-            clearTimeout(timeoutId);
-          })
+
+        // Vía 1: SDK de Firebase (WebSocket / long-polling persistente)
+        window._fbSet('salas/'+salaId+'/knock', payload)
+          .then(function(){ sdkDone = true; succeed(); })
           .catch(function(err){
-            if(settled) return;
-            settled = true;
-            clearTimeout(timeoutId);
-            console.error('[ANE] Firebase knock write error:', err.code, err.message);
-            var status = document.getElementById('sala-espera-status');
-            if(status){ status.innerHTML = '⚠️ Error al enviar solicitud ('+err.code+'). Verifica tu conexión e intenta de nuevo.'; status.style.display='block'; }
-            var btn = document.getElementById('sala-espera-btn');
-            if(btn){ btn.disabled=false; btn.style.opacity='1'; }
+            sdkDone = true;
+            console.error('[ANE] Firebase SDK knock write error:', err && err.code, err && err.message);
+            maybeFail(err && err.code);
           });
+
+        // Vía 2: API REST de Firebase sobre HTTPS normal (sin conexión persistente).
+        // Sirve de respaldo cuando la red bloquea el WebSocket del SDK pero sí
+        // permite peticiones HTTPS estándar.
+        fetch(restUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).then(function(r){
+          restDone = true;
+          if(r.ok) succeed(); else maybeFail('REST HTTP '+r.status);
+        }).catch(function(err){
+          restDone = true;
+          console.error('[ANE] Firebase REST knock write error:', err);
+          maybeFail('REST '+(err && err.message));
+        });
       };
       // Chat en tiempo real — candidato recibe mensajes del entrevistador
       db.ref('salas/'+salaId+'/chat').on('child_added', function(snap){
