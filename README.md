@@ -75,6 +75,13 @@ El portal incluye una sección de **Auditoría técnica** integrada con:
 - Hallazgos de arquitectura, seguridad y diseño
 - Recomendaciones prioritarias para v2
 
+## Notas de despliegue (Simulador STAR — sala virtual)
+
+- **`gh-pages` nunca se edita a mano.** `.github/workflows/deploy.yml` refleja *todo* `main` a `gh-pages` en cada push — cualquier hotfix subido directo a `gh-pages` (p. ej. vía "Add file via upload" en la web de GitHub) se pierde en el siguiente deploy desde `main`. Todo cambio entra por `main`.
+- **Reglas de Firebase:** el modo de prueba por defecto expira a los 30 días y deja la sala de espera fallando en silencio. Reglas de producción sugeridas en [`tools/firebase-database-rules.json`](tools/firebase-database-rules.json) — pegar en Firebase Console → Realtime Database → Rules.
+- **TURN para WebRTC:** la videollamada usa STUN de Google + un TURN público gratuito (Open Relay Project) como respaldo para redes con NAT/firewall estricto. Para uso institucional a mayor escala, considerar un TURN dedicado (Twilio, Xirsys, o `coturn` propio).
+- **API Key de Gemini:** por defecto se guarda en `localStorage` del navegador (visible en DevTools). [`tools/gemini-proxy-worker.js`](tools/gemini-proxy-worker.js) es un proxy gratuito (Cloudflare Workers free tier) que la mantiene solo en el servidor — instrucciones de despliegue en el propio archivo.
+
 ---
 
 *Ecosistema ANE v16 · Recomendación responsable · Costa Rica 2026*

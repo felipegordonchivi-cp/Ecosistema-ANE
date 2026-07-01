@@ -1,0 +1,13 @@
+{
+  "rules": {
+    "salas": {
+      "$salaId": {
+        ".read": true,
+        ".write": true,
+        ".validate": "newData.hasChildren() || newData.val() === null"
+      }
+    },
+    ".read": false,
+    ".write": false
+  }
+}
