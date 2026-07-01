@@ -691,16 +691,18 @@ function escHtml(s){
       var ivPC = null;
       window._initWebRTCInterviewer = function(sid, ivStream){
         window._ivPC = null;
-        // TURN público gratuito (Open Relay Project) como respaldo — sin STUN
-        // solo, la llamada nunca conecta detrás de NAT simétrico o firewalls
-        // institucionales estrictos (el mismo tipo de red que bloquea el
-        // WebSocket de Firebase en el bug de la sala de espera).
+        // TURN dedicado (cuenta propia Metered.ca, 20GB/mes gratis) como
+        // respaldo — sin esto, la llamada nunca conecta detrás de NAT
+        // simétrico o firewalls institucionales estrictos. El TURN
+        // comunitario compartido (Open Relay Project) no fue confiable en
+        // pruebas reales, por eso se reemplazó por credenciales propias.
         var cfg = { iceServers: [
           { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' },
-          { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-          { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-          { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+          { urls: 'stun:stun.relay.metered.ca:80' },
+          { urls: 'turn:standard.relay.metered.ca:80', username: 'b9b7ddf13c911b6311f49b77', credential: 'zEqPvin9GyexlMWb' },
+          { urls: 'turn:standard.relay.metered.ca:80?transport=tcp', username: 'b9b7ddf13c911b6311f49b77', credential: 'zEqPvin9GyexlMWb' },
+          { urls: 'turn:standard.relay.metered.ca:443', username: 'b9b7ddf13c911b6311f49b77', credential: 'zEqPvin9GyexlMWb' },
+          { urls: 'turns:standard.relay.metered.ca:443?transport=tcp', username: 'b9b7ddf13c911b6311f49b77', credential: 'zEqPvin9GyexlMWb' }
         ]};
         ivPC = new RTCPeerConnection(cfg);
         window._ivPC = ivPC;
@@ -779,16 +781,18 @@ function escHtml(s){
       // ── WebRTC: candidato envía su video al entrevistador ──
       var candPC = null;
       window._initWebRTCCandidate = function(stream){
-        // TURN público gratuito (Open Relay Project) como respaldo — sin STUN
-        // solo, la llamada nunca conecta detrás de NAT simétrico o firewalls
-        // institucionales estrictos (el mismo tipo de red que bloquea el
-        // WebSocket de Firebase en el bug de la sala de espera).
+        // TURN dedicado (cuenta propia Metered.ca, 20GB/mes gratis) como
+        // respaldo — sin esto, la llamada nunca conecta detrás de NAT
+        // simétrico o firewalls institucionales estrictos. El TURN
+        // comunitario compartido (Open Relay Project) no fue confiable en
+        // pruebas reales, por eso se reemplazó por credenciales propias.
         var cfg = { iceServers: [
           { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' },
-          { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-          { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-          { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+          { urls: 'stun:stun.relay.metered.ca:80' },
+          { urls: 'turn:standard.relay.metered.ca:80', username: 'b9b7ddf13c911b6311f49b77', credential: 'zEqPvin9GyexlMWb' },
+          { urls: 'turn:standard.relay.metered.ca:80?transport=tcp', username: 'b9b7ddf13c911b6311f49b77', credential: 'zEqPvin9GyexlMWb' },
+          { urls: 'turn:standard.relay.metered.ca:443', username: 'b9b7ddf13c911b6311f49b77', credential: 'zEqPvin9GyexlMWb' },
+          { urls: 'turns:standard.relay.metered.ca:443?transport=tcp', username: 'b9b7ddf13c911b6311f49b77', credential: 'zEqPvin9GyexlMWb' }
         ]};
         candPC = new RTCPeerConnection(cfg);
         stream.getTracks().forEach(function(t){ candPC.addTrack(t, stream); });
