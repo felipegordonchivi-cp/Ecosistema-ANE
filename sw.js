@@ -1,7 +1,7 @@
-// ANE Suite — Service Worker v1.0
+// ANE Suite — Service Worker v1.1
 // Estrategia: Cache-first para assets estáticos, Network-first para HTML
-const CACHE_NAME = 'ane-suite-v1';
-const CACHE_STATIC = 'ane-static-v1';
+const CACHE_NAME = 'ane-suite-v2';
+const CACHE_STATIC = 'ane-static-v2';
 
 const CORE_ASSETS = [
   './',
@@ -56,7 +56,10 @@ self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   if (url.origin !== self.location.origin) return;
 
-  const isNavigation = event.request.mode === 'navigate';
+  // No solo 'navigate': algunos motores no marcan así la carga de un
+  // documento dentro de un <iframe> (así se cargan los módulos desde
+  // index.html) — tratamos cualquier .html igual, para no depender de eso.
+  const isNavigation = event.request.mode === 'navigate' || url.pathname.endsWith('.html');
   const isVendor = url.pathname.includes('/vendor/');
   const isFont = url.pathname.includes('/fonts/');
 
@@ -75,9 +78,14 @@ self.addEventListener('fetch', event => {
       })
     );
   } else if (isNavigation) {
-    // Network-first for HTML pages: fresh if online, fallback if offline
+    // Network-first for HTML pages: fresh if online, fallback if offline.
+    // cache:'no-store' es clave — sin esto, este fetch() hecho DENTRO del
+    // Service Worker puede seguir sirviéndose desde la caché HTTP normal
+    // del navegador (la que pone GitHub Pages), incluso cuando el usuario
+    // hizo un hard-refresh: ese hard-refresh solo fuerza la petición
+    // principal del documento, no las peticiones internas que hace el SW.
     event.respondWith(
-      fetch(event.request).then(response => {
+      fetch(event.request, { cache: 'no-store' }).then(response => {
         if (response.ok) {
           const clone = response.clone();
           caches.open(CACHE_STATIC).then(c => c.put(event.request, clone));
