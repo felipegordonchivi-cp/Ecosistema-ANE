@@ -1773,6 +1773,7 @@ function escHtml(s){
               <button onclick="analyzeAndSave()" style="background:rgba(13,115,115,.2);border:1px solid var(--teal);color:var(--tl);padding:9px 10px;border-radius:9px;font-size:12px" title="Analizar y guardar">💾</button>
               <button onclick="toggleApiKeyUI()" style="background:rgba(13,115,115,.15);border:1px solid rgba(13,115,115,.4);color:var(--tl);padding:9px 10px;border-radius:9px;font-size:12px" title="API Key">🔑</button>
             </div>
+            <button onclick="analyzeLocalOnly()" style="width:100%;margin-bottom:10px;background:rgba(13,115,115,.08);border:1px dashed rgba(13,115,115,.4);color:#5a9898;padding:8px;border-radius:9px;font-size:11px;font-weight:700;cursor:pointer">🧮 Análisis local por palabras clave (sin IA, sin clave, gratis)</button>
 
             <div id="ai-loading" style="display:none;text-align:center;padding:20px;color:var(--tl)">
               <div style="font-size:24px;margin-bottom:8px;animation:blink 1s infinite">⏳</div>Analizando con IA…
@@ -3407,23 +3408,124 @@ Sé específico, constructivo y objetivo. Considera el contexto del mercado labo
   }
 }
 
-// LOCAL FALLBACK ANALYSIS
+// ============================================================
+// ANÁLISIS STAR LOCAL — heurística experta, 100% en el navegador, sin
+// IA externa, sin clave, sin costo. No es un modelo de lenguaje: combina
+// listas de palabras/frases por componente STAR, detección de resultados
+// cuantificables (cifras/%/montos), y señales de comunicación (muletillas,
+// extensión, lenguaje de equipo vs. individual) para dar un reporte con
+// la misma estructura que el análisis por IA.
+// ============================================================
 const STAR_KW = {
-  S:['cuando','situación','contexto','empresa','equipo','departamento','período','durante','proyecto','cliente','caso'],
-  T:['mi responsabilidad','mi tarea','debía','me encargué','mi rol','mi objetivo','tenía que','estaba a cargo','meta'],
-  A:['decidí','implementé','propuse','realicé','hice','tomé','llamé','coordiné','desarrollé','apliqué','gestioné','organicé','inmediatamente','primero','luego'],
-  R:['resultado','logré','mejoré','reduje','aumenté','conseguí','finalmente','impacto','logramos','ahorramos','aprendí','éxito','%']
+  S:['cuando','situación','contexto','empresa','equipo','departamento','período','durante','proyecto','cliente','caso','problema','desafío','reto','en aquel momento','en esa época','la empresa','el área','el mercado','antecedente'],
+  T:['mi responsabilidad','mi tarea','debía','me encargué','mi rol','mi objetivo','tenía que','estaba a cargo','meta','se me asignó','mi función','el objetivo era','debía lograr','me pidieron','me correspondía'],
+  A:['decidí','implementé','propuse','realicé','hice','tomé','llamé','coordiné','desarrollé','apliqué','gestioné','organicé','inmediatamente','primero','luego','después','entonces','elaboré','diseñé','negocié','contacté','revisé','analicé','presenté','capacité','lideré','dirigí','ejecuté'],
+  R:['resultado','logré','mejoré','reduje','aumenté','conseguí','finalmente','impacto','logramos','ahorramos','aprendí','éxito','se logró','como resultado','gracias a esto','esto permitió','se incrementó','se disminuyó']
 };
+const STAR_FILLERS = ['o sea','este,','eh,','tipo,','digamos','como que','bueno,','pues,','entonces,','viste,'];
+
+function _starCountMatches(t, phrases){
+  return phrases.reduce((acc,w)=>acc + (t.split(w).length-1), 0);
+}
+function _starQuantifiableResults(text){
+  const pct = text.match(/\d+([.,]\d+)?\s?%/g) || [];
+  const money = text.match(/[₡$]\s?\d+([.,]\d+)?/g) || [];
+  const nums = text.match(/\b\d{2,}\b/g) || [];
+  return { pct, money, nums, total: pct.length+money.length+nums.length };
+}
+
 function analyzeStarLocally(text){
   const t = text.toLowerCase();
+  const wc = text.trim().split(/\s+/).filter(Boolean).length;
+  const sentences = text.split(/[.!?]+/).map(x=>x.trim()).filter(Boolean);
+  const avgSentLen = sentences.length ? Math.round(wc/sentences.length) : wc;
+
   const hits={};
-  ['S','T','A','R'].forEach(k=>{hits[k]=STAR_KW[k].filter(w=>t.includes(w)).length;});
-  const score=k=>Math.min(5,Math.max(1,hits[k]>=4?5:hits[k]>=3?4:hits[k]>=2?3:hits[k]>=1?2:1));
-  const s={S:score('S'),T:score('T'),A:score('A'),R:score('R')};
-  const total=s.S+s.T+s.A+s.R;
-  const pct=Math.round((total/20)*100);
-  const wc=text.trim().split(/\s+/).length;
-  return `ANÁLISIS STAR LOCAL (sin IA)\n${'═'.repeat(40)}\n\nPuntajes detectados:\n  S (Situación): ${s.S}/5\n  T (Tarea): ${s.T}/5\n  A (Acción): ${s.A}/5\n  R (Resultado): ${s.R}/5\n  Total: ${total}/20 (${pct}%)\n\nPalabras: ${wc}\n\n${hits.R<2?'⚠️ Agregar resultados medibles (cifras, %)\n':''}${hits.S<2?'⚠️ Contextualizar mejor la situación\n':''}${hits.A<2?'⚠️ Detallar más las acciones tomadas\n':''}${wc<40?'⚠️ Respuesta muy breve para evaluación STAR\n':''}\n${pct>=70?'✅ Estructura STAR aceptable':'❌ Respuesta requiere mayor desarrollo STAR'}`;
+  ['S','T','A','R'].forEach(k=>{ hits[k] = _starCountMatches(t, STAR_KW[k]); });
+  const quant = _starQuantifiableResults(text);
+  if(quant.total>0) hits.R += Math.min(3, quant.total);
+
+  const fillerCount = _starCountMatches(t, STAR_FILLERS);
+  const ownershipYo = (t.match(/\byo\b/g)||[]).length;
+  const ownershipNosotros = (t.match(/\bnosotros\b|\bnos\b/g)||[]).length;
+
+  const score = k => Math.min(5, Math.max(1, hits[k]>=5?5:hits[k]>=3?4:hits[k]>=2?3:hits[k]>=1?2:1));
+  const s = { S:score('S'), T:score('T'), A:score('A'), R:score('R') };
+  const total = s.S+s.T+s.A+s.R;
+  const pct = Math.round((total/20)*100);
+  const global10 = Math.max(1, Math.min(10, Math.round(pct/10)));
+  const recomendacion =
+    global10>=9 ? 'Muy Recomendado' :
+    global10>=7 ? 'Recomendado' :
+    global10>=5 ? 'Condicionado' :
+    global10>=3 ? 'Con Reservas' : 'No Recomendado';
+
+  const compLabel = { S:'Situación', T:'Tarea', A:'Acción', R:'Resultado' };
+  const desglose = ['S','T','A','R'].map(k=>{
+    const nivel = s[k]>=4?'Sólido':s[k]>=3?'Presente pero mejorable':s[k]>=2?'Débil':'Prácticamente ausente';
+    return '  • '+compLabel[k]+' ('+k+'): '+s[k]+'/5 — '+nivel;
+  }).join('\n');
+
+  const fortalezas = [];
+  const mejoras = [];
+  if(s.S>=4) fortalezas.push('Describe con claridad el contexto y la situación de partida.');
+  else mejoras.push('Contextualizar mejor la situación: ¿cuándo ocurrió, en qué empresa/proyecto, cuál era el problema?');
+  if(s.T>=4) fortalezas.push('Deja clara cuál era su responsabilidad u objetivo personal en la situación.');
+  else mejoras.push('Precisar cuál era exactamente su rol o responsabilidad (no solo la del equipo).');
+  if(s.A>=4) fortalezas.push('Detalla acciones concretas que tomó, en primera persona.');
+  else mejoras.push('Detallar más las acciones específicas que ejecutó paso a paso.');
+  if(quant.total>0) fortalezas.push('Incluye resultados medibles (cifras/porcentajes/montos), lo cual da credibilidad al logro.');
+  else mejoras.push('Agregar resultados medibles y verificables (cifras, %, montos, tiempos) para respaldar el logro.');
+  if(wc<40) mejoras.push('La respuesta es muy breve para una evaluación STAR completa — se recomienda profundizar.');
+  if(fillerCount>=3) mejoras.push('Se detectaron varias muletillas/relleno — practicar una comunicación más directa ayudaría.');
+  if(ownershipNosotros > ownershipYo*1.5 && ownershipNosotros>=3) mejoras.push('Predomina el lenguaje de equipo ("nosotros") sobre el individual ("yo") — conviene distinguir su aporte personal.');
+
+  const preguntas = [];
+  if(s.T<3) preguntas.push('¿Cuál era específicamente su responsabilidad individual en ese proyecto?');
+  if(quant.total===0) preguntas.push('¿Puede cuantificar el resultado obtenido (en tiempo, dinero o %)?');
+  if(preguntas.length<2) preguntas.push('¿Qué haría diferente si enfrentara la misma situación hoy?');
+  if(preguntas.length<2) preguntas.push('¿Cómo midió el equipo o la organización el éxito de esa acción?');
+
+  return 'ANÁLISIS STAR LOCAL — heurística experta (sin IA externa)\n'+'═'.repeat(50)+'\n\n'
+    +'1. DESGLOSE STAR\n'+desglose+'\n\n'
+    +'2. PUNTAJE SUGERIDO POR COMPONENTE (1-5): S:'+s.S+' T:'+s.T+' A:'+s.A+' R:'+s.R+'\n\n'
+    +'3. PUNTAJE GLOBAL (1-10): '+global10+'/10\n\n'
+    +'4. FORTALEZAS\n'+(fortalezas.length? fortalezas.map(f=>'  • '+f).join('\n') : '  • No se identificaron fortalezas claras con este método — considere ampliar la respuesta.')+'\n\n'
+    +'5. ÁREAS DE MEJORA\n'+(mejoras.length? mejoras.map(m=>'  • '+m).join('\n') : '  • Sin observaciones adicionales — respuesta sólida en los componentes evaluados.')+'\n\n'
+    +'6. RECOMENDACIÓN: '+recomendacion+'\n\n'
+    +'7. PREGUNTAS DE SEGUIMIENTO SUGERIDAS\n'+preguntas.slice(0,2).map((p,i)=>'  '+(i+1)+'. '+p).join('\n')+'\n\n'
+    +'8. NOTAS DE COMUNICACIÓN (heurística de texto — no reemplaza el feedback de tono de voz)\n'
+    +'  • Extensión: '+wc+' palabras, '+sentences.length+' oraciones (~'+avgSentLen+' palabras/oración).\n'
+    +'  • Muletillas/relleno detectadas: '+fillerCount+'.\n'
+    +'  • Resultados cuantificables detectados: '+quant.total+' ('+([...quant.pct,...quant.money,...quant.nums].slice(0,5).join(', ')||'ninguno')+').\n\n'
+    +'─'.repeat(50)+'\n'
+    +'⚠️ Este análisis es una heurística local por palabras clave y patrones de\n'
+    +'texto — no usa modelos de lenguaje ni IA generativa. Es un apoyo objetivo\n'
+    +'y gratuito, pero no sustituye el juicio profesional del entrevistador.';
+}
+
+// Análisis 100% local, sin pasar primero por un intento (fallido) a Gemini —
+// para cuando no hay clave, no hay cuota, o simplemente no se quiere usar IA externa.
+function analyzeLocalOnly(){
+  const resp = document.getElementById('cand-resp')?.value?.trim()||'';
+  if(!resp||resp.length<10){
+    _showAIResult('⚠️ No hay respuesta del candidato. Escribe o graba una respuesta primero.');
+    return;
+  }
+  const result = analyzeStarLocally(resp);
+  _showAIResult(result);
+  const scoresMatch = result.match(/S[:\s]+(\d)\s+T[:\s]+(\d)\s+A[:\s]+(\d)\s+R[:\s]+(\d)/i);
+  if(scoresMatch){
+    ['S','T','A','R'].forEach((k,i)=>{
+      const v=parseInt(scoresMatch[i+1]);
+      if(v>=1&&v<=5&&starScores[k]===0) setStarScore(k,v);
+    });
+  }
+  const globalMatch = result.match(/(\d+)\s*\/\s*10/);
+  if(globalMatch){
+    const v=parseInt(globalMatch[1]);
+    if(v>=1&&v<=10){ const gs=document.getElementById('global-score'); if(gs) gs.value=v; updateGlobalScore(v); }
+  }
 }
 
 async function analyzeAndSave(){
