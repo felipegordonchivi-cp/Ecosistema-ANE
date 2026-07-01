@@ -604,16 +604,55 @@ function escHtml(s){
           : '⚠️ Firebase sin conexión — verifica tu internet';
       });
 
-      // Test if database rules allow reads+writes on salas/ path
+      // Test if database rules allow reads+writes on salas/ path.
+      // Por dos vías (SDK + REST) igual que el knock: si la red bloquea el
+      // WebSocket persistente del SDK, esa promesa puede quedarse colgada
+      // sin resolver NI rechazar nunca — sin la vía REST y el timeout de
+      // abajo, el autodiagnóstico se queda pegado en "Probando…" para
+      // siempre en vez de avisar del problema real.
       window._fbTestRules = function(callback){
         var testPath = 'salas/__ane_test__/ping';
+        var settled = false, sdkDone = false, restDone = false, lastErr = null;
+
+        function finish(err){
+          if(settled) return;
+          settled = true;
+          clearTimeout(timeoutId);
+          if(callback) callback(err);
+        }
+        function maybeFail(err){
+          lastErr = err || lastErr;
+          if(sdkDone && restDone) finish(lastErr);
+        }
+
+        var timeoutId = setTimeout(function(){
+          finish({code:'TIMEOUT', message:'Firebase no respondió a tiempo (posible bloqueo de red al WebSocket)'});
+        }, 10000);
+
+        // Vía 1: SDK
         db.ref(testPath).set({ts: Date.now()}).then(function(){
           return db.ref(testPath).remove();
         }).then(function(){
-          if(callback) callback(null);
+          sdkDone = true;
+          finish(null);
         }).catch(function(err){
-          if(callback) callback(err);
+          sdkDone = true;
+          maybeFail(err);
         });
+
+        // Vía 2: REST sobre HTTPS normal
+        var restUrl = firebaseConfig.databaseURL + '/' + testPath + '.json';
+        fetch(restUrl, {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ts: Date.now()})})
+          .then(function(r){
+            if(!r.ok) throw {code:'REST_HTTP_'+r.status, message:'REST HTTP '+r.status};
+            return fetch(restUrl, {method:'DELETE'});
+          }).then(function(){
+            restDone = true;
+            finish(null);
+          }).catch(function(err){
+            restDone = true;
+            maybeFail(err);
+          });
       };
 
       // Polling backup: reads knock every 3s in case real-time listener fails
@@ -3837,6 +3876,10 @@ function verificarFirebaseConInstrucciones(){
     if(!err){
       if(dot) dot.style.background='#22c55e';
       if(txt) txt.textContent='✓ Firebase OK — la sala de espera funcionará correctamente';
+    } else if(err.code === 'TIMEOUT'){
+      if(dot) dot.style.background='#ef4444';
+      if(txt) txt.textContent='⚠️ Firebase no respondió (red bloqueada) — probá desde otra red o revisa el firewall institucional';
+      if(banner) banner.style.display='block';
     } else {
       if(dot) dot.style.background='#ef4444';
       if(txt) txt.textContent='⚠️ '+err.code+' — reglas de Firebase deben actualizarse';
