@@ -74,8 +74,6 @@ textarea{resize:vertical}
 .teal-pulse{animation:pulse-teal 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 .blink{animation:blink 1s infinite}
-@keyframes knock-pulse{0%,100%{box-shadow:0 8px 32px rgba(0,0,0,.6),0 0 0 0 rgba(34,197,94,.7)}70%{box-shadow:0 8px 32px rgba(0,0,0,.6),0 0 0 16px rgba(34,197,94,0)}}
-.knock-alert{animation:knock-pulse .9s infinite}
 
 /* SECTOR TAGS */
 .sector-tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;letter-spacing:.5px}
@@ -335,12 +333,6 @@ textarea{resize:vertical}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
-// escHtml must be available before Firebase IIFE fires any callbacks
-function escHtml(s){
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
-</script>
-<script>
 (function(){
   var firebaseConfig = {
     apiKey: "AIzaSyBlOKEFWgG1PKb5iOkShyOYTvquAx_nQ_Q",
@@ -357,46 +349,8 @@ function escHtml(s){
     var db = firebase.database();
 
     window._fbSet    = function(path, val){ return db.ref(path).set(val); };
-    // Escritura "best-effort" por las dos vías a la vez (SDK + REST) — para
-    // datos frecuentes (ej. transcripción en vivo) donde no tiene sentido
-    // esperar 8s por intento; si el WebSocket está bloqueado, el REST igual
-    // entrega el dato por HTTPS normal.
-    window._fbSetReliable = function(path, val){
-      try{ window._fbSet(path, val); }catch(e){}
-      try{
-        fetch(firebaseConfig.databaseURL + '/' + path + '.json', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(val)
-        }).catch(function(){});
-      }catch(e){}
-    };
     window._fbRemove = function(path){ return db.ref(path).remove(); };
-    window._fbOff    = function(path){ db.ref(path).off(); };
-    window._fbOn     = function(path, cb, errCb){
-      db.ref(path).on('value', function(snap){ cb(snap.val()); }, function(err){
-        console.error('[ANE Firebase]', path, err.code, err.message);
-        if(errCb) errCb(err);
-      });
-    };
-    // Respaldo por REST (HTTPS simple, sin conexión persistente) para rutas
-    // críticas del candidato — algunas redes bloquean el WebSocket/long-polling
-    // del SDK (.on/.once) pero sí permiten peticiones HTTPS normales. Sondea
-    // por polling y solo invoca cb cuando el valor cambia.
-    window._fbPollBackup = function(path, intervalMs, cb){
-      var url = firebaseConfig.databaseURL + '/' + path + '.json';
-      var last;
-      function tick(){
-        fetch(url).then(function(r){ return r.ok ? r.json() : undefined; }).then(function(val){
-          var json = JSON.stringify(val);
-          if(json === last) return;
-          last = json;
-          cb(val);
-        }).catch(function(){});
-      }
-      tick();
-      return setInterval(tick, intervalMs);
-    };
+    window._fbOn     = function(path, cb){ db.ref(path).on('value', function(snap){ cb(snap.val()); }); };
 
     var params    = new URLSearchParams(window.location.search);
     var salaId    = params.get('sala');
@@ -404,98 +358,23 @@ function escHtml(s){
 
     if(esCand && salaId){
       // Candidato: escuchar admit y preguntas
-      var estadoPollId = null;
-      function handleEstado(val){
+      window._fbOn('salas/'+salaId+'/estado', function(val){
         if(val === 'admitido'){
-          if(estadoPollId){ clearInterval(estadoPollId); estadoPollId = null; }
-          var se = document.getElementById('sala-espera');
-          var sb = document.getElementById('sala-entrevista-body');
-          if(se) se.style.display = 'none';
-          if(sb) sb.style.display = 'flex';
+          document.getElementById('sala-espera').style.display = 'none';
+          document.getElementById('sala-entrevista-body').style.display = 'flex';
           // Auto-activar cámara+mic al entrar (como Teams)
           if(typeof toggleCandCam === 'function' && !window._candAutoStarted){
             window._candAutoStarted = true;
             toggleCandCam();
           }
         }
-      }
-      window._fbOn('salas/'+salaId+'/estado', handleEstado, function(err){
-        var status = document.getElementById('sala-espera-status');
-        if(status) status.innerHTML = '⚠️ Error de conexión Firebase ('+err.code+'). Recarga la página e intenta de nuevo.';
-        if(status) status.style.display = 'block';
       });
-      // Respaldo por REST: si el WebSocket está bloqueado en esta red, el .on()
-      // de arriba nunca dispara aunque el entrevistador sí admita al candidato.
-      estadoPollId = window._fbPollBackup('salas/'+salaId+'/estado', 3000, handleEstado);
-
-      function handlePregunta(val){
+      window._fbOn('salas/'+salaId+'/pregunta', function(val){
         if(val && val.q){ if(typeof showCandQuestion==='function') showCandQuestion(val.q, val.qNum, val.profName); }
         else { if(typeof hideCandQuestion==='function') hideCandQuestion(); }
-      }
-      window._fbOn('salas/'+salaId+'/pregunta', handlePregunta);
-      window._fbPollBackup('salas/'+salaId+'/pregunta', 3000, handlePregunta);
+      });
       window._fbSolicitarEntrada = function(nombre){
-        var settled = false;
-        var sdkDone = false, restDone = false;
-        var payload = { nombre: nombre, ts: Date.now() };
-        var restUrl = firebaseConfig.databaseURL + '/salas/' + encodeURIComponent(salaId) + '/knock.json';
-
-        function showStatus(html){
-          var status = document.getElementById('sala-espera-status');
-          if(status){ status.innerHTML = html; status.style.display = 'block'; }
-        }
-        function reEnableBtn(){
-          var btn = document.getElementById('sala-espera-btn');
-          if(btn){ btn.disabled=false; btn.style.opacity='1'; }
-        }
-        function succeed(){
-          if(settled) return;
-          settled = true;
-          clearTimeout(timeoutId);
-        }
-        function maybeFail(reason){
-          if(settled) return;
-          if(sdkDone && restDone){
-            settled = true;
-            clearTimeout(timeoutId);
-            console.error('[ANE] Firebase knock write failed por ambas vías (SDK y REST):', reason);
-            showStatus('⚠️ No se pudo enviar la solicitud. Verifica tu conexión a internet o avisa al asesor por chat/teléfono.');
-            reEnableBtn();
-          }
-        }
-
-        // Si tras 8s ninguna de las dos vías respondió aún, avisamos que seguimos
-        // intentando — algunas redes bloquean el WebSocket persistente del SDK
-        // pero sí permiten peticiones HTTPS normales (la vía REST de abajo).
-        var timeoutId = setTimeout(function(){
-          if(settled) return;
-          showStatus('⏳ Tu conexión está tardando más de lo normal. Seguimos intentando enviar la solicitud en segundo plano — espera unos segundos más antes de avisar al asesor.');
-        }, 8000);
-
-        // Vía 1: SDK de Firebase (WebSocket / long-polling persistente)
-        window._fbSet('salas/'+salaId+'/knock', payload)
-          .then(function(){ sdkDone = true; succeed(); })
-          .catch(function(err){
-            sdkDone = true;
-            console.error('[ANE] Firebase SDK knock write error:', err && err.code, err && err.message);
-            maybeFail(err && err.code);
-          });
-
-        // Vía 2: API REST de Firebase sobre HTTPS normal (sin conexión persistente).
-        // Sirve de respaldo cuando la red bloquea el WebSocket del SDK pero sí
-        // permite peticiones HTTPS estándar.
-        fetch(restUrl, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        }).then(function(r){
-          restDone = true;
-          if(r.ok) succeed(); else maybeFail('REST HTTP '+r.status);
-        }).catch(function(err){
-          restDone = true;
-          console.error('[ANE] Firebase REST knock write error:', err);
-          maybeFail('REST '+(err && err.message));
-        });
+        window._fbSet('salas/'+salaId+'/knock', { nombre: nombre, ts: Date.now() });
       };
       // Chat en tiempo real — candidato recibe mensajes del entrevistador
       db.ref('salas/'+salaId+'/chat').on('child_added', function(snap){
@@ -505,8 +384,8 @@ function escHtml(s){
         var mine = val.role==='cand';
         var div = document.createElement('div');
         div.style.cssText='display:flex;flex-direction:column;align-items:'+(mine?'flex-end':'flex-start');
-        div.innerHTML='<div class="'+(mine?'chat-bubble-mine':'chat-bubble-other')+'">'+escHtml(val.text)+'</div>'
-          +'<span style="font-size:9px;color:#4a8a8a;margin-top:2px">'+(mine?'Tú':escHtml(val.nombre||'Entrevistador'))+'</span>';
+        div.innerHTML='<div class="'+(mine?'chat-bubble-mine':'chat-bubble-other')+'">'+val.text+'</div>'
+          +'<span style="font-size:9px;color:#4a8a8a;margin-top:2px">'+(mine?'Tú':val.nombre||'Entrevistador')+'</span>';
         container.appendChild(div);
         container.scrollTop=container.scrollHeight;
         var badge = document.getElementById('cand-chat-badge');
@@ -517,39 +396,12 @@ function escHtml(s){
     if(!esCand){
       // Entrevistador: escuchar knocks cuando se abre sala
       window._fbEscucharSala = function(id){
-        // Detach stale listeners from any previous sala before attaching new ones
-        var lastId = window._fbEscucharSala._lastId;
-        if(lastId && lastId !== id){
-          window._fbOff('salas/'+lastId+'/knock');
-          window._fbOff('salas/'+lastId+'/chat');
-          window._fbOff('salas/'+lastId+'/transcript');
-        }
-        window._fbEscucharSala._lastId = id;
-
         window._fbOn('salas/'+id+'/knock', function(val){
           if(!val) return;
-          if(typeof mostrarKnockNotify === 'function') mostrarKnockNotify(val.nombre, id);
-          if(typeof activarBtnAprobar === 'function') activarBtnAprobar(val.nombre || 'Candidato');
-        }, function(err){
-          // Surfacing Firebase permission errors — previously these were silently dropped
-          console.error('[ANE] Firebase knock listener error:', err.code, err.message);
-          var dot = document.getElementById('bc-conn-dot');
-          var txt = document.getElementById('bc-conn-txt');
-          var dot2 = document.getElementById('bc-conn-dot2');
-          var txt2 = document.getElementById('bc-conn-txt2');
-          var msg = '⚠️ Firebase: '+err.code+' — sala de espera no disponible. Verifica las reglas de la base de datos.';
-          if(dot) dot.style.background='#ef4444';
-          if(txt) txt.textContent=msg;
-          if(dot2) dot2.style.background='#ef4444';
-          if(txt2) txt2.textContent=msg;
-          // Also surface in notify area so interviewer sees it
           var nn = document.getElementById('knock-notify');
-          if(nn){
-            var nb = document.getElementById('knock-nombre');
-            if(nb) nb.textContent = 'Error: '+err.code;
-            nn.style.display = 'block';
-            nn.style.borderColor = '#ef4444';
-          }
+          var nb = document.getElementById('knock-nombre');
+          if(nn && nb){ nb.textContent = val.nombre || 'Candidato'; nn.style.display = 'block'; nn.dataset.sala = id; }
+          if(typeof activarBtnAprobar === 'function') activarBtnAprobar(val.nombre || 'Candidato');
         });
         // Chat en tiempo real — entrevistador recibe mensajes del candidato
         db.ref('salas/'+id+'/chat').on('child_added', function(snap){
@@ -559,8 +411,8 @@ function escHtml(s){
           var mine = val.role==='iv';
           var div = document.createElement('div');
           div.style.cssText='display:flex;flex-direction:column;align-items:'+(mine?'flex-end':'flex-start');
-          div.innerHTML='<div class="'+(mine?'chat-bubble-mine':'chat-bubble-other')+'">'+escHtml(val.text)+'</div>'
-            +'<span style="font-size:9px;color:#4a8a8a;margin-top:2px">'+(mine?'Tú':escHtml(val.nombre||'Candidato'))+'</span>';
+          div.innerHTML='<div class="'+(mine?'chat-bubble-mine':'chat-bubble-other')+'">'+val.text+'</div>'
+            +'<span style="font-size:9px;color:#4a8a8a;margin-top:2px">'+(mine?'Tú':val.nombre||'Candidato')+'</span>';
           container.appendChild(div);
           container.scrollTop=container.scrollHeight;
           if(!mine){ var badge=document.getElementById('iv-chat-badge'); if(badge) badge.style.display='inline'; }
@@ -574,6 +426,8 @@ function escHtml(s){
           if(tf) tf.textContent = val.final || '';
           if(ti) ti.textContent = val.interim || '';
           if(ph && (val.final || val.interim)) ph.style.display = 'none';
+          // Sincronizar con variable interna para que el evaluador IA funcione
+          if(typeof finalTranscript !== 'undefined') finalTranscript = val.final || '';
           // Indicador visual de que está grabando
           var dot = document.getElementById('rec-dot');
           var status = document.getElementById('audio-status-txt');
@@ -590,62 +444,6 @@ function escHtml(s){
       };
       window._fbBroadcastClear = function(sid){
         window._fbRemove('salas/'+sid+'/pregunta');
-      };
-
-      // ── Firebase connection monitor ──
-      window._fbConnected = false;
-      db.ref('.info/connected').on('value', function(snap){
-        window._fbConnected = !!snap.val();
-        var dot = document.getElementById('fb-status-dot');
-        var txt = document.getElementById('fb-status-txt');
-        if(dot) dot.style.background = window._fbConnected ? '#22c55e' : '#ef4444';
-        if(txt) txt.textContent = window._fbConnected
-          ? '✓ Firebase conectado'
-          : '⚠️ Firebase sin conexión — verifica tu internet';
-      });
-
-      // Test if database rules allow reads+writes on salas/ path
-      window._fbTestRules = function(callback){
-        var testPath = 'salas/__ane_test__/ping';
-        db.ref(testPath).set({ts: Date.now()}).then(function(){
-          return db.ref(testPath).remove();
-        }).then(function(){
-          if(callback) callback(null);
-        }).catch(function(err){
-          if(callback) callback(err);
-        });
-      };
-
-      // Polling backup: reads knock every 3s in case real-time listener fails
-      var _knockPollInterval = null;
-      window._startKnockPolling = function(id){
-        if(_knockPollInterval) clearInterval(_knockPollInterval);
-        _knockPollInterval = setInterval(function(){
-          db.ref('salas/'+id+'/knock').once('value').then(function(snap){
-            var val = snap.val();
-            if(!val) return;
-            // Only activate if button is still disabled (not yet approved)
-            var btnAprobar = document.getElementById('btn-aprobar-sala');
-            if(btnAprobar && !btnAprobar.disabled) return;
-            if(typeof mostrarKnockNotify === 'function') mostrarKnockNotify(val.nombre, id);
-            if(typeof activarBtnAprobar === 'function') activarBtnAprobar(val.nombre || 'Candidato');
-          }).catch(function(err){
-            console.warn('[ANE] Poll knock error:', err.code);
-            if(err.code === 'PERMISSION_DENIED'){
-              // Stop polling — it won't work until rules are fixed
-              if(_knockPollInterval){ clearInterval(_knockPollInterval); _knockPollInterval = null; }
-              var dot  = document.getElementById('fb-status-dot');
-              var txt  = document.getElementById('fb-status-txt');
-              var ban  = document.getElementById('fb-error-banner');
-              if(dot) dot.style.background = '#ef4444';
-              if(txt) txt.textContent = '⚠️ Sala virtual no disponible. Use modo presencial/mismo equipo o solicite configuración institucional.';
-              if(ban) ban.style.display = 'block';
-            }
-          });
-        }, 3000);
-      };
-      window._stopKnockPolling = function(){
-        if(_knockPollInterval){ clearInterval(_knockPollInterval); _knockPollInterval = null; }
       };
 
       // ── WebRTC: entrevistador recibe video del candidato ──
@@ -954,9 +752,6 @@ function escHtml(s){
       <div style="font-size:52px;margin-bottom:12px">🚪</div>
       <div style="font-size:20px;font-weight:800;color:#7dd3d3;margin-bottom:6px">Sala de Espera</div>
       <div style="font-size:13px;color:#4a7a7a;margin-bottom:28px">Ingresa tu nombre y solicita entrada al entrevistador</div>
-      <div id="sala-inapp-warning" style="display:none;background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.35);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:#fbbf24;text-align:left">
-        ⚠️ <b>Parece que abriste este enlace dentro de WhatsApp/Instagram/Facebook.</b> Esos navegadores integrados a veces bloquean la conexión en tiempo real. Toca el botón "•••" o "Abrir en el navegador" y ábrelo en Safari o Chrome para evitar problemas.
-      </div>
       <div style="background:var(--s1);border:1px solid var(--db);border-radius:14px;padding:28px;display:flex;flex-direction:column;gap:16px">
         <div style="text-align:left">
           <label style="font-size:12px;color:#7dd3d3;font-weight:700;display:block;margin-bottom:6px">Tu nombre</label>
@@ -1124,12 +919,12 @@ function escHtml(s){
 </div><!-- end v-candidato -->
 
 <!-- NOTIFICACIÓN DE LLAMADO (panel entrevistador) -->
-<div id="knock-notify" style="display:none;position:fixed;top:20px;right:20px;z-index:9999;background:#0b3d52;border:3px solid #22c55e;border-radius:14px;padding:20px 24px;min-width:300px;box-shadow:0 8px 32px rgba(0,0,0,.6)">
-  <div style="font-size:14px;font-weight:800;color:#4ade80;margin-bottom:4px">🔔 Candidato en sala de espera</div>
-  <div id="knock-nombre" style="font-size:16px;color:#e0f2f2;font-weight:700;margin-bottom:16px"></div>
+<div id="knock-notify" style="display:none;position:fixed;bottom:24px;right:24px;z-index:9999;background:#0b3d52;border:2px solid var(--teal);border-radius:14px;padding:20px 24px;min-width:300px;box-shadow:0 8px 32px rgba(0,0,0,.5)">
+  <div style="font-size:13px;font-weight:800;color:#7dd3d3;margin-bottom:4px">🔔 Candidato en sala de espera</div>
+  <div id="knock-nombre" style="font-size:15px;color:#e0f2f2;font-weight:700;margin-bottom:16px"></div>
   <div style="display:flex;gap:10px">
-    <button onclick="admitirCandidato()" style="flex:1;background:linear-gradient(135deg,#16a34a,#15803d);border:none;color:#fff;padding:10px;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer">✅ Admitir</button>
-    <button onclick="ocultarKnockNotify()" style="background:var(--s2);border:1px solid var(--db);color:#7dd3d3;padding:10px 16px;border-radius:8px;font-size:13px;cursor:pointer">✕</button>
+    <button onclick="admitirCandidato()" style="flex:1;background:var(--teal);border:none;color:#fff;padding:10px;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer">✅ Admitir</button>
+    <button onclick="document.getElementById('knock-notify').style.display='none'" style="background:var(--s2);border:1px solid var(--db);color:#7dd3d3;padding:10px 16px;border-radius:8px;font-size:13px;cursor:pointer">✕</button>
   </div>
 </div>
 
@@ -1230,15 +1025,6 @@ function escHtml(s){
 
     <!-- CONTENIDO MODO REMOTA -->
     <div id="sala-content-remota">
-      <!-- Modos de uso -->
-      <div style="background:rgba(13,115,115,.06);border:1px solid rgba(13,115,115,.2);border-radius:10px;padding:14px;margin-bottom:12px">
-        <div style="font-size:11px;font-weight:800;color:#7dd3d3;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Modos de entrevista disponibles</div>
-        <div style="display:grid;gap:8px;font-size:12px;color:#c8e8e8">
-          <div><b style="color:#7dd3d3">Modo presencial/local:</b> Misma computadora o pantalla compartida.</div>
-          <div><b style="color:#7dd3d3">Modo videollamada:</b> Teams, Meet o Zoom compartiendo Vista Candidato.</div>
-          <div><b style="color:#fbbf24">Modo sala virtual:</b> Requiere Firebase configurado institucionalmente.</div>
-        </div>
-      </div>
       <div style="background:rgba(13,115,115,.08);border:1px solid rgba(13,115,115,.25);border-radius:12px;padding:16px;margin-bottom:14px">
         <div style="font-size:11px;font-weight:800;color:#7dd3d3;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Cómo funciona la sala virtual</div>
         <div style="display:grid;gap:10px">
@@ -1260,22 +1046,7 @@ function escHtml(s){
           </div>
         </div>
       </div>
-      <!-- Firebase status -->
-      <div id="fb-status-row" style="background:var(--s2);border:1px solid var(--db);border-radius:10px;padding:11px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
-        <span id="fb-status-dot" style="width:10px;height:10px;border-radius:50%;background:#eab308;flex-shrink:0"></span>
-        <div style="flex:1">
-          <span id="fb-status-txt" style="font-size:12px;font-weight:700;color:#5a9898">Verificando Firebase…</span>
-        </div>
-        <button onclick="verificarFirebaseConInstrucciones()" style="background:rgba(13,115,115,.2);border:1px solid var(--db);color:#7dd3d3;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer">Probar</button>
-      </div>
-      <!-- Error Firebase banner (oculto por defecto) -->
-      <div id="fb-error-banner" style="display:none;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.4);border-radius:10px;padding:14px;margin-bottom:10px">
-        <div style="font-size:12px;font-weight:800;color:#fca5a5;margin-bottom:8px">⚠️ Sala virtual no disponible. Use modo presencial/mismo equipo o solicite configuración institucional.</div>
-        <div style="font-size:11px;color:#9a5a5a;line-height:1.6;margin-bottom:10px">Las reglas de la base de datos Firebase han vencido (caducan a los 30 días en modo de prueba). Debes actualizarlas en la consola:</div>
-        <div style="background:rgba(0,0,0,.3);border-radius:8px;padding:10px;font-family:monospace;font-size:10px;color:#e0f2f2;margin-bottom:10px;white-space:pre">{"rules": {"salas": {".read": true, ".write": true}}}</div>
-        <button onclick="window.open('https://console.firebase.google.com/project/simulador-de-entrevista-a883d/database/simulador-de-entrevista-a883d-default-rtdb/rules','_blank')" style="width:100%;background:#ef4444;border:none;color:#fff;padding:9px;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer">🔗 Abrir Firebase Console → Reglas</button>
-      </div>
-      <!-- Estado conexión BC -->
+      <!-- Estado conexión -->
       <div style="background:var(--s2);border:1px solid var(--db);border-radius:10px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:12px">
         <span id="bc-conn-dot" style="width:10px;height:10px;border-radius:50%;background:#3a7272;flex-shrink:0"></span>
         <div style="flex:1">
@@ -1650,7 +1421,6 @@ function escHtml(s){
             <h4>⭐ Evaluación STAR
               <span id="star-pct-badge" style="margin-left:auto;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);border-radius:999px;padding:2px 10px;font-size:12px;color:#86efac;font-weight:900">0%</span>
             </h4>
-            <div style="background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.3);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:#e0a800;line-height:1.5">⚠️ Evaluación asistida. Requiere revisión y validación humana. No constituye decisión automática de contratación.</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="star-grid"></div>
           </div>
         </div>
@@ -1691,7 +1461,6 @@ function escHtml(s){
                 <button onclick="clearApiKey()" style="background:rgba(200,50,50,.2);border:1px solid rgba(200,50,50,.4);color:#ff8888;padding:6px 10px;border-radius:6px;font-size:11px">🗑</button>
               </div>
               <p id="api-key-status" style="color:#4a8a8a;font-size:10px;margin-top:4px"></p>
-              <p style="color:#e0a800;font-size:11px;margin-top:6px;line-height:1.5">⚠️ IA externa opcional. No ingrese datos sensibles sin autorización institucional. El uso de API externa debe estar validado por la institución.</p>
             </div>
 
             <div style="display:flex;gap:6px;margin-bottom:10px">
@@ -1811,10 +1580,6 @@ let finalTranscript = '';
 let speechSynth = window.speechSynthesis;
 let currentUtterance = null;
 let selectedSector = 'all';
-
-function escHtml(s){
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
 
 // ============================================================
 // OCCUPATION DATABASE — 100 OCCUPATIONS, 8 SECTORS
@@ -2602,11 +2367,7 @@ function switchPanel(n){
     document.getElementById('tab'+i)?.classList.toggle('active',i===n);
     document.getElementById('panel'+i)?.classList.toggle('active',i===n);
   });
-  if(n===2){
-    updateEvalCtx();
-    updateStarDisplay();
-    if(activeQ) renderStarGuide(activeQ);
-  }
+  if(n===2){ updateEvalCtx(); if(activeQ) renderStarGuide(activeQ); }
   if(n===3) renderHistList();
 }
 
@@ -2832,9 +2593,7 @@ function stopReading(){
 // ============================================================
 // AUDIO / SPEECH RECOGNITION
 // ============================================================
-async function startRecording(){
-  const allowed = await requireANEConsent('grabacion');
-  if (!allowed) return;
+function startRecording(){
   if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){
     (function(msg){ const t=document.createElement('div'); t.textContent=msg; Object.assign(t.style,{position:'fixed',bottom:'24px',left:'50%',transform:'translateX(-50%)',background:'#1e293b',color:'#fff',padding:'10px 20px',borderRadius:'10px',fontWeight:'600',fontSize:'13px',zIndex:'9999',boxShadow:'0 4px 16px rgba(0,0,0,.3)',transition:'opacity .4s',maxWidth:'90vw',textAlign:'center'}); document.body.appendChild(t); setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),500);},4000); })('⚠️ Reconocimiento de voz no disponible en este navegador. Usa Chrome o Edge, o escribe tu respuesta manualmente.');
     return;
@@ -2844,9 +2603,8 @@ async function startRecording(){
   recognition.lang = 'es-CR';
   recognition.continuous = true;
   recognition.interimResults = true;
-  recognition.maxAlternatives = 1;
   finalTranscript = '';
-
+  
   recognition.onstart = ()=>{
     isRecording = true;
     setRecStatus(true);
@@ -2864,20 +2622,15 @@ async function startRecording(){
   };
   recognition.onerror = (e)=>{
     console.warn('Speech error:', e.error);
-    if(e.error === 'no-speech') return; // Móvil: ignorar silencio
     stopRecording();
   };
-  recognition.onend = ()=>{
-    if(!isRecording) return;
-    // En móvil el reconocimiento se corta solo — reiniciar automáticamente
-    try{ recognition.start(); } catch(ex){ stopRecording(); }
-  };
+  recognition.onend = ()=>{ if(isRecording) stopRecording(); };
   recognition.start();
 }
 
 function stopRecording(){
+  if(recognition) recognition.stop();
   isRecording = false;
-  try{ if(recognition) recognition.stop(); } catch(ex){}
   setRecStatus(false);
   stopRecTimer();
   animateWaveform(false);
@@ -2998,25 +2751,21 @@ function updateStarDisplay(){
 function updateStarSummary(pct){
   const c = document.getElementById('star-summary');
   if(!c) return;
-  let html = '<div style="font-size:10px;color:#3a7272;text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:10px">Desglose STAR</div>';
-  STAR_C.forEach(({k,l,col})=>{
-    const score = starScores[k] || 0;
-    const fillWidth = Math.max(0, Math.min(100, (score/5)*100));
-    const rowBg = score===0 ? 'rgba(13,115,115,.1)' : 'rgba(13,115,115,.05)';
-    html += `<div class="star-mini-row" style="background:${rowBg};padding:6px 8px;border-radius:4px;margin-bottom:2px;border:1px solid rgba(13,115,115,.15);display:flex;align-items:center;gap:8px">
-      <span style="color:${col};font-weight:900;font-size:11px;width:16px;flex-shrink:0;text-align:center">${k}</span>
-      <span style="font-size:10px;color:#7dd3d3;width:55px;flex-shrink:0">${l}</span>
-      <div class="star-mini-bar" style="flex:1;height:5px;border-radius:2px;background:rgba(13,115,115,.15);overflow:hidden">
-        <div class="star-mini-fill" style="height:100%;border-radius:2px;width:${fillWidth}%;background:${col};transition:width .3s ease"></div>
+  c.innerHTML = `
+    <div style="font-size:10px;color:#3a7272;text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:10px">Desglose STAR</div>
+    ${STAR_C.map(({k,l,col})=>`
+      <div class="star-mini-row">
+        <span style="color:${col};font-weight:900;font-size:12px;width:14px;flex-shrink:0">${k}</span>
+        <span style="font-size:11px;color:#7dd3d3;width:68px;flex-shrink:0">${l}</span>
+        <div class="star-mini-bar"><div class="star-mini-fill" style="width:${starScores[k]/5*100}%;background:${col}"></div></div>
+        <span style="font-weight:800;font-size:12px;color:${col};width:28px;text-align:right">${starScores[k]}/5</span>
       </div>
-      <span style="font-weight:700;font-size:11px;color:${col};width:20px;text-align:right;flex-shrink:0">${score}/5</span>
-    </div>`;
-  });
-  html += `<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:8px;border-top:1px solid rgba(13,115,115,.2)">
-    <span style="font-size:10px;color:#5a9898;font-weight:700;text-transform:uppercase">Total STAR</span>
-    <span style="font-weight:900;font-size:14px;color:${scoreColor(pct)};font-family:'IBM Plex Mono',monospace">${pct}%</span>
-  </div>`;
-  c.innerHTML = html;
+    `).join('')}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid rgba(13,115,115,.2)">
+      <span style="font-size:11px;color:#5a9898;font-weight:700">Total STAR</span>
+      <span style="font-weight:900;font-size:15px;color:${scoreColor(pct)};font-family:'IBM Plex Mono',monospace">${pct}%</span>
+    </div>
+  `;
 }
 
 // ============================================================
@@ -3114,8 +2863,8 @@ function saveApiKey(){
   const st = document.getElementById('api-key-status');
   if(!inp) return;
   const val = inp.value.trim();
-  if(!val.startsWith('AIza') && !val.startsWith('AQ.')){
-    if(st) st.textContent = '⚠️ Formato inválido. Las claves de Google comienzan con AIza o AQ.';
+  if(!val.startsWith('AIza')){
+    if(st) st.textContent = '⚠️ Formato inválido. Las claves de Google comienzan con AIza';
     return;
   }
   localStorage.setItem('ane_gemini_key', val);
@@ -3133,23 +2882,17 @@ function getApiKey(){ return localStorage.getItem('ane_gemini_key')||''; }
 // ============================================================
 // AI STAR ANALYSIS (via Google Gemini API - free tier)
 // ============================================================
-function _showAIResult(msg){
-  const r = document.getElementById('ai-result');
-  if(r){ r.textContent=msg; r.style.display='block'; r.scrollIntoView({behavior:'smooth',block:'nearest'}); }
-  else console.error('[ANE] ai-result element not found');
-}
-
 async function analyzeWithAI(){
   const apiKey = getApiKey();
   const resp = document.getElementById('cand-resp')?.value?.trim()||'';
-  console.log('[ANE] analyzeWithAI - resp length:', resp.length, '| apiKey set:', !!apiKey);
-
   if(!resp||resp.length<10){
-    _showAIResult('⚠️ No hay respuesta del candidato. Escribe o graba una respuesta primero.');
+    const r = document.getElementById('ai-result');
+    if(r){ r.textContent='⚠️ No hay respuesta del candidato. Escribe o graba una respuesta primero.'; r.style.display='block'; }
     return null;
   }
   if(!apiKey){
-    _showAIResult('🔑 Para usar el análisis IA configura tu API Key de Google Gemini (botón 🔑 arriba). Obtén tu clave GRATIS en: aistudio.google.com');
+    const r = document.getElementById('ai-result');
+    if(r){ r.textContent='🔑 Para usar el análisis IA configura tu API Key de Google Gemini (botón 🔑 arriba). Obtén tu clave GRATIS en: aistudio.google.com'; r.style.display='block'; }
     return null;
   }
 
@@ -3186,44 +2929,16 @@ Proporciona:
 
 Sé específico, constructivo y objetivo. Considera el contexto del mercado laboral costarricense y la normativa del MTSS cuando sea relevante.`;
 
-    console.log('[ANE] Llamando Gemini API...');
-    const abortCtrl = new AbortController();
-    const fetchTimeout = setTimeout(()=>abortCtrl.abort(), 20000);
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({contents:[{parts:[{text:promptText}]}]}),
-      signal: abortCtrl.signal
+      body: JSON.stringify({contents:[{parts:[{text:promptText}]}]})
     });
-    clearTimeout(fetchTimeout);
 
-    console.log('[ANE] Gemini status:', response.status, response.ok);
-    let data;
-    try { data = await response.json(); } catch(je){ data = {}; }
-    console.log('[ANE] Gemini response keys:', Object.keys(data));
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No se obtuvo respuesta del análisis.';
 
-    if(!response.ok){
-      const errMsg = data.error?.message || `Error HTTP ${response.status}`;
-      console.error('[ANE] Gemini error:', errMsg);
-      _showAIResult('❌ Error de API Gemini ('+response.status+'): '+errMsg);
-      return null;
-    }
-
-    const blockReason = data.promptFeedback?.blockReason;
-    if(blockReason){
-      _showAIResult('⚠️ Gemini bloqueó el contenido: '+blockReason+'. Intenta reformular la respuesta del candidato.');
-      return null;
-    }
-
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if(!text){
-      const finishReason = data.candidates?.[0]?.finishReason || 'desconocido';
-      console.warn('[ANE] Sin texto, finishReason:', finishReason, data);
-      _showAIResult('⚠️ Gemini no generó texto (razón: '+finishReason+'). Revisá el contenido de la respuesta.');
-      return null;
-    }
-
-    _showAIResult(text);
+    if(result){ result.textContent=text; result.style.display='block'; }
 
     // Auto-update scores from AI response
     const scoresMatch = text.match(/S[:\s]+(\d)\s+T[:\s]+(\d)\s+A[:\s]+(\d)\s+R[:\s]+(\d)/i);
@@ -3241,13 +2956,9 @@ Sé específico, constructivo y objetivo. Considera el contexto del mercado labo
 
     return text;
   } catch(err) {
-    console.error('[ANE] analyzeWithAI catch:', err.name, err.message);
-    if(err.name==='AbortError'){
-      _showAIResult('⏱ Tiempo de espera agotado (20s). Verificá tu conexión a internet o que la API key sea válida.\n\nAnálisis local de respaldo:\n\n'+analyzeStarLocally(resp));
-    } else {
-      _showAIResult('Análisis local de respaldo:\n\n'+analyzeStarLocally(resp));
-    }
-    return null;
+    const errMsg = 'Análisis local de respaldo:\n\n'+analyzeStarLocally(resp);
+    if(result){ result.textContent=errMsg; result.style.display='block'; }
+    return errMsg;
   } finally {
     if(btn){ btn.disabled=false; btn.textContent='🔍 Re-analizar'; }
     if(loading) loading.style.display='none';
@@ -3329,9 +3040,9 @@ function renderHistList(){
     <div style="background:var(--s1);border:1px solid var(--db);border-radius:12px;padding:14px;margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div>
-          <div style="font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px">${e.profIcon} ${escHtml(e.name)}</div>
-          <div style="color:#7dd3d3;font-size:11px;margin-top:2px">${escHtml(e.prof)} · ${escHtml(e.date)}</div>
-          <div style="margin-top:4px"><span style="background:rgba(13,115,115,.25);border:1px solid rgba(13,115,115,.4);border-radius:10px;padding:2px 8px;font-size:10px;color:#7dd3d3">🎯 ${escHtml(e.competency)}</span></div>
+          <div style="font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px">${e.profIcon} ${e.name}</div>
+          <div style="color:#7dd3d3;font-size:11px;margin-top:2px">${e.prof} · ${e.date}</div>
+          <div style="margin-top:4px"><span style="background:rgba(13,115,115,.25);border:1px solid rgba(13,115,115,.4);border-radius:10px;padding:2px 8px;font-size:10px;color:#7dd3d3">🎯 ${e.competency}</span></div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
           <div style="width:50px;height:50px;border-radius:50%;border:3px solid ${scoreColorNum(e.globalScore)};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;color:${scoreColorNum(e.globalScore)}">${e.globalScore}</div>
@@ -3339,8 +3050,8 @@ function renderHistList(){
           <span style="background:${scoreColor(e.starPct)};border-radius:4px;padding:2px 6px;font-size:10px;font-weight:700">STAR ${e.starPct}%</span>
         </div>
       </div>
-      ${e.question&&e.question!=='N/A'?`<p style="color:#9dc8c8;font-size:12px;margin:0 0 8px;font-style:italic;border-left:2px solid var(--teal);padding-left:8px">"${escHtml(e.question.substring(0,100))}…"</p>`:''}
-      ${e.transcript?`<div style="background:rgba(0,0,0,.3);border-radius:6px;padding:8px 10px;font-size:11px;color:#7dd3d3;margin-bottom:8px;max-height:60px;overflow-y:auto">🎤 ${escHtml(e.transcript.substring(0,200))}${e.transcript.length>200?'…':''}</div>`:''}
+      ${e.question&&e.question!=='N/A'?`<p style="color:#9dc8c8;font-size:12px;margin:0 0 8px;font-style:italic;border-left:2px solid var(--teal);padding-left:8px">"${e.question.substring(0,100)}…"</p>`:''}
+      ${e.transcript?`<div style="background:rgba(0,0,0,.3);border-radius:6px;padding:8px 10px;font-size:11px;color:#7dd3d3;margin-bottom:8px;max-height:60px;overflow-y:auto">🎤 ${e.transcript.substring(0,200)}${e.transcript.length>200?'…':''}</div>`:''}
       <div style="display:flex;gap:6px;flex-wrap:wrap">
         <button onclick="loadEvalForPDF(${i})" class="pdf-btn" style="padding:5px 12px;font-size:11px">📄 PDF</button>
         <button onclick="evalHistory.splice(${i},1);renderHistList();document.getElementById('hist-count').textContent=evalHistory.length" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:5px 10px;border-radius:6px;font-size:11px">🗑</button>
@@ -3451,7 +3162,7 @@ function buildPDFHTML(e){
   <div style="background:#f0fafa;border-bottom:2px solid #0d7373;padding:16px 24px;display:flex;gap:20px;align-items:flex-start">
     <div style="flex:1">
       <div style="font-size:11px;color:#0d7373;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Candidato</div>
-      <div style="font-size:20px;font-weight:800;color:#041616">${escHtml(e.name)}</div>
+      <div style="font-size:20px;font-weight:800;color:#041616">${e.name}</div>
       <div style="font-size:12px;color:#0a5050;margin-top:3px">${e.profIcon} ${e.prof} · Sector: ${secLabel}</div>
       <div style="font-size:11px;color:#5a9898;margin-top:3px">Fecha de entrevista: ${e.dateInterview||e.date}</div>
     </div>
@@ -3469,7 +3180,7 @@ function buildPDFHTML(e){
   <!-- QUESTION + COMPETENCY -->
   <div style="padding:16px 24px;background:#fff;border-bottom:1px solid #e0f0f0">
     <div style="font-size:10px;color:#0d7373;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px">Pregunta Evaluada · Competencia: ${e.competency}</div>
-    <div style="background:#f0fafa;border-left:4px solid #0d7373;padding:10px 14px;border-radius:0 8px 8px 0;font-size:13px;font-style:italic;line-height:1.5;color:#041616">"${escHtml(e.question)}"</div>
+    <div style="background:#f0fafa;border-left:4px solid #0d7373;padding:10px 14px;border-radius:0 8px 8px 0;font-size:13px;font-style:italic;line-height:1.5;color:#041616">"${e.question}"</div>
   </div>
 
   <!-- STAR SCORES -->
@@ -3503,19 +3214,19 @@ function buildPDFHTML(e){
   <!-- TRANSCRIPT -->
   ${e.transcript?`<div style="padding:16px 24px;background:#fff;border-bottom:1px solid #e0f0f0">
     <div style="font-size:12px;font-weight:700;color:#041616;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">🎤 Transcripción de la Respuesta</div>
-    <div style="background:#f8fffe;border:1px solid #d0eaea;border-radius:8px;padding:12px;font-size:12px;line-height:1.7;color:#041616;font-style:italic">"${escHtml(e.transcript)}"</div>
+    <div style="background:#f8fffe;border:1px solid #d0eaea;border-radius:8px;padding:12px;font-size:12px;line-height:1.7;color:#041616;font-style:italic">"${e.transcript}"</div>
   </div>`:''}
 
   <!-- AI ANALYSIS -->
   ${e.ai?`<div style="padding:16px 24px;background:#fff;border-bottom:1px solid #e0f0f0">
     <div style="font-size:12px;font-weight:700;color:#041616;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">🤖 Análisis STAR y Retroalimentación</div>
-    <div style="background:#f8fffe;border-left:3px solid #0d7373;border-radius:0 8px 8px 0;padding:12px;font-size:11px;line-height:1.8;color:#041616;white-space:pre-wrap">${escHtml(e.ai.substring(0,1500))}</div>
+    <div style="background:#f8fffe;border-left:3px solid #0d7373;border-radius:0 8px 8px 0;padding:12px;font-size:11px;line-height:1.8;color:#041616;white-space:pre-wrap">${e.ai.substring(0,1500)}</div>
   </div>`:''}
 
   <!-- NOTES -->
   ${e.notes?`<div style="padding:16px 24px;background:#fff;border-bottom:1px solid #e0f0f0">
     <div style="font-size:12px;font-weight:700;color:#041616;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">📝 Notas del Entrevistador</div>
-    <div style="font-size:12px;line-height:1.6;color:#041616;white-space:pre-wrap">${escHtml(e.notes)}</div>
+    <div style="font-size:12px;line-height:1.6;color:#041616">${e.notes}</div>
   </div>`:''}
 
   <!-- FOOTER -->
@@ -3609,20 +3320,20 @@ let candRecognition=null, isCandRecording=false;
 let candRecTimer=null, candRecSecs=0, candFinalTranscript='';
 let candQHistory=[];
 
-let _bcBaseHandler = null;
 if(bc){
-  _bcBaseHandler = (ev)=>{
+  bc.onmessage=(ev)=>{
     const d=ev.data;
     if(d.type==='question') showCandQuestion(d.q, d.qNum, d.profName);
     if(d.type==='clear') hideCandQuestion();
     if(d.type==='ping') bc.postMessage({type:'pong'});
     if(d.type==='pong'){ const el=document.getElementById('bc-iv-txt'); if(el) el.textContent='✓ Vista Candidato conectada'; }
     if(d.type==='knock'){
-      if(typeof mostrarKnockNotify === 'function') mostrarKnockNotify(d.nombre, window._activeSalaId||'');
+      const nn=document.getElementById('knock-notify');
+      const nb=document.getElementById('knock-nombre');
+      if(nn&&nb){ nb.textContent=d.nombre||'Candidato'; nn.style.display='block'; nn.dataset.sala=window._activeSalaId||''; }
       activarBtnAprobar(d.nombre||'Candidato');
     }
   };
-  bc.onmessage=_bcBaseHandler;
 }
 
 function broadcastQuestion(){
@@ -3658,62 +3369,25 @@ function openCandidateView(){
   window._candidateViewUrl = url;
   // Auto-llenar el campo Link del correo
   const linkFld = document.getElementById('email-link'); if(linkFld && !linkFld.value) linkFld.value = url;
-  // Limpiar estado previo de la sala para que el candidato siempre vea sala-espera
-  if(typeof window._fbRemove === 'function'){
-    window._fbRemove('salas/'+salaId+'/estado');
-    window._fbRemove('salas/'+salaId+'/knock');
-  }
-  // Escuchar knock via Firebase para esta sala (real-time + polling backup)
-  if(typeof window._fbEscucharSala === 'function'){
-    window._fbEscucharSala(salaId);
-    if(typeof window._startKnockPolling === 'function') window._startKnockPolling(salaId);
-    // Update status to show Firebase is listening
-    var dot = document.getElementById('bc-conn-dot');
-    var txt = document.getElementById('bc-conn-txt');
-    var dot2 = document.getElementById('bc-conn-dot2');
-    var txt2 = document.getElementById('bc-conn-txt2');
-    if(dot) dot.style.background='#eab308';
-    if(txt) txt.textContent='Sala '+salaId+' activa — esperando candidato…';
-    if(dot2) dot2.style.background='#eab308';
-    if(txt2) txt2.textContent='Sala '+salaId+' activa — esperando candidato…';
-  } else {
-    console.error('[ANE] _fbEscucharSala no disponible — Firebase no inicializó correctamente');
-    var dot = document.getElementById('bc-conn-dot');
-    var txt = document.getElementById('bc-conn-txt');
-    if(dot) dot.style.background='#ef4444';
-    if(txt) txt.textContent='⚠️ Firebase no disponible — recarga la página';
-  }
+  // Escuchar knock via Firebase para esta sala
+  if(typeof window._fbEscucharSala === 'function') window._fbEscucharSala(salaId);
   // Mostrar el enlace en un toast copiable
   const toast = document.createElement('div');
   toast.id = 'sala-link-toast';
   toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#0b3d52;border:2px solid var(--teal);border-radius:14px;padding:18px 24px;z-index:99999;box-shadow:0 8px 32px rgba(0,0,0,.5);max-width:90vw;min-width:340px';
   toast.innerHTML = '<div style="font-size:12px;color:#7dd3d3;font-weight:700;margin-bottom:8px">🔗 Enlace para el candidato</div>'
-    + '<div id="sala-link-url" style="background:rgba(0,0,0,.3);border-radius:8px;padding:8px 12px;font-size:11px;color:#e0f2f2;word-break:break-all;margin-bottom:10px;user-select:all;cursor:text">' + escHtml(url) + '</div>'
+    + '<div style="background:rgba(0,0,0,.3);border-radius:8px;padding:8px 12px;font-size:11px;color:#e0f2f2;word-break:break-all;margin-bottom:10px">' + url + '</div>'
     + '<div style="display:flex;gap:8px">'
-    + '<button id="sala-copy-btn" style="flex:1;background:var(--teal);border:none;color:#fff;padding:9px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">📋 Copiar enlace</button>'
-    + '<button onclick="document.getElementById(\'sala-link-toast\').remove()" style="background:var(--s2);border:1px solid var(--db);color:#7dd3d3;padding:9px 14px;border-radius:8px;font-size:12px;cursor:pointer">✕</button>'
+    + '<button onclick="navigator.clipboard.writeText(\''+url+'\').then(()=>{this.textContent=\'✓ Copiado\';setTimeout(()=>this.textContent=\'📋 Copiar enlace\',2000)})" style="flex:1;background:var(--teal);border:none;color:#fff;padding:9px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">📋 Copiar enlace</button>'
+    + '<button onclick="this.closest(\'#sala-link-toast\').remove()" style="background:var(--s2);border:1px solid var(--db);color:#7dd3d3;padding:9px 14px;border-radius:8px;font-size:12px;cursor:pointer">✕</button>'
     + '</div>';
   document.getElementById('sala-link-toast')?.remove();
   document.body.appendChild(toast);
-  // Copiar enlace con fallback para HTTP/file://
-  const copyBtn = document.getElementById('sala-copy-btn');
-  if(copyBtn){
-    copyBtn.addEventListener('click', function(){
-      if(navigator.clipboard && navigator.clipboard.writeText){
-        navigator.clipboard.writeText(url).then(()=>{
-          copyBtn.textContent='✓ Copiado'; setTimeout(()=>{ copyBtn.textContent='📋 Copiar enlace'; },2000);
-        }).catch(()=>{ prompt('Copia este enlace:', url); });
-      } else {
-        prompt('Copia este enlace:', url);
-      }
-    });
-  }
 }
 function showSalaModal(){
   document.getElementById('sala-modal').classList.remove('hidden');
   setSalaTab('remota');
   setTimeout(updateBcStatus,400);
-  setTimeout(verificarFirebaseConInstrucciones,600);
 }
 function closeSalaModal(){ document.getElementById('sala-modal').classList.add('hidden'); }
 function setSalaTab(tab){
@@ -3724,30 +3398,6 @@ function setSalaTab(tab){
   document.getElementById('sala-tab-presencial').style.borderColor=!isRemota?'var(--teal)':'var(--db)';
   document.getElementById('sala-content-remota').classList.toggle('hidden',!isRemota);
   document.getElementById('sala-content-presencial').classList.toggle('hidden',isRemota);
-}
-function verificarFirebaseConInstrucciones(){
-  const dot = document.getElementById('fb-status-dot');
-  const txt = document.getElementById('fb-status-txt');
-  const banner = document.getElementById('fb-error-banner');
-  if(dot) dot.style.background='#eab308';
-  if(txt) txt.textContent='Probando escritura en Firebase…';
-  if(banner) banner.style.display='none';
-
-  if(typeof window._fbTestRules !== 'function'){
-    if(dot) dot.style.background='#ef4444';
-    if(txt) txt.textContent='⚠️ Firebase no inicializó — recarga la página';
-    return;
-  }
-  window._fbTestRules(function(err){
-    if(!err){
-      if(dot) dot.style.background='#22c55e';
-      if(txt) txt.textContent='✓ Firebase OK — la sala de espera funcionará correctamente';
-    } else {
-      if(dot) dot.style.background='#ef4444';
-      if(txt) txt.textContent='⚠️ '+err.code+' — reglas de Firebase deben actualizarse';
-      if(banner) banner.style.display='block';
-    }
-  });
 }
 function copyCandUrl(){
   const url=window.location.href.split('?')[0]+'?vista=candidato';
@@ -4059,8 +3709,7 @@ function updateBcStatus(){
     if(dot2) dot2.style.background='#3a7272';
     if(txt2) txt2.textContent='Vista Candidato: no abierta en este navegador';
   },1500);
-  // Always restore to the original base handler to prevent stacking on repeated calls
-  const base = _bcBaseHandler || bc.onmessage;
+  const prev=bc.onmessage;
   bc.onmessage=(ev)=>{
     if(ev.data.type==='pong'){
       clearTimeout(timeout);
@@ -4069,8 +3718,8 @@ function updateBcStatus(){
       if(dot2){ dot2.style.background='#22c55e'; }
       if(txt2){ txt2.textContent='✓ Vista Candidato conectada y sincronizada'; }
     }
-    if(base) base(ev);
-    bc.onmessage=base;
+    if(prev) prev(ev);
+    bc.onmessage=prev;
   };
 }
 
@@ -4173,97 +3822,44 @@ async function switchCamera(deviceId){
 }
 
 // ── GRABACIÓN DE VOZ — CANDIDATO ───────────────
-let _candFbTimer=null;
-let _candNetRetry=0;
-const _CAND_MAX_RETRY=5;
-
-function _candSRSession(){
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  try{ if(candRecognition){ candRecognition.onend=null; candRecognition.abort(); } }catch(e){}
-  candRecognition=new SR();
-  candRecognition.lang='es-CR';
-  candRecognition.continuous=true;
-  candRecognition.interimResults=true;
-  candRecognition.maxAlternatives=1;
-
-  const params=new URLSearchParams(window.location.search);
-  const sid=params.get('sala');
-
-  candRecognition.onresult=(e)=>{
-    _candNetRetry=0;
-    let interim='';
-    const prevFinal=candFinalTranscript;
-    for(let i=e.resultIndex;i<e.results.length;i++){
-      if(e.results[i].isFinal) candFinalTranscript+=e.results[i][0].transcript+' ';
-      else interim+=e.results[i][0].transcript;
-    }
-    const f=document.getElementById('cand-transcript-final');
-    const it=document.getElementById('cand-transcript-interim');
-    if(f) f.textContent=candFinalTranscript;
-    if(it) it.textContent=interim;
-    if(sid && typeof window._fbSetReliable==='function'){
-      clearTimeout(_candFbTimer);
-      if(candFinalTranscript!==prevFinal){
-        // Texto final nuevo: escribir de inmediato
-        window._fbSetReliable('salas/'+sid+'/transcript',{final:candFinalTranscript,interim:interim,ts:Date.now()});
-      } else {
-        // Solo interim: debounce 500ms para no saturar Firebase
-        _candFbTimer=setTimeout(()=>{
-          window._fbSetReliable('salas/'+sid+'/transcript',{final:candFinalTranscript,interim:interim,ts:Date.now()});
-        },500);
-      }
-    }
-  };
-  candRecognition.onerror=(e)=>{
-    console.warn('cand SR:',e.error);
-    if(e.error==='no-speech'||e.error==='aborted') return;
-    if(e.error==='network'){
-      _candNetRetry++;
-      if(_candNetRetry<=_CAND_MAX_RETRY) return; // onend will restart with backoff
-      stopCandRecording();
-      return;
-    }
-    stopCandRecording();
-  };
-  candRecognition.onend=()=>{
-    clearTimeout(_candFbTimer);
-    if(!isCandRecording) return;
-    // En móvil continuous se corta: reiniciar sesión SR con backoff en caso de red
-    const delay=_candNetRetry>0 ? Math.min(300*Math.pow(2,_candNetRetry-1),16000) : 200;
-    setTimeout(()=>{ if(isCandRecording) _candSRSession(); }, delay);
-  };
-  try{ candRecognition.start(); }catch(ex){ stopCandRecording(); }
-}
-
 function startCandRecording(){
   if(!('webkitSpeechRecognition' in window)&&!('SpeechRecognition' in window)){
-    alert('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.');
+    alert('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge en escritorio.');
     return;
   }
-  candFinalTranscript='';
-  _candNetRetry=0;
-  isCandRecording=true;
-  setCandRecStatus(true);
-  startCandRecTimerFn();
-  animCandWave(true);
-  const ph=document.getElementById('cand-transcript-ph');
-  if(ph) ph.style.display='none';
-  _candSRSession();
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  candRecognition=new SR();
+  candRecognition.lang='es-CR'; candRecognition.continuous=true; candRecognition.interimResults=true;
+  let local='';
+  candRecognition.onstart=()=>{ isCandRecording=true; setCandRecStatus(true); startCandRecTimerFn(); animCandWave(true); document.getElementById('cand-transcript-ph').style.display='none'; };
+  candRecognition.onresult=(e)=>{
+    let interim='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal) local+=e.results[i][0].transcript+' ';
+      else interim+=e.results[i][0].transcript;
+    }
+    candFinalTranscript=local;
+    const f=document.getElementById('cand-transcript-final'); const it=document.getElementById('cand-transcript-interim');
+    if(f) f.textContent=local; if(it) it.textContent=interim;
+    // Enviar transcripción al entrevistador via Firebase
+    const params=new URLSearchParams(window.location.search);
+    const sid=params.get('sala');
+    if(sid && typeof window._fbSet==='function'){
+      window._fbSet('salas/'+sid+'/transcript', { final: local, interim: interim, ts: Date.now() });
+    }
+  };
+  candRecognition.onerror=(e)=>{ console.warn('cand SR',e.error); stopCandRecording(); };
+  candRecognition.onend=()=>{ if(isCandRecording) stopCandRecording(); };
+  candRecognition.start();
 }
-
 function stopCandRecording(){
-  isCandRecording=false;
-  clearTimeout(_candFbTimer);
-  try{ if(candRecognition){ candRecognition.onend=null; candRecognition.abort(); } }catch(e){}
-  candRecognition=null;
-  setCandRecStatus(false);
-  stopCandRecTimerFn();
-  animCandWave(false);
-  // Escribir transcripción final en Firebase
+  if(candRecognition) candRecognition.stop();
+  isCandRecording=false; setCandRecStatus(false); stopCandRecTimerFn(); animCandWave(false);
+  // Limpiar interim en Firebase (mantener final)
   const params=new URLSearchParams(window.location.search);
   const sid=params.get('sala');
-  if(sid && typeof window._fbSetReliable==='function'){
-    window._fbSetReliable('salas/'+sid+'/transcript',{final:candFinalTranscript||'',interim:'',ts:Date.now()});
+  if(sid && typeof window._fbSet==='function' && candFinalTranscript){
+    window._fbSet('salas/'+sid+'/transcript', { final: candFinalTranscript, interim: '', ts: Date.now() });
   }
 }
 function setCandRecStatus(on){
@@ -4289,43 +3885,34 @@ function animCandWave(on){
 
 // ── AUTODETECCIÓN VISTA CANDIDATO ──────────────
 (function detectView(){
-  try {
-    const params=new URLSearchParams(window.location.search);
-    if(params.get('vista')==='candidato'){
-      const vHome = document.getElementById('v-home');
-      const vCand = document.getElementById('v-candidato');
-      const salaEsp = document.getElementById('sala-espera');
-      const salaBody = document.getElementById('sala-entrevista-body');
-      if(vHome) vHome.classList.remove('active');
-      if(vCand) vCand.classList.add('active');
-      document.title='Vista Candidato · ANE';
-      if(salaEsp) salaEsp.style.display='flex';
-      if(salaBody) salaBody.style.display='none';
-      // Detectar navegador integrado (in-app browser) de apps de mensajería —
-      // suelen bloquear/degradar WebSocket y romper la conexión en tiempo real.
-      var ua = navigator.userAgent || '';
-      var isInApp = /FBAN|FBAV|Instagram|Line\/|MicroMessenger|TikTok|Snapchat/i.test(ua)
-        || (/(iPhone|iPad|iPod)/.test(ua) && !/Safari/.test(ua) && !/CriOS/.test(ua) && !/FxiOS/.test(ua));
-      if(isInApp){
-        var w = document.getElementById('sala-inapp-warning');
-        if(w) w.style.display = 'block';
-      }
-      const ivBtns=document.querySelectorAll('#v-candidato .hdr button');
-      ivBtns.forEach(b=>{ if(b.textContent.includes('Vista Candidato')||b.textContent.includes('Inicio')) b.style.display='none'; });
-      if(bc){
-        bc.onmessage=(ev)=>{
-          const d=ev.data;
-          if(d.type==='admit'){
-            if(salaEsp) salaEsp.style.display='none';
-            if(salaBody) salaBody.style.display='flex';
-          }
-          if(d.type==='question') showCandQuestion(d.q, d.qNum, d.profName);
-          if(d.type==='clear') hideCandQuestion();
-          if(d.type==='ping') bc.postMessage({type:'pong'});
-        };
-      }
+  const params=new URLSearchParams(window.location.search);
+  if(params.get('vista')==='candidato'){
+    document.getElementById('v-home').classList.remove('active');
+    document.getElementById('v-candidato').classList.add('active');
+    document.title='Vista Candidato · ANE';
+    // Ocultar el header de entrevistador y mostrar solo la sala de espera
+    document.getElementById('sala-espera').style.display='flex';
+    document.getElementById('sala-entrevista-body').style.display='none';
+    // Ocultar botones de entrevistador del header candidato
+    const ivBtns=document.querySelectorAll('#v-candidato .hdr button');
+    ivBtns.forEach(b=>{ if(b.textContent.includes('Vista Candidato')||b.textContent.includes('Inicio')) b.style.display='none'; });
+    if(bc){
+      bc.onmessage=(ev)=>{
+        const d=ev.data;
+        if(d.type==='admit'){
+          // Entrevistador admitió al candidato
+          document.getElementById('sala-espera').style.display='none';
+          document.getElementById('sala-entrevista-body').style.display='flex';
+        }
+        if(d.type==='question') showCandQuestion(d.q, d.qNum, d.profName);
+        if(d.type==='clear') hideCandQuestion();
+        if(d.type==='ping') bc.postMessage({type:'pong'});
+        if(d.type==='knock') {
+          // El candidato tocó la puerta (desde panel entrevistador — ignorar en candidato)
+        }
+      };
     }
-  } catch(e){ console.error('[ANE] detectView error:', e); }
+  }
 })();
 
 function solicitarEntrada(){
@@ -4407,36 +3994,6 @@ function sendCandChat(){
   document.getElementById('cand-chat-badge').style.display='none';
 }
 
-function playKnockSound(){
-  try{
-    var ctx=new(window.AudioContext||window.webkitAudioContext)();
-    [0,0.18].forEach(function(delay){
-      var osc=ctx.createOscillator(),g=ctx.createGain();
-      osc.connect(g);g.connect(ctx.destination);
-      osc.frequency.value=880;
-      g.gain.setValueAtTime(0.4,ctx.currentTime+delay);
-      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+0.25);
-      osc.start(ctx.currentTime+delay);osc.stop(ctx.currentTime+delay+0.25);
-    });
-  }catch(e){}
-}
-function mostrarKnockNotify(nombre,salaId){
-  var nn=document.getElementById('knock-notify');
-  var nb=document.getElementById('knock-nombre');
-  if(!nn||!nb) return;
-  nb.textContent=nombre||'Candidato';
-  nn.style.display='block';
-  nn.style.borderColor='';
-  nn.classList.add('knock-alert');
-  if(salaId) nn.dataset.sala=salaId;
-  playKnockSound();
-}
-function ocultarKnockNotify(){
-  var nn=document.getElementById('knock-notify');
-  if(!nn) return;
-  nn.style.display='none';
-  nn.classList.remove('knock-alert');
-}
 function activarBtnAprobar(nombre){
   ['btn-aprobar-sala','btn-aprobar-sala2','btn-aprobar-sala3'].forEach(function(id){
     var b = document.getElementById(id);
@@ -4468,9 +4025,8 @@ function desactivarBtnAprobar(){
 function admitirCandidato(){
   const nn = document.getElementById('knock-notify');
   const salaId = nn?.dataset?.sala || window._activeSalaId;
-  ocultarKnockNotify();
+  if(nn) nn.style.display='none';
   desactivarBtnAprobar();
-  if(typeof window._stopKnockPolling === 'function') window._stopKnockPolling();
   // Firebase (cross-device) + BroadcastChannel (mismo navegador)
   if(typeof window._fbAdmitir === 'function' && salaId) window._fbAdmitir(salaId);
   if(bc) bc.postMessage({type:'admit'});
@@ -4495,35 +4051,18 @@ function admitirCandidato(){
       if(mb){ mb.className='iv-ctrl-btn active'; mb.innerHTML='<span style="font-size:18px">🎙</span>MIC ON'; }
       // Iniciar WebRTC con el stream ya listo
       window._initWebRTCInterviewer(salaId, stream);
-    }).catch(function(err){
-      var errName = err && err.name || 'Error';
-      console.error('[ANE] No se pudo activar cámara+mic del entrevistador:', errName, err && err.message);
+    }).catch(function(){
       // Si no hay cámara, intentar solo audio
       navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(function(aStream){
         ivMicStream = aStream; ivMicOn = true; ivMicMuted = false;
         var mb = document.getElementById('iv-mic-btn');
         if(mb){ mb.className='iv-ctrl-btn active'; mb.innerHTML='<span style="font-size:18px">🎙</span>MIC ON'; }
-        var ph2 = document.getElementById('iv-local-ph');
-        if(ph2) ph2.innerHTML = '<span style="font-size:18px">⚠️</span><span style="font-size:8px;font-weight:700;letter-spacing:.5px;color:#eab308;text-align:center;padding:0 4px">SIN CÁMARA ('+escHtml(errName)+')</span>';
         window._initWebRTCInterviewer(salaId, aStream);
-      }).catch(function(err2){
-        var errName2 = err2 && err2.name || 'Error';
-        console.error('[ANE] No se pudo activar ni cámara ni mic del entrevistador:', errName2, err2 && err2.message);
-        var ph3 = document.getElementById('iv-local-ph');
-        if(ph3) ph3.innerHTML = '<span style="font-size:18px">⚠️</span><span style="font-size:8px;font-weight:700;letter-spacing:.5px;color:#ef4444;text-align:center;padding:0 4px">SIN CÁMARA/MIC ('+escHtml(errName)+'/'+escHtml(errName2)+')</span>';
+      }).catch(function(){
         // Sin medios — iniciar WebRTC de todas formas para recibir al candidato
         window._initWebRTCInterviewer(salaId, null);
       });
     });
-  } else {
-    console.error('[ANE] Cámara del entrevistador no iniciada — _initWebRTCInterviewer:', typeof window._initWebRTCInterviewer, 'salaId:', salaId);
-    var phMissing = document.getElementById('iv-local-ph');
-    if(phMissing){
-      var why = (typeof window._initWebRTCInterviewer !== 'function')
-        ? 'Firebase no inicializó en esta página'
-        : 'falta el ID de la sala — recarga y genera el enlace de nuevo';
-      phMissing.innerHTML = '<span style="font-size:18px">⚠️</span><span style="font-size:8px;font-weight:700;letter-spacing:.5px;color:#ef4444;text-align:center;padding:0 4px">CÁMARA NO INICIADA — '+escHtml(why)+'</span>';
-    }
   }
   // Toast de confirmación
   const t = document.createElement('div');
@@ -4632,64 +4171,5 @@ document.addEventListener('keydown', e=>{
 
 
 <a class="ane-help-btn" href="manual-simulador-entrevistas-ane.html" target="_blank" rel="noopener">❔ Manual y FAQ</a>
-
-<!-- ANE CONSENT MODAL — reutilizable -->
-<style>
-.ane-consent-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.82);display:none;align-items:center;justify-content:center;z-index:99999;padding:20px}
-.ane-consent-card{width:min(680px,100%);background:#0e1f2e;color:#e0f2f2;border:2px solid #0d7373;border-radius:20px;box-shadow:0 24px 80px rgba(0,0,0,.5);padding:28px 32px;font-family:inherit}
-.ane-consent-card h2{margin:0 0 12px;font-size:20px;color:#7dd3d3}
-.ane-consent-card p{line-height:1.6;margin:10px 0;color:#c8e8e8;font-size:14px}
-.ane-consent-list{margin:14px 0;padding-left:20px;color:#c8e8e8;font-size:14px;line-height:1.7}
-.ane-consent-check-row{display:flex;gap:10px;align-items:flex-start;margin-top:16px;padding:12px 14px;background:rgba(13,115,115,.15);border:1px solid rgba(13,115,115,.4);border-radius:10px}
-.ane-consent-check-row input{margin-top:3px;width:18px;height:18px;flex-shrink:0;cursor:pointer;accent-color:#0d7373}
-.ane-consent-check-row label{font-size:14px;font-weight:700;color:#e0f2f2;cursor:pointer}
-.ane-consent-small{font-size:11px;color:#4a8a8a;margin-top:8px}
-.ane-consent-actions{display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap;margin-top:20px}
-.ane-btn-consent-ok{background:#0d7373;color:#fff;border:none;border-radius:10px;padding:11px 22px;font-weight:800;font-size:14px;cursor:pointer}
-.ane-btn-consent-cancel{background:transparent;color:#7dd3d3;border:1px solid #3a6a6a;border-radius:10px;padding:11px 18px;font-size:13px;cursor:pointer}
-</style>
-<div id="aneConsentBackdrop" class="ane-consent-backdrop" role="dialog" aria-modal="true" aria-labelledby="aneConsentTitle">
-  <div class="ane-consent-card">
-    <h2 id="aneConsentTitle">🔒 Consentimiento informado requerido</h2>
-    <p>Antes de procesar CV, entrevistas, audio, transcripciones o diagnósticos, confirme que la persona candidata fue informada y autorizó el uso de sus datos para orientación laboral, evaluación asistida y seguimiento institucional.</p>
-    <ul class="ane-consent-list">
-      <li>El resultado es orientativo y requiere revisión humana.</li>
-      <li>Los datos deben usarse solo para el fin informado.</li>
-      <li>La grabación/transcripción requiere autorización expresa.</li>
-      <li>Si se usa IA externa o sala virtual, debe informarse previamente.</li>
-    </ul>
-    <div class="ane-consent-check-row">
-      <input id="aneConsentCheck" type="checkbox">
-      <label for="aneConsentCheck">Confirmo que cuento con autorización informada de la persona candidata.</label>
-    </div>
-    <p class="ane-consent-small">Registro local: esta confirmación se guarda en este navegador para la sesión del módulo.</p>
-    <div class="ane-consent-actions">
-      <button class="ane-btn-consent-cancel" onclick="closeANEConsent(false)">Cancelar</button>
-      <button class="ane-btn-consent-ok" onclick="closeANEConsent(true)">Continuar →</button>
-    </div>
-  </div>
-</div>
-<script>
-var _aneConsentResolve=null;
-function requireANEConsent(moduleName){
-  moduleName=moduleName||'general';
-  var key='ane_consent_'+moduleName+'_'+new Date().toISOString().slice(0,10);
-  if(typeof localStorage!=='undefined'&&localStorage.getItem(key)==='ok') return Promise.resolve(true);
-  var el=document.getElementById('aneConsentCheck');
-  if(el) el.checked=false;
-  var bd=document.getElementById('aneConsentBackdrop');
-  if(bd) bd.style.display='flex';
-  return new Promise(function(resolve){ _aneConsentResolve={resolve:resolve,key:key}; });
-}
-function closeANEConsent(accept){
-  var check=document.getElementById('aneConsentCheck');
-  if(accept&&check&&!check.checked){ alert('Debe confirmar la autorización informada para continuar.'); return; }
-  var bd=document.getElementById('aneConsentBackdrop');
-  if(bd) bd.style.display='none';
-  if(accept&&_aneConsentResolve){ try{localStorage.setItem(_aneConsentResolve.key,'ok');}catch(e){} _aneConsentResolve.resolve(true); }
-  else if(_aneConsentResolve){ _aneConsentResolve.resolve(false); }
-  _aneConsentResolve=null;
-}
-</script>
 </body>
 </html>
