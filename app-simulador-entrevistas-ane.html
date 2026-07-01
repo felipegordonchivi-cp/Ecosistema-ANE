@@ -105,11 +105,11 @@ textarea{resize:vertical}
 .global-score{width:90px;height:90px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;font-weight:800;flex-shrink:0;border:3px solid;transition:all .3s}
 
 /* ── PANEL 2 PREMIUM ───────────────────────────────────── */
-.eval2-wrap{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px}
-.eval2-header{background:linear-gradient(135deg,rgba(13,115,115,.18),rgba(13,45,45,.4));border:1px solid rgba(125,211,211,.2);border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.eval2-header .q-pill{background:rgba(13,115,115,.25);border:1px solid rgba(125,211,211,.3);border-radius:10px;padding:10px 16px;flex:1;min-width:200px;font-size:13px;line-height:1.6;color:#c9ffff;font-weight:500}
-.eval2-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.eval2-card{background:rgba(8,32,32,.7);border:1px solid rgba(13,115,115,.25);border-radius:16px;padding:18px;backdrop-filter:blur(6px)}
+.eval2-wrap{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.eval2-header{background:linear-gradient(135deg,rgba(13,115,115,.18),rgba(13,45,45,.4));border:1px solid rgba(125,211,211,.2);border-radius:14px;padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.eval2-header .q-pill{background:rgba(13,115,115,.25);border:1px solid rgba(125,211,211,.3);border-radius:10px;padding:8px 14px;flex:1;min-width:200px;font-size:13px;line-height:1.5;color:#c9ffff;font-weight:500}
+.eval2-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.eval2-card{background:rgba(8,32,32,.7);border:1px solid rgba(13,115,115,.25);border-radius:14px;padding:14px;backdrop-filter:blur(6px)}
 .eval2-card h4{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#5a9898;font-weight:800;margin:0 0 12px;display:flex;align-items:center;gap:7px}
 .star-comp-card{border-radius:14px;padding:16px;border:1px solid;position:relative;overflow:hidden;transition:all .25s}
 .star-comp-card:before{content:"";position:absolute;inset:0 auto 0 0;width:3px;border-radius:3px 0 0 3px;background:var(--sc-col)}
@@ -124,9 +124,9 @@ textarea{resize:vertical}
 
 /* Guide card */
 .guide-card{border-radius:16px;overflow:hidden;border:1px solid rgba(125,211,211,.15)}
-.guide-header{padding:14px 18px;background:linear-gradient(90deg,rgba(13,115,115,.35),rgba(13,45,45,.5));display:flex;align-items:center;gap:10px}
+.guide-header{padding:10px 16px;background:linear-gradient(90deg,rgba(13,115,115,.35),rgba(13,45,45,.5));display:flex;align-items:center;gap:10px}
 .guide-header h4{font-size:13px;font-weight:900;color:#7dd3d3;margin:0}
-.guide-body{padding:16px 18px;background:rgba(4,22,22,.55);display:flex;flex-direction:column;gap:10px}
+.guide-body{padding:10px 16px;background:rgba(4,22,22,.55);display:flex;flex-direction:column;gap:10px}
 .guide-row{display:grid;grid-template-columns:72px 1fr;gap:10px;align-items:flex-start}
 .guide-letter{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;flex-shrink:0}
 .guide-content b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
@@ -1733,10 +1733,9 @@ function escHtml(s){
               <div id="guide-competencia" class="guide-competencia" style="margin-left:auto"></div>
             </div>
             <div class="guide-body" id="guide-body">
-              <div style="text-align:center;padding:20px;color:#3a7272;font-size:13px">
-                <div style="font-size:32px;margin-bottom:10px">🧭</div>
-                La guía aparece al activar una pregunta en el Panel de Perfiles.<br>
-                <span style="font-size:11px;color:#2a5050">Analiza el tipo de pregunta y sugiere qué buscar en cada componente STAR.</span>
+              <div style="text-align:center;padding:6px 4px;color:#3a7272;font-size:12px;display:flex;align-items:center;gap:10px;justify-content:center">
+                <span style="font-size:18px;flex-shrink:0">🧭</span>
+                <span>La guía aparece al activar una pregunta en el Panel de Perfiles. <span style="font-size:11px;color:#2a5050">Analiza el tipo de pregunta y sugiere qué buscar en cada componente STAR.</span></span>
               </div>
             </div>
           </div>
