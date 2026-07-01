@@ -565,8 +565,12 @@ function escHtml(s){
           container.scrollTop=container.scrollHeight;
           if(!mine){ var badge=document.getElementById('iv-chat-badge'); if(badge) badge.style.display='inline'; }
         });
-        // Recibir transcripción del candidato en tiempo real
-        window._fbOn('salas/'+id+'/transcript', function(val){
+        // Recibir transcripción del candidato en tiempo real. El candidato
+        // escribe con _fbSetReliable (SDK+REST), pero si el listener .on()
+        // del SDK aquí pierde una notificación (canal degradado), el
+        // entrevistador se queda viendo una versión vieja/incompleta del
+        // texto — por eso también se hace polling REST de respaldo.
+        function handleTranscript(val){
           if(!val) return;
           var tf = document.getElementById('transcript-final');
           var ti = document.getElementById('transcript-interim');
@@ -579,7 +583,9 @@ function escHtml(s){
           var status = document.getElementById('audio-status-txt');
           if(dot && val.interim) dot.style.background = '#ef4444';
           if(status && val.interim) status.textContent = 'Candidato grabando…';
-        });
+        }
+        window._fbOn('salas/'+id+'/transcript', handleTranscript);
+        window._fbPollBackup('salas/'+id+'/transcript', 3000, handleTranscript);
       };
       window._fbAdmitir = function(sid){
         window._fbSet('salas/'+sid+'/estado', 'admitido');
