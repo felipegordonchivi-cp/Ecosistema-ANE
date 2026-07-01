@@ -668,6 +668,7 @@ function escHtml(s){
           if(vid && e.streams && e.streams[0]){
             vid.srcObject = e.streams[0];
             if(ph) ph.style.display='none';
+            startIvAudioCapture(e.streams[0]);
             vid.play().catch(function(){
               vid.muted = true;
               vid.play().catch(function(){});
@@ -1705,6 +1706,7 @@ function escHtml(s){
             </div>
             <div id="ai-result" style="background:rgba(13,115,115,.08);border:1px solid rgba(13,115,115,.25);border-radius:10px;padding:14px;font-size:12px;color:#c8e8e8;line-height:1.8;white-space:pre-wrap;max-height:280px;overflow-y:auto;display:none;border-left:3px solid var(--teal)"></div>
             <p id="ai-hint" style="color:#4a8a8a;font-size:11px;margin-top:6px">Importa la transcripción de audio o escribe la respuesta, luego presiona <b style="color:var(--tl)">Analizar</b>.</p>
+            <p style="color:#4a8a8a;font-size:10px;margin-top:4px;line-height:1.5">🎙 Si el candidato respondió por Sala Virtual, el análisis incluye feedback de tono de voz (ritmo, claridad, muletillas) — es solo retroalimentación de coaching y no afecta el puntaje ni la recomendación. No se evalúa lenguaje corporal.</p>
 
             <!-- Puntaje global -->
             <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(13,115,115,.2)">
@@ -3131,6 +3133,41 @@ function clearApiKey(){
 function getApiKey(){ return localStorage.getItem('ane_gemini_key')||''; }
 
 // ============================================================
+// CAPTURA DE AUDIO DEL CANDIDATO (para feedback de tono de voz)
+// Reutiliza el stream WebRTC que ya llega al entrevistador — no
+// requiere reenviar nada por Firebase. Grabación continua en
+// segundo plano; "consumimos" el buffer cada vez que se analiza.
+// ============================================================
+let ivAudioRecorder=null, ivAudioChunks=[], ivAudioMime='';
+function startIvAudioCapture(remoteStream){
+  try{
+    if(ivAudioRecorder && ivAudioRecorder.state==='recording') ivAudioRecorder.stop();
+    const audioTracks = remoteStream.getAudioTracks();
+    if(!audioTracks.length) return;
+    const audioOnly = new MediaStream(audioTracks);
+    const mimeCandidates = ['audio/ogg;codecs=opus','audio/webm;codecs=opus','audio/webm'];
+    ivAudioMime = mimeCandidates.find(m=>window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || '';
+    if(!ivAudioMime || !window.MediaRecorder) return;
+    ivAudioChunks = [];
+    ivAudioRecorder = new MediaRecorder(audioOnly, {mimeType:ivAudioMime});
+    ivAudioRecorder.ondataavailable = (e)=>{ if(e.data && e.data.size>0) ivAudioChunks.push(e.data); };
+    ivAudioRecorder.start(1000);
+  }catch(e){ console.warn('[ANE] No se pudo iniciar captura de audio para tono de voz:', e); }
+}
+// Devuelve (y consume) el audio acumulado desde la última llamada, en base64.
+async function getLatestAudioBase64(){
+  if(!ivAudioChunks.length) return null;
+  try{
+    const blob = new Blob(ivAudioChunks, {type:ivAudioMime});
+    ivAudioChunks = [];
+    const buf = await blob.arrayBuffer();
+    let binary=''; const bytes=new Uint8Array(buf);
+    for(let i=0;i<bytes.length;i++) binary+=String.fromCharCode(bytes[i]);
+    return {mimeType:ivAudioMime, data:btoa(binary)};
+  }catch(e){ console.warn('[ANE] No se pudo procesar audio para tono de voz:', e); return null; }
+}
+
+// ============================================================
 // AI STAR ANALYSIS (via Google Gemini API - free tier)
 // ============================================================
 function _showAIResult(msg){
@@ -3166,6 +3203,7 @@ async function analyzeWithAI(){
   const profName = currentProf?.name||'Perfil no especificado';
   const question = activeQ||'Pregunta no especificada';
   const comp = getCompetency();
+  const audioPart = await getLatestAudioBase64().catch(()=>null);
 
   try {
     const promptText = `Eres un experto evaluador de entrevistas con metodología STAR para la Agencia Nacional de Empleo (ANE) de Costa Rica. Evalúa la siguiente respuesta.
@@ -3182,17 +3220,20 @@ Proporciona:
 4. FORTALEZAS (2-3 puntos concretos)
 5. ÁREAS DE MEJORA (2-3 puntos accionables)
 6. RECOMENDACIÓN: Muy Recomendado / Recomendado / Condicionado / Con Reservas / No Recomendado
-7. PREGUNTAS DE SEGUIMIENTO (2 preguntas para profundizar)
+7. PREGUNTAS DE SEGUIMIENTO (2 preguntas para profundizar)${audioPart ? `
+8. FEEDBACK DE TONO DE VOZ: Se adjunta un fragmento de audio de la respuesta del candidato. Comenta únicamente sobre ritmo, volumen aparente, claridad de dicción, muletillas y pausas — como retroalimentación de coaching para que el candidato mejore su comunicación oral. Este punto es solo informativo: NO lo uses para ajustar el PUNTAJE GLOBAL, los puntajes STAR ni la RECOMENDACIÓN, y no infieras rasgos de personalidad ni emociones a partir de la voz.` : ''}
 
 Sé específico, constructivo y objetivo. Considera el contexto del mercado laboral costarricense y la normativa del MTSS cuando sea relevante.`;
 
-    console.log('[ANE] Llamando Gemini API...');
+    console.log('[ANE] Llamando Gemini API...', audioPart ? '(con audio de tono de voz)' : '(solo texto)');
     const abortCtrl = new AbortController();
     const fetchTimeout = setTimeout(()=>abortCtrl.abort(), 20000);
+    const parts = [{text:promptText}];
+    if(audioPart) parts.push({inlineData:{mimeType:audioPart.mimeType, data:audioPart.data}});
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({contents:[{parts:[{text:promptText}]}]}),
+      body: JSON.stringify({contents:[{parts}]}),
       signal: abortCtrl.signal
     });
     clearTimeout(fetchTimeout);
