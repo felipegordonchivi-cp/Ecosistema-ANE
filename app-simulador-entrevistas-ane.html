@@ -4243,7 +4243,14 @@ function hideCandQuestion(){
 async function toggleCandCam(){
   if(!candCamOn){
     try{
-      candCamStream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720},facingMode:'user'},audio:true});
+      // En algunos navegadores integrados (WhatsApp/Instagram) getUserMedia()
+      // ni lanza error ni resuelve — se queda colgado en silencio. Sin este
+      // timeout el candidato nunca se entera de que su cámara nunca se activó.
+      const camTimeout = new Promise((_, reject)=>setTimeout(()=>reject({name:'TimeoutError'}), 8000));
+      candCamStream=await Promise.race([
+        navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720},facingMode:'user'},audio:true}),
+        camTimeout
+      ]);
       candCamOn=true; candMicOn=true;
       const v=document.getElementById('cand-video');
       const ph=document.getElementById('cand-video-ph');
@@ -4260,6 +4267,7 @@ async function toggleCandCam(){
       if(err.name==='NotAllowedError') msg='Permiso denegado. Haz clic en el ícono de cámara en la barra del navegador y permite el acceso.';
       else if(err.name==='NotFoundError') msg='No se encontró cámara en este dispositivo.';
       else if(err.name==='NotReadableError') msg='La cámara está siendo usada por otra aplicación. Ciérrala e intenta.';
+      else if(err.name==='TimeoutError') msg='La cámara no respondió. Si abriste este enlace desde WhatsApp/Instagram, copia el link y ábrelo directo en Chrome o Safari.';
       const ph=document.getElementById('cand-video-ph');
       if(ph) ph.innerHTML=`<div style="text-align:center;padding:20px"><div style="font-size:28px;margin-bottom:8px">📵</div><div style="font-size:13px;color:#ef4444;font-weight:600;margin-bottom:12px">${msg}</div><button onclick="toggleCandCam()" style="padding:8px 18px;background:#0d9488;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">🔄 Reintentar</button></div>`;
     }
@@ -4440,9 +4448,15 @@ function animCandWave(on){
       if(salaEsp) salaEsp.style.display='flex';
       if(salaBody) salaBody.style.display='none';
       // Detectar navegador integrado (in-app browser) de apps de mensajería —
-      // suelen bloquear/degradar WebSocket y romper la conexión en tiempo real.
+      // suelen bloquear/degradar la cámara/micrófono y la conexión en tiempo real.
+      // WhatsApp en Android no agrega ningún token identificable a su User-Agent
+      // (a diferencia de Instagram/Facebook), así que el sniffing de UA por sí solo
+      // no lo detecta de forma confiable — por eso también revisamos si el navegador
+      // ni siquiera expone la API de cámara, señal fuerte de un WebView restringido.
       var ua = navigator.userAgent || '';
-      var isInApp = /FBAN|FBAV|Instagram|Line\/|MicroMessenger|TikTok|Snapchat/i.test(ua)
+      var noMediaDevices = !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia;
+      var isInApp = noMediaDevices
+        || /FBAN|FBAV|Instagram|Line\/|MicroMessenger|TikTok|Snapchat|WhatsApp/i.test(ua)
         || (/(iPhone|iPad|iPod)/.test(ua) && !/Safari/.test(ua) && !/CriOS/.test(ua) && !/FxiOS/.test(ua));
       if(isInApp){
         var w = document.getElementById('sala-inapp-warning');
