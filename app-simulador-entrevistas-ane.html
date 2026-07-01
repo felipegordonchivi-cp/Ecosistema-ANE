@@ -3212,9 +3212,13 @@ function saveApiKey(){
   const inp = document.getElementById('api-key-input');
   const st = document.getElementById('api-key-status');
   if(!inp) return;
+  // No validamos por prefijo (AIza, AQ., etc.) — Google ha cambiado el
+  // formato de sus claves más de una vez (de AIza a AQ. en 2026), así que
+  // exigir un prefijo fijo termina rechazando claves nuevas y válidas.
+  // Solo revisamos que tenga un largo razonable y sin espacios internos.
   const val = inp.value.trim();
-  if(!val.startsWith('AIza') && !val.startsWith('AQ.')){
-    if(st) st.textContent = '⚠️ Formato inválido. Las claves de Google comienzan con AIza o AQ.';
+  if(val.length<20 || /\s/.test(val)){
+    if(st) st.textContent = '⚠️ Eso no parece una clave válida (muy corta o con espacios). Verifica que la copiaste completa.';
     return;
   }
   localStorage.setItem('ane_gemini_key', val);
