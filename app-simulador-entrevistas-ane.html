@@ -1751,6 +1751,7 @@ function escHtml(s){
               <p style="color:#4a8a8a;font-size:10px;margin-bottom:6px">🔒 Guardada en <b>localStorage</b> — persiste entre sesiones</p>
               <div style="display:flex;gap:6px">
                 <input id="api-key-input" type="password" placeholder="AIzaSy..." style="flex:1;background:rgba(0,0,0,.3);border:1px solid rgba(13,115,115,.5);color:#e0f0f0;padding:6px 10px;border-radius:6px;font-size:12px;font-family:monospace">
+                <button onclick="(function(b){var i=document.getElementById('api-key-input');var show=i.type==='password';i.type=show?'text':'password';b.textContent=show?'🙈':'👁';})(this)" title="Mostrar/ocultar" style="background:rgba(13,115,115,.15);border:1px solid rgba(13,115,115,.4);color:var(--tl);padding:6px 10px;border-radius:6px;font-size:11px">👁</button>
                 <button onclick="saveApiKey()" style="background:var(--teal);border:none;color:#fff;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:700">Guardar</button>
                 <button onclick="clearApiKey()" style="background:rgba(200,50,50,.2);border:1px solid rgba(200,50,50,.4);color:#ff8888;padding:6px 10px;border-radius:6px;font-size:11px">🗑</button>
               </div>
@@ -3221,6 +3222,10 @@ function saveApiKey(){
     if(st) st.textContent = '⚠️ Eso no parece una clave válida (muy corta o con espacios). Verifica que la copiaste completa.';
     return;
   }
+  if(/^https?:\/\//i.test(val) || val.includes('vista=candidato') || val.includes('?sala=') || val.includes('&sala=')){
+    if(st) st.textContent = '⚠️ Eso parece el enlace del candidato (no la clave de Gemini). Copia la clave desde aistudio.google.com/apikey.';
+    return;
+  }
   localStorage.setItem('ane_gemini_key', val);
   if(st) st.textContent = '✅ Clave guardada correctamente';
 }
@@ -3336,7 +3341,7 @@ Sé específico, constructivo y objetivo. Considera el contexto del mercado labo
     // el navegador — el proxy la inyecta del lado servidor (ver
     // tools/gemini-proxy-worker.js). Sin proxy, se llama directo con la
     // clave guardada en localStorage (comportamiento original).
-    const targetUrl = proxyUrl || `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const targetUrl = proxyUrl || `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
     const response = await fetch(targetUrl,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
