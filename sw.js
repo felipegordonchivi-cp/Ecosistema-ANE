@@ -10,6 +10,7 @@ const CORE_ASSETS = [
   './app-simulador-entrevistas-ane.html',
   './app-dashboard-intermediacion-ane.html',
   './app-4-laboratorio-ia-ane.html',
+  './app-demo-brete-empresas-ane.html',
   './manual-ats-ane.html',
   './manual-simulador-entrevistas-ane.html',
   './manual-dashboard-intermediacion-ane.html',
