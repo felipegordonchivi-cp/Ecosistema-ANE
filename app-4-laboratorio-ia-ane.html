@@ -130,15 +130,7 @@
 </style>
 </head><body>
 <div id="mob-sidebar-overlay" onclick="document.querySelector('.sidebar').classList.remove('mob-open');this.classList.remove('open')"></div>
-<div class="shell"><aside class="sidebar"><div class="brand"><div class="mark">ANE</div><div><b>Laboratorio IA ESCO-CR</b><span>2,000 competencias priorizadas</span></div></div><div class="navlabel">Módulos</div><nav class="nav"><button class="active" data-go="#diagnostico"><span class="ico">🧭</span>Diagnóstico ESCO</button><button data-go="#comparar"><span class="ico">🔍</span>Comparar Oferta</button><button data-go="#ruta"><span class="ico">🗺️</span>Ruta 30/60/90</button><button data-go="#academica"><span class="ico">🎓</span>Oferta Académica CR</button><button data-go="#recomendador"><span class="ico">🎯</span>Recomendador</button><button data-go="#informe"><span class="ico">📄</span>Informe</button><button data-go="#gobernanza"><span class="ico">🛡️</span>Uso seguro</button></nav><div class="sidecard"><b>Enfoque</b><p>Diccionario ESCO-compatible adaptado a Costa Rica. Priorizado por ocupaciones frecuentes de ANE/Brete y sectores con mayor contratación.</p></div></aside><main class="main"><header class="topbar"><button class="mob-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('mob-open');document.getElementById('mob-sidebar-overlay').classList.toggle('open')">☰</button><div class="crumb"><b>Copiloto ANE V15 · Recomendación responsable</b><span>2,000 competencias, 100 rutas académicas, confianza, trazabilidad y revisión humana</span></div><button class="utility" id="themeBtn">◐</button><div class="demo-dropdown" id="demoDropdown"><button class="utility primary" onclick="toggleDemoMenu(event)">Cargar ejemplo ▾</button><div class="demo-menu" id="demoMenu" style="display:none"><button onclick="demo('admin')">👩‍💼 Asistente Administrativa</button><button onclick="demo('ingeniero')">🏗️ Ingeniero Civil</button><button onclick="demo('ventas')">📊 Asesor de Ventas</button><button onclick="demo('logistica')">📦 Bodega / Logística</button></div></div></header><div class="content"><section class="hero"><span class="eyebrow">🤖 ESCO-compatible · Uso interno ANE</span><h1>Diagnóstico basado en <span>2,000 competencias y 100 rutas académicas priorizadas para Costa Rica.</span></h1><p class="lead">El laboratorio usa una matriz ESCO-CR ampliada a 2,000 competencias y una base de 100 rutas académicas CR. Detecta brechas y orienta al candidato hacia cursos, carreras, certificaciones e instituciones verificables.</p><div class="hero-actions"><a href="#diagnostico" class="btn primary">🧭 Iniciar diagnóstico</a><a href="#academica" class="btn">🎓 Oferta académica CR</a></div></section><section class="section"><div class="grid g4"><div class="card"><small>Base ESCO-CR</small><h3><span id="totalSkills">2000</span> competencias</h3><p>Skill/competence + knowledge aplicado a empleabilidad.</p></div><div class="card"><small>Familias ocupacionales</small><h3>80 familias</h3><p>Orientación por familia ocupacional con mayor cantidad de opciones.</p></div><div class="card"><small>Resultado</small><h3 id="detectedCount">0 detectadas</h3><p>Competencias reconocidas en CV/resumen.</p></div><div class="card"><small>Brechas</small><h3 id="gapCount">0 sugeridas</h3><p>Competencias faltantes por familia ocupacional.</p></div></div></section><section class="section" id="diagnostico"><div class="section-head"><div><h2>Diagnóstico inteligente ESCO</h2><p>Ingrese información del candidato. El prototipo funciona localmente con reglas explicables.</p></div><div id="labProfileBar" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;padding:10px 14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;">
-  <span style="font-size:12px;font-weight:700;color:#166534;">Perfiles guardados:</span>
-  <select id="labProfileSel" style="padding:5px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;flex:1;min-width:140px;">
-    <option value="">— Seleccionar perfil guardado —</option>
-  </select>
-  <button onclick="labLoadProfile()" style="padding:5px 12px;background:#16a34a;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">Cargar</button>
-  <button onclick="labSaveProfile()" style="padding:5px 12px;background:#0d9488;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">Guardar perfil</button>
-  <button onclick="labDeleteProfile()" style="padding:5px 12px;background:#fee2e2;color:#dc2626;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">Eliminar</button>
-</div>
+<div class="shell"><aside class="sidebar"><div class="brand"><div class="mark">ANE</div><div><b>Laboratorio IA ESCO-CR</b><span>2,000 competencias priorizadas</span></div></div><div class="navlabel">Módulos</div><nav class="nav"><button class="active" data-go="#diagnostico"><span class="ico">🧭</span>Diagnóstico ESCO</button><button data-go="#comparar"><span class="ico">🔍</span>Comparar Oferta</button><button data-go="#ruta"><span class="ico">🗺️</span>Ruta 30/60/90</button><button data-go="#academica"><span class="ico">🎓</span>Oferta Académica CR</button><button data-go="#recomendador"><span class="ico">🎯</span>Recomendador</button><button data-go="#informe"><span class="ico">📄</span>Informe</button><button data-go="#gobernanza"><span class="ico">🛡️</span>Uso seguro</button></nav><div class="sidecard"><b>Enfoque</b><p>Diccionario ESCO-compatible adaptado a Costa Rica. Priorizado por ocupaciones frecuentes de ANE/Brete y sectores con mayor contratación.</p></div></aside><main class="main"><header class="topbar"><button class="mob-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('mob-open');document.getElementById('mob-sidebar-overlay').classList.toggle('open')">☰</button><div class="crumb"><b>Copiloto ANE V15 · Recomendación responsable</b><span>2,000 competencias, 100 rutas académicas, confianza, trazabilidad y revisión humana</span></div><button class="utility" id="themeBtn">◐</button><div class="demo-dropdown" id="demoDropdown"><button class="utility primary" onclick="toggleDemoMenu(event)">Cargar ejemplo ▾</button><div class="demo-menu" id="demoMenu" style="display:none"><button onclick="demo('admin')">👩‍💼 Asistente Administrativa</button><button onclick="demo('ingeniero')">🏗️ Ingeniero Civil</button><button onclick="demo('ventas')">📊 Asesor de Ventas</button><button onclick="demo('logistica')">📦 Bodega / Logística</button></div></div></header><div class="content"><section class="hero"><span class="eyebrow">🤖 ESCO-compatible · Uso interno ANE</span><h1>Diagnóstico basado en <span>2,000 competencias y 100 rutas académicas priorizadas para Costa Rica.</span></h1><p class="lead">El laboratorio usa una matriz ESCO-CR ampliada a 2,000 competencias y una base de 100 rutas académicas CR. Detecta brechas y orienta al candidato hacia cursos, carreras, certificaciones e instituciones verificables.</p><div class="hero-actions"><a href="#diagnostico" class="btn primary">🧭 Iniciar diagnóstico</a><a href="#academica" class="btn">🎓 Oferta académica CR</a></div></section><section class="section"><div class="grid g4"><div class="card"><small>Base ESCO-CR</small><h3><span id="totalSkills">2000</span> competencias</h3><p>Skill/competence + knowledge aplicado a empleabilidad.</p></div><div class="card"><small>Familias ocupacionales</small><h3>80 familias</h3><p>Orientación por familia ocupacional con mayor cantidad de opciones.</p></div><div class="card"><small>Resultado</small><h3 id="detectedCount">0 detectadas</h3><p>Competencias reconocidas en CV/resumen.</p></div><div class="card"><small>Brechas</small><h3 id="gapCount">0 sugeridas</h3><p>Competencias faltantes por familia ocupacional.</p></div></div></section><section class="section" id="diagnostico"><div class="section-head"><div><h2>Diagnóstico inteligente ESCO</h2><p>Ingrese información del candidato. El prototipo funciona localmente con reglas explicables.</p></div>
 <button class="btn primary" id="analyzeBtn">Generar diagnóstico</button></div><div class="grid g2"><div class="card"><small>Entrada del candidato</small><h3>Perfil base</h3><div class="inline"><div class="field"><label>Nombre</label><input id="name" placeholder="Nombre del candidato"></div><div class="field"><label>Puesto objetivo</label><input id="target" placeholder="Ej. Asesor de ventas"></div></div><div class="inline"><div class="field"><label>Zona</label><input id="zone" placeholder="Ej. Limón, GAM, Puntarenas"></div><div class="field"><label>Disponibilidad</label><select id="availability"><option>Inmediata</option><option>15 días</option><option>30 días</option><option>Parcial / fines de semana</option></select></div></div><div class="field"><label>Experiencia laboral</label><textarea id="experience" placeholder="Puestos, funciones, logros, años de experiencia..."></textarea></div><div class="field"><label>Educación y cursos</label><textarea id="education" placeholder="Cursos INA, Excel, inglés, manipulación, seguridad, etc."></textarea></div><div class="field"><label>Habilidades</label><textarea id="skills" placeholder="Comunicación, ventas, Excel, inventario, caja, CRM, etc."></textarea></div><div class="field"><label>Texto del CV o resumen completo</label><textarea id="cvtext" placeholder="Pegue el texto del CV o resumen del perfil..."></textarea></div></div><div class="card"><small>Resultado IA explicable</small><h3>Nivel de empleabilidad</h3><div class="score-wrap"><div class="score" id="scoreCircle"><div class="score-inner"><b id="scoreValue">0</b><span>sobre 100</span></div></div></div><div class="chips" id="profileChips"><span class="chip">Sin diagnóstico</span></div>
 <div class="trust-panel">
   <div class="trust-card"><b id="trustLevel">Confianza: sin análisis</b><p id="trustReason">La confianza aparecerá al generar el diagnóstico.</p></div>
@@ -831,59 +823,4 @@ vacancies(FAMILIES.map(f=>({...f,score:f.base})).sort((a,b)=>b.score-a.score),[]
 </script>
 
 <a class="ane-help-btn" href="manual-laboratorio-ia-ane.html" target="_blank" rel="noopener">❔ Manual y FAQ</a>
-
-<script>
-(function(){
-  const STOR_KEY = 'ane_lab_profiles';
-  const MAX_PROFILES = 5;
-  function getProfiles(){ try{ return JSON.parse(localStorage.getItem(STOR_KEY))||[]; }catch(e){ return []; } }
-  function saveProfiles(arr){ try{ localStorage.setItem(STOR_KEY, JSON.stringify(arr)); }catch(e){} }
-  function $e(id){ return document.getElementById(id); }
-  function getFormData(){
-    return ['name','target','zone','availability','experience','education','skills','cvtext'].reduce((o,id)=>{
-      o[id]=($e(id)||{}).value||''; return o; },{});
-  }
-  function setFormData(d){
-    if(!d) return;
-    ['name','target','zone','availability','experience','education','skills','cvtext'].forEach(id=>{
-      const el=$e(id); if(el&&d[id]!==undefined) el.value=d[id];
-    });
-  }
-  function refreshSelect(){
-    const sel=$e('labProfileSel'); if(!sel) return;
-    const arr=getProfiles();
-    sel.innerHTML='<option value="">— Seleccionar perfil guardado —</option>'+
-      arr.map((p,i)=>`<option value="${i}">${(p._label||p.name||'Perfil '+(i+1)).replace(/</g,'&lt;')}</option>`).join('');
-  }
-  window.labSaveProfile=function(){
-    const arr=getProfiles();
-    if(arr.length>=MAX_PROFILES){
-      if(!confirm('Ya tienes '+MAX_PROFILES+' perfiles guardados. ¿Deseas reemplazar el más antiguo?')) return;
-      arr.shift();
-    }
-    const data=getFormData();
-    data._label=(data.name||'Sin nombre').trim()+(data.target?' · '+data.target.trim():'')+' · '+new Date().toLocaleDateString('es-CR');
-    arr.push(data); saveProfiles(arr); refreshSelect();
-    const f=document.createElement('div');
-    f.textContent='✓ Perfil guardado: '+data._label;
-    Object.assign(f.style,{position:'fixed',bottom:'80px',right:'24px',background:'#0d9488',color:'#fff',padding:'10px 18px',borderRadius:'8px',fontWeight:'600',zIndex:'9999',boxShadow:'0 4px 12px rgba(0,0,0,.2)',transition:'opacity .4s'});
-    document.body.appendChild(f);
-    setTimeout(()=>{f.style.opacity='0';setTimeout(()=>f.remove(),500);},2500);
-  };
-  window.labLoadProfile=function(){
-    const sel=$e('labProfileSel'); if(!sel) return;
-    const idx=parseInt(sel.value); if(isNaN(idx)) return;
-    const arr=getProfiles(); if(!arr[idx]) return;
-    setFormData(arr[idx]);
-  };
-  window.labDeleteProfile=function(){
-    const sel=$e('labProfileSel'); if(!sel) return;
-    const idx=parseInt(sel.value); if(isNaN(idx)) return;
-    const arr=getProfiles();
-    if(!confirm('¿Eliminar "'+((arr[idx]&&arr[idx]._label)||'este perfil')+'"?')) return;
-    arr.splice(idx,1); saveProfiles(arr); refreshSelect();
-  };
-  refreshSelect();
-})();
-</script>
 </body></html>
