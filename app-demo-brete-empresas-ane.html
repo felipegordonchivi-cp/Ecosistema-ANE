@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; frame-ancestors 'self'">
+<title>Demo Empresas — Ecosistema ANE</title>
+<link rel="stylesheet" href="vendor/fonts/fonts.css">
+<style>
+/* ============================================================
+   DEMO BRETE — EMPRESAS
+   Recreación de la plataforma real (ane.cr) para uso en visitas de
+   capacitación a usuarios. Datos y flujo son de ejemplo — no se
+   conecta a ningún backend real.
+   ============================================================ */
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased}
+body{font-family:'IBM Plex Sans',Arial,sans-serif;background:#f5f5f5;color:#222;min-height:100vh;font-size:14px;line-height:1.5}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:13px}
+a{color:#1d6f66;text-decoration:none}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#c7cfce;border-radius:8px}
+
+/* ── DEMO BANNER ── */
+#demo-banner{background:#0d3b36;color:#eafffb;font-size:12px;font-weight:700;text-align:center;padding:7px 12px;letter-spacing:.3px;display:flex;align-items:center;justify-content:center;gap:8px}
+#demo-banner span.tag{background:#14b8a6;color:#04211d;border-radius:999px;padding:2px 10px;font-size:10px;font-weight:900;letter-spacing:.5px}
+
+/* ── HEADER ── */
+.brete-header{height:56px;background:#fff;border-bottom:1px solid #e5e5e5;display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+.brete-logo{font-size:22px;font-weight:900;color:#111;letter-spacing:-.5px}
+.brete-logo b{color:#111}
+.brete-header-icons{display:flex;align-items:center;gap:18px}
+.brete-icon-btn{width:34px;height:34px;border-radius:50%;border:none;background:transparent;display:flex;align-items:center;justify-content:center;font-size:16px;color:#444;position:relative}
+.brete-icon-btn:hover{background:#f2f2f2}
+.brete-icon-btn .dot{position:absolute;top:2px;right:4px;width:8px;height:8px;border-radius:50%;background:#e11d48;border:2px solid #fff}
+
+/* ── LAYOUT ── */
+#brete-shell{display:flex;min-height:calc(100vh - 30px)}
+.brete-sidebar{width:212px;flex-shrink:0;background:#fff;border-right:1px solid #e5e5e5;padding:18px 0}
+.brete-sidebar .sec-label{font-size:11px;font-weight:800;color:#8a8a8a;text-transform:none;padding:14px 20px 6px;letter-spacing:.2px}
+.brete-sidebar .sec-label:first-child{padding-top:4px}
+.brete-nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:13.5px;color:#333;font-weight:600;border-left:3px solid transparent;cursor:pointer}
+.brete-nav-item:hover{background:#f7f7f7}
+.brete-nav-item.active{color:#1d6fe0;border-left-color:#1d6fe0;background:#eef4ff}
+.brete-nav-item.danger{color:#d63a2e}
+.brete-nav-item .ic{width:18px;text-align:center;flex-shrink:0}
+
+.brete-main{flex:1;min-width:0;padding:28px 32px;overflow-y:auto}
+.brete-view{display:none}
+.brete-view.active{display:block}
+.brete-crumbbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.brete-crumbbar h1{font-size:22px;font-weight:500;color:#222}
+.brete-crumb-pill{background:#1c1c1c;color:#fff;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:700;display:flex;gap:6px;align-items:center}
+.brete-crumb-pill .sep{opacity:.5}
+
+.brete-card{background:#fff;border:1px solid #e7e7e7;border-radius:8px}
+.brete-card-head{padding:14px 18px;font-size:14px;font-weight:700;color:#222;display:flex;align-items:center;gap:8px;border-bottom:1px solid #f0f0f0}
+
+/* ── INICIO ── */
+.hello-box{margin-bottom:16px}
+.hello-box h2{font-size:20px;font-weight:500;color:#222}
+.hello-box p{font-size:13px;color:#555;margin-top:2px}
+.survey-banner{background:#eaf6fd;border:1px solid #cdeaf7;border-radius:8px;padding:14px 18px;max-width:640px;margin:20px auto;text-align:center;position:relative;font-size:13px;color:#1a3b4d}
+.survey-banner b{display:block;margin:2px 0}
+.survey-banner .x{position:absolute;top:10px;right:14px;cursor:pointer;color:#777;font-weight:700;background:none;border:none;font-size:14px}
+.action-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:22px 0}
+.action-card{background:#fff;border:1px solid #e7e7e7;border-radius:8px;padding:22px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:box-shadow .15s,transform .15s}
+.action-card:hover{box-shadow:0 6px 18px rgba(0,0,0,.08);transform:translateY(-1px)}
+.action-card .lbl{font-size:15px;font-weight:500;color:#222}
+.action-card .ic-box{width:46px;height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.ic-green{background:#e3f8ea;color:#1e9e4a}
+.ic-pink{background:#fbe9f0;color:#c23a72}
+.ic-violet{background:#eee9fb;color:#6c4fd6}
+.mis-datos-row{display:flex;flex-wrap:wrap;gap:10px 40px;padding:16px 18px;font-size:13px;color:#333}
+.mis-datos-row .it b{margin-right:5px}
+
+@media(max-width:1000px){.action-grid{grid-template-columns:1fr 1fr}}
+
+/* ── PUBLICAR VACANTE ── */
+.pv-btn-back{background:#0f4a44;color:#fff;border:none;border-radius:6px;padding:9px 16px;font-size:12.5px;font-weight:700;margin-bottom:16px}
+.pv-infobar{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.pv-infobar .box{border:1px solid #e7e7e7;border-radius:8px;background:#fff;padding:14px 16px;display:flex;gap:12px;font-size:12px;color:#444;line-height:1.5}
+.pv-infobar .box .ic{font-size:18px;flex-shrink:0}
+@media(max-width:900px){.pv-infobar{grid-template-columns:1fr}}
+
+.accordion-item{border-bottom:1px solid #55565b}
+.accordion-item:last-child{border-bottom:none}
+.accordion-head{background:#5a5b60;color:#fff;padding:11px 18px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.accordion-head:hover{background:#4d4e53}
+.accordion-head .ic{margin-right:8px}
+.accordion-head .chev{transition:transform .2s}
+.accordion-item.open .accordion-head .chev{transform:rotate(180deg)}
+.accordion-body{display:none;background:#fff;padding:24px;border-bottom:1px solid #eee}
+.accordion-item.open .accordion-body{display:block}
+.accordion-desc{font-size:12px;color:#333;text-align:center;margin-bottom:16px}
+.pv-form{max-width:820px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:14px 20px}
+.pv-form .full{grid-column:1/-1}
+.pv-field label{display:block;font-size:12px;color:#333;margin-bottom:4px;font-weight:600}
+.pv-field label .req{color:#e11d48;margin-right:2px}
+.pv-field label .info{color:#8a8a8a;font-size:11px;font-weight:400;margin-left:3px}
+.pv-field input[type=text],.pv-field input[type=number],.pv-field input[type=date],.pv-field select,.pv-field textarea{width:100%;border:1px solid #d5d5d5;border-radius:5px;padding:8px 10px;font-size:12.5px;color:#222;background:#fff}
+.pv-field textarea{min-height:64px;resize:vertical}
+.pv-field .money-wrap{display:flex;align-items:center;border:1px solid #d5d5d5;border-radius:5px;padding:0 8px;gap:6px}
+.pv-field .money-wrap span{color:#888;font-size:12px}
+.pv-field .money-wrap input{border:none;padding:8px 0;flex:1}
+.pv-checkbox{display:flex;align-items:center;gap:8px;font-size:12px;color:#333}
+.pv-submit-row{grid-column:1/-1;text-align:center;margin-top:6px}
+.pv-submit-row button{background:#0f4a44;color:#fff;border:none;border-radius:6px;padding:9px 18px;font-size:12.5px;font-weight:700}
+.pv-bottom-actions{text-align:center;margin-top:24px;padding-top:20px}
+.pv-bottom-actions .publish{background:#0f4a44;color:#fff;border:none;border-radius:6px;padding:11px 26px;font-size:13px;font-weight:700}
+.pv-bottom-actions .cancel{display:block;margin:10px auto 0;background:#eee;color:#555;border:none;border-radius:6px;padding:8px 20px;font-size:12px}
+
+/* ── Bloques "agrega aquí" + tabla "agregados" (Ubicación/Idiomas/Programas) ── */
+.pv-two-col{display:grid;grid-template-columns:340px 1fr;gap:22px;justify-content:center;max-width:820px;margin:0 auto}
+@media(max-width:760px){.pv-two-col{grid-template-columns:1fr}}
+.pv-subbox{border:1px solid #e0e0e0;border-radius:6px;padding:14px}
+.pv-subbox h5{font-size:12px;font-weight:700;text-align:center;margin-bottom:12px;color:#333}
+.pv-subbox .pv-field{margin-bottom:10px}
+.pv-subbox .pv-field:last-of-type{margin-bottom:0}
+.pv-chk-grid{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11.5px;color:#333;margin:6px 0}
+.pv-chk-grid label{display:flex;align-items:center;gap:4px;white-space:nowrap}
+.pv-add-btn{width:100%;background:#0f4a44;color:#fff;border:none;border-radius:5px;padding:8px;font-size:12px;font-weight:700;margin-top:10px}
+.pv-table{width:100%;border-collapse:collapse;font-size:11.5px}
+.pv-table th{background:#f5f5f5;text-align:left;padding:6px 8px;font-weight:700;color:#555;border-bottom:1px solid #e5e5e5}
+.pv-table td{padding:8px;border-top:1px solid #eee;color:#333}
+.pv-table .empty-row td{text-align:center;color:#e11d48;padding:18px 8px;font-size:12px}
+.pv-subhead{font-size:12.5px;font-weight:700;color:#1d6fe0;text-align:center;margin:18px 0 4px;display:flex;align-items:center;gap:6px;justify-content:center}
+.pv-subhead:first-child{margin-top:0}
+
+/* ── Requisitos: bloques de checkboxes por categoría ── */
+.req-block{margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid #eee}
+.req-block:last-child{border:none;margin-bottom:0}
+.req-block .pv-chk-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px 14px;font-size:11.5px}
+@media(max-width:760px){.req-block .pv-chk-grid{grid-template-columns:1fr 1fr}}
+
+/* ── Prioridades: columnas arrastrables ── */
+.priority-cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;max-width:900px;margin:0 auto}
+@media(max-width:760px){.priority-cols{grid-template-columns:1fr}}
+.priority-col-head{font-size:11.5px;font-weight:700;text-align:center;margin-bottom:8px;color:#333}
+.priority-badge{font-size:9px;font-weight:900;letter-spacing:.4px;padding:2px 8px;border-radius:4px;color:#fff;margin-left:4px}
+.badge-alta{background:#c0392b}
+.badge-media{background:#b5850a}
+.badge-baja{background:#1e9e4a}
+.priority-col{min-height:280px;border:1px dashed #ccc;border-radius:6px;padding:8px;background:#fafafa}
+.priority-col.dragover{background:#eef4ff;border-color:#1d6fe0}
+.priority-item{background:#fff;border:1px solid #ddd;border-radius:5px;padding:8px 10px;font-size:11.5px;color:#1d6fe0;font-weight:600;margin-bottom:6px;cursor:grab;text-align:center}
+.priority-item:active{cursor:grabbing;opacity:.6}
+
+/* ── PUESTOS Y CANDIDATOS ── */
+.pc-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.pc-btn-new{background:#0f4a44;color:#fff;border:none;border-radius:6px;padding:9px 16px;font-size:12.5px;font-weight:700}
+.pc-btn-secondary{background:#fff;border:1px solid #cfd4d3;color:#333;border-radius:6px;padding:8px 14px;font-size:12px;font-weight:600}
+.job-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.job-grid{grid-template-columns:1fr}}
+.job-card{background:#fff;border:1px solid #e7e7e7;border-radius:8px;overflow:hidden}
+.job-card-body{padding:16px 18px}
+.job-card-code{text-align:right;font-size:11px;color:#888;margin-bottom:2px}
+.job-card h3{font-size:16px;font-weight:700;color:#222}
+.job-card .role{font-size:12.5px;color:#555;font-style:italic;margin-bottom:8px}
+.job-card .row{display:flex;gap:8px;font-size:12px;color:#444;align-items:flex-start;margin-bottom:4px}
+.job-card .row .ic{width:16px;flex-shrink:0;color:#888}
+.job-badge{display:inline-block;padding:1px 8px;border-radius:4px;font-size:11px;font-weight:700}
+.badge-anulado{background:#fde6e6;color:#c0392b}
+.badge-publicado{background:#e3f8ea;color:#1e9e4a}
+.badge-pendiente{background:#fff3d6;color:#a9720a}
+.job-card-loc{margin-top:6px;font-size:11.5px;color:#555}
+.job-card-actions{border-top:1px solid #f0f0f0;background:#fafafa;padding:10px 18px;display:flex;gap:16px;font-size:12px}
+.job-card-actions span{color:#1d6fe0;cursor:pointer;display:flex;align-items:center;gap:4px}
+.pc-page-pill{width:30px;height:30px;border-radius:6px;background:#4a4b50;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;margin:0 auto 18px}
+
+/* Candidatos list (sub-view) */
+.cand-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #f0f0f0;font-size:12.5px}
+.cand-row:last-child{border-bottom:none}
+.cand-name{font-weight:700;color:#222}
+.cand-meta{color:#777;font-size:11.5px;margin-top:2px}
+.cand-match{background:#e3f8ea;color:#1e9e4a;border-radius:999px;padding:3px 12px;font-size:11.5px;font-weight:700}
+
+/* ── Candidatos: pestañas ── */
+.cand-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;border:1px solid #e5e5e5;border-radius:6px;overflow:hidden;margin-bottom:14px}
+.cand-tab{padding:12px;text-align:center;font-size:12.5px;font-weight:600;color:#1d6fe0;cursor:pointer;border-right:1px solid #e5e5e5;background:#fff}
+.cand-tab:last-child{border-right:none}
+.cand-tab.active{background:#eef4ff;font-weight:800}
+.cand-notice{background:#fff8e1;border:1px solid #ffe9a8;border-radius:6px;padding:10px 14px;font-size:12px;color:#7a5c00;text-align:center;margin-bottom:16px}
+.cand-notice a{color:#7a5c00;font-weight:700}
+.cand-blocked{background:#fff8e1;border:1px solid #ffe9a8;border-radius:6px;padding:16px;font-size:12.5px;color:#7a5c00;text-align:center}
+
+/* ── Detalles del empleo ── */
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.detail-grid{grid-template-columns:1fr}}
+.detail-card{background:#fff;border:1px solid #e7e7e7;border-radius:8px;padding:20px}
+.detail-card .back-link{font-size:11.5px;color:#1d6fe0;display:block;margin-bottom:14px}
+.detail-card h3{text-align:center;font-size:16px;margin-bottom:16px}
+.detail-row{font-size:12.5px;color:#333;margin-bottom:10px}
+.detail-row b{font-weight:700}
+.detail-sep{font-size:11px;color:#8a8a8a;text-align:right;border-top:1px solid #eee;padding-top:10px;margin:16px 0 8px}
+.detail-list a{display:block;font-size:12px;margin-bottom:4px}
+
+/* ── Puestos cerrados / historial ── */
+.pcerr-toolbar{display:flex;gap:8px;margin-bottom:14px}
+.pcerr-btn{background:#fff;border:1px solid #cfd4d3;color:#333;border-radius:6px;padding:7px 14px;font-size:11.5px;font-weight:600}
+.pcerr-table{width:100%;border-collapse:collapse;font-size:12px;background:#fff}
+.pcerr-table th{background:#f7f7f7;text-align:left;padding:8px 10px;font-weight:700;color:#444;border-bottom:1px solid #e5e5e5}
+.pcerr-table td{padding:9px 10px;border-top:1px solid #f0f0f0}
+.pcerr-table tr:nth-child(even) td{background:#fafafa}
+.pcerr-footer{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:#666;padding:10px 4px}
+
+.stats-toolbar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.stats-search{flex:1;min-width:220px;display:flex;border:1px solid #d5d5d5;border-radius:6px;overflow:hidden}
+.stats-search input{flex:1;border:none;padding:9px 12px;font-size:12.5px}
+.stats-search button{border:none;background:#f5f5f5;padding:0 14px}
+.stats-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+@media(max-width:900px){.stats-cards{grid-template-columns:1fr 1fr}}
+.stat-card{background:#fff;border:1px solid #e7e7e7;border-radius:8px;padding:16px;display:flex;align-items:center;justify-content:space-between}
+.stat-card .num{font-size:26px;font-weight:800;color:#222}
+.stat-card .lbl{font-size:11.5px;color:#666;margin-top:2px}
+.stat-card .ic{width:40px;height:40px;border-radius:8px;background:#e3f8ea;color:#1e9e4a;display:flex;align-items:center;justify-content:center;font-size:18px}
+.stats-bottom-grid{display:grid;grid-template-columns:300px 1fr;gap:16px}
+@media(max-width:900px){.stats-bottom-grid{grid-template-columns:1fr}}
+.chart-bars{display:flex;align-items:flex-end;gap:10px;height:220px;padding:10px;border-left:1px solid #e5e5e5;border-bottom:1px solid #e5e5e5}
+.chart-bar{width:36px;background:#bfead0;border:1px solid #8fd6ab;border-radius:2px 2px 0 0}
+
+/* ── PERFIL DE LA EMPRESA ── */
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.profile-grid{grid-template-columns:1fr}}
+.profile-card{background:#fff;border:1px solid #e7e7e7;border-radius:8px;padding:18px}
+.profile-card h4{font-size:13.5px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.profile-logo{width:64px;height:64px;border-radius:10px;background:#eef4ff;color:#1d6fe0;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;margin-bottom:10px}
+
+/* ── AJUSTES ── */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.settings-grid{grid-template-columns:1fr}}
+.set-card{background:#fff;border:1px solid #e7e7e7;border-radius:8px;padding:18px}
+.set-card h4{font-size:13.5px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:7px}
+.set-field{margin-bottom:14px}
+.set-field label{display:block;font-size:12px;font-weight:600;color:#333;margin-bottom:5px}
+.set-field label .req{color:#e11d48}
+.set-field input{width:100%;border:1px solid #d5d5d5;border-radius:5px;padding:8px 10px;font-size:12.5px}
+.set-btn{background:#0f4a44;color:#fff;border:none;border-radius:6px;padding:9px 18px;font-size:12.5px;font-weight:700}
+.set-btn-row{display:flex;gap:8px}
+.set-btn-row input{flex:1}
+.set-warning{background:#fff8e1;border:1px solid #ffe9a8;border-radius:6px;padding:10px 12px;font-size:12px;color:#7a5c00;margin-bottom:12px}
+.set-danger-note{background:#fff8e1;border:1px solid #ffe9a8;border-radius:6px;padding:10px 12px;font-size:12px;color:#7a5c00;margin-bottom:12px;text-align:center}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#0f4a44;color:#fff;padding:12px 22px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:all .25s;z-index:9999;display:flex;align-items:center;gap:8px}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.ane-help-btn{position:fixed;right:18px;bottom:18px;z-index:99999;background:linear-gradient(135deg,#0d7373,#14b8a6);color:#fff!important;text-decoration:none;border-radius:999px;padding:12px 16px;font-family:Inter,system-ui,-apple-system,sans-serif;font-weight:900;font-size:13px;box-shadow:0 16px 42px rgba(13,115,115,.38);border:1px solid rgba(255,255,255,.22);display:inline-flex;align-items:center;gap:8px}
+.ane-help-btn:hover{transform:translateY(-2px)}
+</style>
+</head>
+<body>
+
+<div id="demo-banner">🎓 <span class="tag">MODO DEMO</span> Recreación de la plataforma Brete (ane.cr) para capacitación — datos de ejemplo, no conectado al sistema real</div>
+
+<header class="brete-header">
+  <div class="brete-logo"><b>B</b>rete</div>
+  <div class="brete-header-icons">
+    <button class="brete-icon-btn" title="Ayuda">❓</button>
+    <button class="brete-icon-btn" title="Configuración">⚙️</button>
+    <button class="brete-icon-btn" title="Notificaciones">🔔<span class="dot"></span></button>
+    <button class="brete-icon-btn" title="Mi cuenta">👤▾</button>
+  </div>
+</header>
+
+<div id="brete-shell">
+  <aside class="brete-sidebar">
+    <div class="sec-label">Inicio</div>
+    <div class="brete-nav-item active" data-view="inicio" onclick="breteShowView('inicio', this)"><span class="ic">▦</span> Inicio</div>
+    <div class="brete-nav-item" data-view="inicio" onclick="breteShowView('inicio', this)"><span class="ic">🔔</span> Notificaciones</div>
+
+    <div class="sec-label">Panel</div>
+    <div class="brete-nav-item" data-view="empresas" onclick="breteShowView('empresas', this)"><span class="ic">🏢</span> Empresas</div>
+    <div class="brete-nav-item" data-view="citas" onclick="breteShowView('citas', this)"><span class="ic">📅</span> Citas</div>
+
+    <div class="sec-label">Cuenta</div>
+    <div class="brete-nav-item" data-view="perfil" onclick="breteShowView('perfil', this)"><span class="ic">👤</span> Perfil de la empresa</div>
+    <div class="brete-nav-item" data-view="encargo" onclick="breteShowView('encargo', this)"><span class="ic">📊</span> Encargo de datos</div>
+    <div class="brete-nav-item" data-view="ajustes" onclick="breteShowView('ajustes', this)"><span class="ic">⚙️</span> Ajustes</div>
+    <div class="brete-nav-item" data-view="contactenos" onclick="breteShowView('contactenos', this)"><span class="ic">📞</span> Contáctenos</div>
+    <div class="brete-nav-item danger" onclick="breteShowToast('Sesión cerrada (demo)')"><span class="ic">↩</span> Cerrar Sesión</div>
+  </aside>
+
+  <main class="brete-main">
+
+    <!-- ============ VISTA: INICIO ============ -->
+    <div class="brete-view active" id="view-inicio">
+      <div class="brete-crumbbar">
+        <div class="hello-box">
+          <h2>(empresa)</h2>
+          <p>¡Nos alegra recibirle de nuevo!</p>
+        </div>
+        <div class="brete-crumb-pill">Inicio</div>
+      </div>
+
+      <div class="survey-banner">
+        <button class="x" onclick="this.parentElement.style.display='none'">✕</button>
+        ℹ️ Gracias por utilizar con nuestros servicios :
+        <b>Cuéntanos tu experiencia en ANE</b>
+        <a href="#" onclick="return false">Ir a la Encuesta</a>
+      </div>
+
+      <div class="action-grid">
+        <div class="action-card" onclick="breteShowView('publicar', document.querySelector('[data-view=empresas]'))">
+          <span class="lbl">Publicar Vacante</span>
+          <span class="ic-box ic-green">➕</span>
+        </div>
+        <div class="action-card" onclick="breteShowView('puestos', document.querySelector('[data-view=empresas]'))">
+          <span class="lbl">Puestos y candidatos</span>
+          <span class="ic-box ic-pink">☰</span>
+        </div>
+        <div class="action-card" onclick="breteShowView('perfil', document.querySelector('[data-view=perfil]'))">
+          <span class="lbl">Perfil de la Empresa</span>
+          <span class="ic-box ic-pink">👤</span>
+        </div>
+        <div class="action-card" onclick="breteShowView('ajustes', document.querySelector('[data-view=ajustes]'))">
+          <span class="lbl">Ajustes</span>
+          <span class="ic-box ic-violet">⚙️</span>
+        </div>
+      </div>
+
+      <div class="brete-card">
+        <div class="brete-card-head">☰ Mis Datos</div>
+        <div class="mis-datos-row">
+          <div class="it">👤 <b>Usuario:</b> empresa</div>
+          <div class="it">👤 <b>Nombre:</b> Empresa Demo S.A.</div>
+          <div class="it">✉️ <b>Correo Electrónico:</b> contacto@empresademo.cr</div>
+          <div class="it">🪪 <b>Identificación:</b> 3-101-000000</div>
+          <div class="it">👤 <b>Tipo de cuenta:</b> Empresa</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ VISTA: PUBLICAR VACANTE ============ -->
+    <div class="brete-view" id="view-publicar">
+      <div class="brete-crumbbar">
+        <h1>Publicar vacante</h1>
+        <div class="brete-crumb-pill">Inicio <span class="sep">›</span> Publicar vacante</div>
+      </div>
+
+      <div class="brete-card" style="margin-bottom:16px">
+        <div class="brete-card-head">☰ Publicar una vacante</div>
+      </div>
+
+      <button class="pv-btn-back" onclick="breteShowView('puestos', document.querySelector('[data-view=empresas]'))">Regresar a los puestos publicados</button>
+
+      <div class="pv-infobar">
+        <div class="box"><span class="ic">ℹ️</span><span>Procura guardar la información de la vacante en cada pestaña.<br>Nota: si edita algún apartado de una vacante ya publicada, el estado de la misma cambiará a <b>Pendiente de Publicar</b> hasta que no vuelva a publicar la vacante nuevamente.</span></div>
+        <div class="box"><span class="ic">✔️</span><span>Una vez completada la información, se debe de publicar la información de la vacante, esto para cambiar su estado y poder generar perfiles que son concordantes con los requisitos de la misma.</span></div>
+      </div>
+
+      <div class="brete-card" style="overflow:hidden">
+        <!-- 1. Información general del empleo -->
+        <div class="accordion-item open">
+          <div class="accordion-head" onclick="breteToggleAccordion(this)"><span><span class="ic">ⓘ</span>Información general del empleo</span><span class="chev">⌄</span></div>
+          <div class="accordion-body">
+            <div class="accordion-desc"><b>Descripción:</b> Información general de la vacante</div>
+            <div class="pv-form">
+              <div class="pv-field"><label><span class="req">*</span>Nombre del puesto</label><input type="text" placeholder="ej. Asistente Administrativo"></div>
+              <div class="pv-field"><label><span class="req">*</span>Cantidad de plazas</label><input type="number" placeholder="1"></div>
+              <div class="pv-field"><label><span class="req">*</span>Salario mínimo <a href="#" onclick="return false">Ver salarios</a></label><div class="money-wrap"><span>₡</span><input type="text" placeholder="0.00"></div></div>
+              <div class="pv-field"><label><span class="req">*</span>Salario máximo</label><div class="money-wrap"><span>₡</span><input type="text" placeholder="0.00"></div></div>
+              <div class="pv-field full"><label><span class="req">*</span>Detalles del salario</label><textarea placeholder="Ej. Salario base + comisiones por ventas"></textarea></div>
+              <div class="pv-field"><label><span class="req">*</span>Detalle de horario del empleo</label><textarea placeholder="Ej. Lunes a viernes, 8am a 5pm"></textarea></div>
+              <div class="pv-field"><label><span class="req">*</span>Funciones del empleo</label><textarea placeholder="Describa las funciones principales del puesto"></textarea></div>
+              <div class="pv-field"><label><span class="req">*</span>Correo N° 1 <span class="info">ⓘ</span></label><input type="text" placeholder="contacto@empresa.cr"></div>
+              <div class="pv-field"><label>Correo N° 2 <span class="info">ⓘ</span></label><input type="text" placeholder="opcional"></div>
+              <div class="pv-field"><label>Fecha de vencimiento de la vacante <span class="info">ⓘ</span></label><input type="date"></div>
+              <div class="pv-field full"><div class="pv-checkbox"><input type="checkbox" id="pv-priv"><label for="pv-priv">¿Deseas mantener la privacidad de cierta información de contacto? <span class="info">ⓘ</span></label></div></div>
+              <div class="pv-submit-row"><button onclick="breteShowToast('Información general guardada (demo)')">Agregar información del empleo</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Ocupación, tipo de contratación y horario del empleo -->
+        <div class="accordion-item">
+          <div class="accordion-head" onclick="breteToggleAccordion(this)"><span><span class="ic">💼</span>Ocupación, tipo de contratación y horario del empleo</span><span class="chev">⌄</span></div>
+          <div class="accordion-body">
+            <div class="accordion-desc"><b>Descripción:</b> Agrega la ocupación y los demás valores de la vacante a publicar</div>
+            <div class="pv-form">
+              <div class="pv-field"><label><span class="req">*</span>Ocupación asociada <span class="info">ⓘ</span></label><select><option>Seleccione un área</option><option>Administrativo</option><option>Tecnología</option><option>Servicios</option></select></div>
+              <div class="pv-field"><label><span class="req">*</span>Tipo de contratación</label><select><option>Seleccione el tipo de contratación</option><option>Tiempo indefinido</option><option>Plazo fijo</option><option>Por servicios profesionales</option></select></div>
+              <div class="pv-field"><label><span class="req">*</span>Horario de trabajo</label><select><option>Seleccione un tipo de horario</option><option>Diurno</option><option>Mixto</option><option>Nocturno</option></select></div>
+              <div class="pv-field"><label><span class="req">*</span>Jornada de trabajo</label><select><option>Seleccione un tipo de jornada</option><option>Tiempo completo</option><option>Medio tiempo</option></select></div>
+              <div class="pv-field full"><div class="pv-checkbox"><input type="checkbox" id="pv-jor"><label for="pv-jor">¿Es la jornada laboral obligatoria para el empleo? <span class="info">ⓘ</span></label></div></div>
+              <div class="pv-submit-row"><button onclick="breteShowToast('Ocupación y contratación guardadas (demo)')">Agregar los valores al empleo</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Ubicación del empleo -->
+        <div class="accordion-item">
+          <div class="accordion-head" onclick="breteToggleAccordion(this)"><span><span class="ic">📍</span>Ubicación del empleo</span><span class="chev">⌄</span></div>
+          <div class="accordion-body">
+            <div class="accordion-desc"><b>Descripción:</b> Agrega las ubicaciones del empleo (2 ubicaciones como máximo)</div>
+            <div class="pv-two-col">
+              <div class="pv-subbox">
+                <h5>Agrega las ubicaciones aquí</h5>
+                <div class="pv-field"><label>Provincia</label><select id="ub-prov"><option>Selecciona una provincia</option><option>San José</option><option>Alajuela</option><option>Cartago</option><option>Heredia</option><option>Guanacaste</option><option>Puntarenas</option><option>Limón</option></select></div>
+                <div class="pv-field"><label>Cantón</label><select id="ub-canton"><option>Selecciona un cantón</option><option>Central</option><option>Desamparados</option><option>Escazú</option><option>Grecia</option></select></div>
+                <div class="pv-field"><label>Distrito</label><select id="ub-distrito"><option>Selecciona un distrito</option><option>Centro</option><option>San Rafael Arriba</option></select></div>
+                <button class="pv-add-btn" onclick="breteAddUbicacion()">Agregar</button>
+              </div>
+              <div>
+                <h5 style="text-align:left;margin-bottom:8px">Ubicaciones agregadas</h5>
+                <table class="pv-table"><thead><tr><th>Provincia</th><th>Cantón</th><th>Distrito</th><th>Acciones</th></tr></thead>
+                <tbody id="ub-tbody"><tr class="empty-row"><td colspan="4">Aún no se han agregado ubicaciones</td></tr></tbody></table>
+              </div>
+            </div>
+            <div class="pv-submit-row" style="margin-top:18px"><button onclick="breteShowToast('Ubicaciones guardadas (demo)')">Agregar la ubicación al empleo</button></div>
+          </div>
+        </div>
+
+        <!-- 4. Beneficios del empleo -->
+        <div class="accordion-item">
+          <div class="accordion-head" onclick="breteToggleAccordion(this)"><span><span class="ic">🗂</span>Beneficios del empleo</span><span class="chev">⌄</span></div>
+          <div class="accordion-body">
+            <div class="accordion-desc"><b>Descripción:</b> Seleccione beneficios para agregar a la vacante (Opcional)</div>
+            <div class="pv-form">
+              <div class="pv-field full">
+                <label style="text-align:center;display:block">Beneficios</label>
+                <div class="pv-chk-grid" style="display:grid;grid-template-columns:1fr 1fr;max-width:420px;margin:8px auto 0">
+                  <label><input type="checkbox">Médico de empresa</label>
+                  <label><input type="checkbox">Asociación solidarista</label>
+                  <label><input type="checkbox">Servicio de soda</label>
+                  <label><input type="checkbox">Bonificaciones</label>
+                  <label><input type="checkbox">Anualidades</label>
+                  <label><input type="checkbox">Capacitación</label>
+                  <label><input type="checkbox">Becas de estudio</label>
+                  <label><input type="checkbox">Tiempo de estudio</label>
+                  <label><input type="checkbox">Teletrabajo</label>
+                  <label><input type="checkbox">Otros</label>
+                  <label><input type="checkbox">Transporte</label>
+                </div>
+              </div>
+              <div class="pv-submit-row"><button onclick="breteShowToast('Beneficios guardados (demo)')">Agregar beneficios del empleo</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Idiomas y programas de cómputo del empleo -->
+        <div class="accordion-item">
+          <div class="accordion-head" onclick="breteToggleAccordion(this)"><span><span class="ic">📖</span>Idiomas y programas de cómputo del empleo</span><span class="chev">⌄</span></div>
+          <div class="accordion-body">
+            <div class="pv-subhead">🌐 Idiomas</div>
+            <div class="accordion-desc"><b>Descripción:</b> Seleccione idiomas y su nivel de conocimiento (Opcional)</div>
+            <div class="pv-two-col">
+              <div class="pv-subbox">
+                <h5>Agrega los idiomas aquí</h5>
+                <div class="pv-field"><label><span class="req">*</span>Idioma</label><select id="idi-nombre"><option>Selecciona un idioma</option><option>Inglés</option><option>Francés</option><option>Portugués</option><option>Alemán</option></select></div>
+                <label style="font-size:11.5px;font-weight:600;color:#333">Nivel de Conocimiento</label>
+                <div class="pv-chk-grid">
+                  <label><input type="radio" name="idi-nivel" value="A1">Clasificación A1 <span style="color:#8a8a8a">ⓘ</span></label>
+                  <label><input type="radio" name="idi-nivel" value="A2">Clasificación A2 <span style="color:#8a8a8a">ⓘ</span></label>
+                  <label><input type="radio" name="idi-nivel" value="B1">Clasificación B1 <span style="color:#8a8a8a">ⓘ</span></label>
+                  <label><input type="radio" name="idi-nivel" value="B2">Clasificación B2 <span style="color:#8a8a8a">ⓘ</span></label>
+                  <label><input type="radio" name="idi-nivel" value="C1">Clasificación C1 <span style="color:#8a8a8a">ⓘ</span></label>
+                </div>
+                <div class="pv-checkbox" style="margin-top:6px"><input type="checkbox" id="idi-obl"><label for="idi-obl">Idioma obligatorio <span style="color:#8a8a8a">ⓘ</span></label></div>
+                <button class="pv-add-btn" onclick="breteAddIdioma()">Agregar</button>
+              </div>
+              <div>
+                <h5 style="text-align:left;margin-bottom:8px">Idiomas agregados</h5>
+                <table class="pv-table"><thead><tr><th>Idioma</th><th>Conocimiento</th><th>Requerido</th><th>Acciones</th></tr></thead>
+                <tbody id="idi-tbody"><tr class="empty-row"><td colspan="4">Aún no se han agregado idiomas</td></tr></tbody></table>
+              </div>
+            </div>
+
+            <div class="pv-subhead">🖥 Programas de cómputo</div>
+            <div class="accordion-desc"><b>Descripción:</b> Seleccione programas de cómputo y su nivel de conocimiento (Opcional)</div>
+            <div class="pv-two-col">
+              <div class="pv-subbox">
+                <h5>Agrega los programas aquí</h5>
+                <div class="pv-field"><label><span class="req">*</span>Programa cómputo</label><select id="prog-nombre"><option>Selecciona un programa</option><option>Excel</option><option>SAP</option><option>AutoCAD</option><option>Access</option></select></div>
+                <div class="pv-field"><label><span class="req">*</span>Nivel conocimiento</label><select id="prog-nivel"><option>Selecciona un nivel de conocimiento</option><option>Básico</option><option>Medio</option><option>Avanzado</option></select></div>
+                <div class="pv-checkbox"><input type="checkbox" id="prog-obl"><label for="prog-obl">Programa obligatorio <span style="color:#8a8a8a">ⓘ</span></label></div>
+                <button class="pv-add-btn" onclick="breteAddPrograma()">Agregar</button>
+              </div>
+              <div>
+                <h5 style="text-align:left;margin-bottom:8px">Programas agregados</h5>
+                <table class="pv-table"><thead><tr><th>Programa</th><th>Experiencia</th><th>Requerido</th><th>Acciones</th></tr></thead>
+                <tbody id="prog-tbody"><tr class="empty-row"><td colspan="4">Aún no se han agregado programas</td></tr></tbody></table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Requisitos del empleo -->
+        <div class="accordion-item">
+          <div class="accordion-head" onclick="breteToggleAccordion(this)"><span><span class="ic">≡</span>Requisitos del empleo</span><span class="chev">⌄</span></div>
+          <div class="accordion-body">
+            <div class="accordion-desc"><b>Descripción:</b> Agrega los requisitos adicionales del empleo</div>
+            <div class="pv-form" style="max-width:900px">
+              <div class="req-block full" style="grid-column:1/-1">
+                <div class="pv-form" style="grid-template-columns:1fr 1fr;padding:0">
+                  <div class="pv-field"><label><span class="req">*</span>Experiencia laboral</label><select><option>Seleccione experiencia laboral</option><option>Sin experiencia</option><option>De 1 a menos de 12 meses</option><option>1-3 años</option><option>Más de 3 años</option></select></div>
+                  <div class="pv-field"><label><span class="req">*</span>Nivel educativo</label><select><option>Seleccione un nivel educativo</option><option>Primaria completa</option><option>Secundaria completa</option><option>Técnico</option><option>Universitario</option></select></div>
+                  <div class="pv-field full"><div class="pv-checkbox"><input type="checkbox"><label>¿Es la experiencia laboral obligatoria para el empleo? <span style="color:#8a8a8a">ⓘ</span></label></div></div>
+                  <div class="pv-field full"><div class="pv-checkbox"><input type="checkbox"><label>¿Es el nivel académico obligatorio para el empleo? <span style="color:#8a8a8a">ⓘ</span></label></div></div>
+                </div>
+              </div>
+
+              <div class="req-block full" style="grid-column:1/-1">
+                <label style="font-size:12px;font-weight:600">Estudio técnico <span style="color:#8a8a8a;font-weight:400">(Opcional)</span></label>
+                <select style="width:100%;margin:6px 0"><option>Seleccione un estudio técnico</option><option>Contabilidad</option><option>Informática</option><option>Electromecánica</option></select>
+                <div class="pv-checkbox"><input type="checkbox"><label>¿Es el estudio técnico obligatorio para el empleo? <span style="color:#8a8a8a">ⓘ</span></label></div>
+              </div>
+
+              <div class="req-block full" style="grid-column:1/-1">
+                <div class="accordion-desc"><b>Descripción:</b> Seleccione los tipos de licencias requeridas para el puesto y si son obligatorias (Opcional)</div>
+                <div class="pv-chk-grid">
+                  <label><input type="checkbox">A1 <span style="color:#8a8a8a">ⓘ</span></label>
+                  <label><input type="checkbox">A2 <span style="color:#8a8a8a">ⓘ</span></label>
+                  <label><input type="checkbox">A3 <span style="color:#8a8a8a">ⓘ</span></label>
+                  <label><input type="checkbox">B1 <span style="color:#8a8a8a">ⓘ</span></label>
+                  <label><input type="checkbox">B2 <span style="color:#8a8a8a">ⓘ</span></label>
+                  <label><input type="checkbox">B3 <span style="color:#8a8a8a">ⓘ</span></label>
+                  <label><input type="checkbox">B4 <span style="color:#8a8a8a">ⓘ</span></label>
+                  <label><input type="checkbox">C1 <span style="color:#8a8a8a">ⓘ</span></label>
+                  <label><input type="checkbox">C2 <span style="color:#8a8a8a">ⓘ</span></label>
+                  <label><input type="checkbox">D1 <span style="color:#8a8a8a">ⓘ</span></label>
+                  <label><input type="checkbox">D2 <span style="color:#8a8a8a">ⓘ</span></label>
+                  <label><input type="checkbox">D3 <span style="color:#8a8a8a">ⓘ</span></label>
+                  <label><input type="checkbox">E1 <span style="color:#8a8a8a">ⓘ</span></label>
+                  <label><input type="checkbox">E2 <span style="color:#8a8a8a">ⓘ</span></label>
+                </div>
+                <div class="pv-checkbox" style="margin-top:8px"><input type="checkbox"><label>¿Son las licencias seleccionadas obligatorias para el empleo? <span style="color:#8a8a8a">ⓘ</span></label></div>
+              </div>
+
+              <div class="req-block full" style="grid-column:1/-1">
+                <div class="accordion-desc"><b>Descripción:</b> Seleccione los tipos de vehículos requeridos para el puesto y si son obligatorios (Opcional)</div>
+                <div class="pv-chk-grid">
+                  <label><input type="checkbox">Agrícola</label>
+                  <label><input type="checkbox">Liviano</label>
+                  <label><input type="checkbox">Moto</label>
+                  <label><input type="checkbox">Otro</label>
+                  <label><input type="checkbox">Pesado</label>
+                </div>
+                <div class="pv-checkbox" style="margin-top:8px"><input type="checkbox"><label>¿Son los vehículos seleccionados obligatorios para el empleo? <span style="color:#8a8a8a">ⓘ</span></label></div>
+              </div>
+
+              <div class="req-block full" style="grid-column:1/-1">
+                <div class="accordion-desc"><b>Descripción:</b> Seleccione requisitos adicionales para el empleo (Opcional)</div>
+                <div class="pv-chk-grid" style="grid-template-columns:1fr 1fr">
+                  <label><input type="checkbox">Carné de manipulación de alimentos</label>
+                  <label><input type="checkbox">Carné de portación de armas</label>
+                  <label><input type="checkbox">Credencial de guía de turismo</label>
+                  <label><input type="checkbox">Paraguas al día</label>
+                  <label><input type="checkbox">VIGA a los EE.UU. al día</label>
+                  <label><input type="checkbox">Incorporación colegio profesional</label>
+                  <label><input type="checkbox">Disponibilidad giras dentro del país</label>
+                  <label><input type="checkbox">Disponibilidad para viajar fuera del país</label>
+                  <label><input type="checkbox">Curso básico de embarco</label>
+                  <label><input type="checkbox">Carné de buenas prácticas y manejo de refrigerantes</label>
+                </div>
+                <div class="pv-checkbox" style="margin-top:8px"><input type="checkbox"><label>¿Son los requisitos seleccionados obligatorios para el empleo? <span style="color:#8a8a8a">ⓘ</span></label></div>
+                <div class="pv-field" style="max-width:280px;margin-top:8px"><label>Carné Agente <span style="color:#8a8a8a;font-weight:400">(Opcional)</span></label><input type="text"></div>
+              </div>
+
+              <div class="req-block full" style="grid-column:1/-1"><label style="font-size:12px;font-weight:600">Otros requisitos del empleo</label><textarea style="width:100%;min-height:64px;margin-top:6px"></textarea></div>
+
+              <div class="req-block full" style="grid-column:1/-1;border-bottom:none">
+                <div class="accordion-desc"><b>Descripción:</b> Seleccione las habilidades de preferencia para el empleo</div>
+                <div class="pv-chk-grid" style="grid-template-columns:1fr 1fr 1fr">
+                  <label><input type="checkbox">Adaptabilidad</label>
+                  <label><input type="checkbox">Aprendizaje permanente</label>
+                  <label><input type="checkbox">Autonomía</label>
+                  <label><input type="checkbox">Desarrollo de relaciones</label>
+                  <label><input type="checkbox">Disposición</label>
+                  <label><input type="checkbox">Comunicación asertiva</label>
+                  <label><input type="checkbox">Liderazgo</label>
+                  <label><input type="checkbox">Orientación a la calidad</label>
+                  <label><input type="checkbox">Enfoque a resultados</label>
+                  <label><input type="checkbox">Trabajo en equipo</label>
+                  <label><input type="checkbox">Profesionalismo</label>
+                  <label><input type="checkbox">Gestión de los recursos</label>
+                  <label><input type="checkbox">Resolución de conflictos</label>
+                </div>
+              </div>
+
+              <div class="pv-submit-row"><button onclick="breteShowToast('Requisitos guardados (demo)')">Agregar requisitos del empleo</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. Prioridades variables de concordancia -->
+        <div class="accordion-item">
+          <div class="accordion-head" onclick="breteToggleAccordion(this)"><span><span class="ic">⊘</span>Prioridades variables de concordancia</span><span class="chev">⌄</span></div>
+          <div class="accordion-body">
+            <div style="text-align:right;font-size:11.5px;margin-bottom:4px"><a href="#" onclick="return false">ⓘ Ayuda</a></div>
+            <div class="accordion-desc"><span class="req">*</span><b>Descripción:</b> Selecciona y arrastra las variables a la prioridad que desees.</div>
+            <div class="priority-cols">
+              <div>
+                <div class="priority-col-head">Variables con prioridad <span class="priority-badge badge-alta">ALTA</span></div>
+                <div class="priority-col" id="prio-alta" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="bretePriorityDrop(event,this)">
+                  <div class="priority-item" draggable="true" ondragstart="bretePriorityDrag(event)">Vehículos</div>
+                  <div class="priority-item" draggable="true" ondragstart="bretePriorityDrag(event)">Experiencia laboral</div>
+                  <div class="priority-item" draggable="true" ondragstart="bretePriorityDrag(event)">Ubicación Geográfica</div>
+                  <div class="priority-item" draggable="true" ondragstart="bretePriorityDrag(event)">Salario</div>
+                  <div class="priority-item" draggable="true" ondragstart="bretePriorityDrag(event)">Licencias de Conducir</div>
+                  <div class="priority-item" draggable="true" ondragstart="bretePriorityDrag(event)">Idiomas</div>
+                  <div class="priority-item" draggable="true" ondragstart="bretePriorityDrag(event)">Nivel académico</div>
+                  <div class="priority-item" draggable="true" ondragstart="bretePriorityDrag(event)">Estudios técnicos</div>
+                  <div class="priority-item" draggable="true" ondragstart="bretePriorityDrag(event)">Programas de Cómputo</div>
+                  <div class="priority-item" draggable="true" ondragstart="bretePriorityDrag(event)">Otros requisitos</div>
+                  <div class="priority-item" draggable="true" ondragstart="bretePriorityDrag(event)">Jornada Laboral</div>
+                </div>
+              </div>
+              <div>
+                <div class="priority-col-head">Variables con prioridad <span class="priority-badge badge-media">MEDIA</span></div>
+                <div class="priority-col" id="prio-media" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="bretePriorityDrop(event,this)"></div>
+              </div>
+              <div>
+                <div class="priority-col-head">Variables con prioridad <span class="priority-badge badge-baja">BAJA</span></div>
+                <div class="priority-col" id="prio-baja" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="bretePriorityDrop(event,this)"></div>
+              </div>
+            </div>
+            <p style="font-size:10.5px;color:#888;text-align:center;margin-top:14px;max-width:820px;margin-left:auto;margin-right:auto">ⓘ Nota: dependiendo de cómo ordenes cada variable como prioridad alta a baja, esto puede dar prioridad más inteligente según la prioridad que le sido asignada a cada uno de estos.</p>
+            <div class="pv-submit-row" style="margin-top:14px"><button onclick="breteShowToast('Prioridades guardadas (demo)')">Agregar prioridades del empleo</button></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pv-bottom-actions">
+        <button class="publish" onclick="bretePublishDemo()">+ Publicar vacante</button>
+        <button class="cancel" onclick="breteShowView('puestos', document.querySelector('[data-view=empresas]'))">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- ============ VISTA: PUESTOS Y CANDIDATOS ============ -->
+    <div class="brete-view" id="view-puestos">
+      <div class="brete-crumbbar">
+        <h1>Listado de puestos</h1>
+        <div class="brete-crumb-pill">Inicio <span class="sep">›</span> Puestos y candidatos</div>
+      </div>
+      <div class="pc-toolbar">
+        <button class="pc-btn-new" onclick="breteShowView('publicar', document.querySelector('[data-view=empresas]'))">Publicar nuevo puesto</button>
+        <div style="display:flex;gap:8px">
+          <button class="pc-btn-secondary" onclick="breteShowView('cerrados', document.querySelector('[data-view=empresas]'))">🗄 Puestos cerrados</button>
+          <button class="pc-btn-secondary" onclick="breteShowView('historial', document.querySelector('[data-view=empresas]'))">📊 Historial y estadísticas</button>
+        </div>
+      </div>
+      <div class="pc-page-pill">1</div>
+      <div class="job-grid" id="job-grid"></div>
+      <div style="text-align:right;font-size:11.5px;color:#777;margin-top:14px">Página 1 de 1</div>
+    </div>
+
+    <!-- Sub-vista: candidatos de un puesto -->
+    <div class="brete-view" id="view-candidatos">
+      <div class="brete-crumbbar">
+        <h1 id="cand-job-title">Gestión de candidatos del puesto</h1>
+        <div class="brete-crumb-pill">Inicio</div>
+      </div>
+      <button class="pv-btn-back" onclick="breteShowView('puestos', document.querySelector('[data-view=empresas]'))">Regresar a los empleos publicados</button>
+
+      <div class="cand-tabs">
+        <div class="cand-tab active" data-tab="recomendados" onclick="breteCandTab('recomendados', this)">👤 Candidatos recomendados por la plataforma <span style="color:#8a8a8a">ⓘ</span></div>
+        <div class="cand-tab" data-tab="aplicantes" onclick="breteCandTab('aplicantes', this)">👤 Personas aplicantes al puesto <span style="color:#8a8a8a">ⓘ</span></div>
+        <div class="cand-tab" data-tab="preselecciones" onclick="breteCandTab('preselecciones', this)">👤 Preselecciones <span style="color:#8a8a8a">ⓘ</span></div>
+      </div>
+
+      <div class="cand-notice">Si requiere apoyo de uno de nuestros agentes de intermediación, puede contactar al teléfono <b>2210-6060</b> o al correo <a href="#" onclick="return false">intermediacion@ane.cr</a></div>
+
+      <div class="brete-card">
+        <div class="brete-card-head" id="cand-tab-title">👤 Candidatos recomendados por la plataforma</div>
+        <div id="cand-list" style="padding:4px 0"></div>
+      </div>
+    </div>
+
+    <!-- Sub-vista: detalles del empleo -->
+    <div class="brete-view" id="view-detalles">
+      <div class="brete-crumbbar">
+        <h1>Detalles del empleo</h1>
+        <div class="brete-crumb-pill">Inicio <span class="sep">›</span> Empleos publicados <span class="sep">›</span> Detalles del empleo</div>
+      </div>
+      <div class="detail-grid">
+        <div class="detail-card">
+          <a class="back-link" href="#" onclick="breteShowView('puestos', document.querySelector('[data-view=empresas]'));return false">Ir a la sección anterior</a>
+          <div style="text-align:center;font-size:11px;color:#8a8a8a;margin-bottom:6px">📦 Información general del empleo</div>
+          <h3 id="det-titulo">ASDASDASSD</h3>
+          <div class="detail-row"><b>Ocupación:</b> <span id="det-ocupacion">Director de organización empresarial</span></div>
+          <div class="detail-row"><b>Nivel académico:</b> Primaria completa</div>
+          <div class="detail-row"><b>Experiencia laboral:</b> De 1 a menos de 12 meses</div>
+          <div class="detail-row"><b>Plazas disponibles:</b> <span id="det-plazas">1</span></div>
+          <div class="detail-row"><b>Ubicaciones del empleo:</b><br>📍 <span id="det-ubic">San José / Desamparados</span></div>
+        </div>
+        <div class="detail-card">
+          <div style="text-align:center;font-size:11px;color:#8a8a8a;margin-bottom:6px">ⓘ Detalles del empleo</div>
+          <div class="detail-row"><b>Horario:</b> ½ Tiempo (Jornada nocturna)</div>
+          <div class="detail-row"><b>Tipo contratación:</b> Temporal</div>
+          <div class="detail-row"><b>Fecha de vencimiento de la vacante:</b> <span id="det-fin">domingo, 10 de mayo del 2026</span></div>
+          <div class="detail-row"><b>Estudio técnico:</b> <i>"No se especifica estudios técnicos"</i></div>
+          <div class="detail-row"><b>Detalle del horario:</b> Lunes a viernes, 8am a 5pm</div>
+          <div class="detail-row"><b>Funciones principales del empleo:</b> Coordinación general y supervisión del equipo</div>
+          <div class="detail-sep">Conocimientos para el empleo</div>
+          <b style="font-size:12px">Programas de cómputo:</b>
+          <div class="detail-list"><a href="#" onclick="return false">→ Excel - Avanzado</a><a href="#" onclick="return false">→ SAP - Medio</a></div>
+          <div class="detail-sep">Requisitos adicionales del empleo</div>
+          <b style="font-size:12px">Requisitos adicionales:</b>
+          <div class="detail-row" style="color:#8a8a8a">Ninguno especificado</div>
+          <div class="detail-sep">Otra información del empleo</div>
+          <b style="font-size:12px">Beneficios incluidos para el empleo:</b>
+          <div class="detail-list"><a href="#" onclick="return false">→ Médico de empresa</a><a href="#" onclick="return false">→ Servicio de soda</a><a href="#" onclick="return false">→ Anualidades</a></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sub-vista: puestos cerrados -->
+    <div class="brete-view" id="view-cerrados">
+      <div class="brete-crumbbar">
+        <h1>Puestos Cerrados</h1>
+        <div class="brete-crumb-pill">Inicio <span class="sep">›</span> Puestos Cerrados</div>
+      </div>
+      <button class="pv-btn-back" onclick="breteShowView('puestos', document.querySelector('[data-view=empresas]'))" style="margin-bottom:16px">← Regresar al listado de puestos</button>
+      <div class="brete-card" style="padding:16px">
+        <div class="brete-card-head" style="border:none;padding:0 0 12px">📋 Listado de movimientos</div>
+        <div class="pcerr-toolbar">
+          <button class="pcerr-btn">⤓ Exportar a excel</button>
+          <button class="pcerr-btn">🖶 Vista de impresión</button>
+          <button class="pcerr-btn">☰ Columnas seleccionadas ▾</button>
+        </div>
+        <table class="pcerr-table">
+          <thead><tr><th>Nombre Puesto ▾</th><th>Plazas</th><th>Descripción</th><th>Ocupación</th><th>Fecha Inicio</th><th>Fecha Fin</th></tr></thead>
+          <tbody id="pcerr-tbody"></tbody>
+        </table>
+        <div class="pcerr-footer"><span id="pcerr-count">Mostrando 1 a 4 de 4</span><span>Anterior &nbsp; <b>1</b> &nbsp; Siguiente</span></div>
+      </div>
+    </div>
+
+    <!-- Sub-vista: historial y estadísticas -->
+    <div class="brete-view" id="view-historial">
+      <div class="brete-crumbbar">
+        <h1>Historial y estadísticas</h1>
+        <div class="brete-crumb-pill">Inicio <span class="sep">›</span> Históricos</div>
+      </div>
+      <div class="stats-toolbar">
+        <button class="pcerr-btn">🔽 Filtrar por fechas</button>
+      </div>
+      <label style="font-size:12px;color:#333;font-weight:600">Nombre, palabra clave o código del empleo</label>
+      <div class="stats-search" style="margin:6px 0 18px"><input type="text" placeholder="Busca y selecciona un empleo por nombre o código"><button>🔍</button></div>
+      <div style="text-align:right;font-size:11.5px;margin-bottom:10px"><a href="#" onclick="return false">ⓘ Ayuda</a></div>
+      <div class="stats-cards">
+        <div class="stat-card"><div><div class="num">0</div><div class="lbl">Perfiles aplicantes</div></div><span class="ic">💼</span></div>
+        <div class="stat-card"><div><div class="num">0</div><div class="lbl">Perfiles Consultantes</div></div><span class="ic">✉️</span></div>
+        <div class="stat-card"><div><div class="num">14</div><div class="lbl">CVS concordantes</div></div><span class="ic">📑</span></div>
+        <div class="stat-card"><div><div class="num">0</div><div class="lbl">CVS consultados</div></div><span class="ic">🔍</span></div>
+      </div>
+      <div class="stats-bottom-grid">
+        <div class="detail-card">
+          <div class="brete-card-head" style="border:none;padding:0 0 10px">📦 Información del empleo</div>
+          <div class="detail-row"><b>Nombre del empleo:</b> ASDASDASSD</div>
+          <div class="detail-row"><b>Cod:</b> 103505</div>
+          <div class="detail-row"><b>Estado:</b> Anulado</div>
+          <div class="detail-row"><b>Ocupación:</b> Director de organización empresarial</div>
+        </div>
+        <div class="detail-card">
+          <div class="brete-card-head" style="border:none;padding:0 0 10px">📶 Total por área</div>
+          <div class="chart-bars">
+            <div class="chart-bar" style="height:0%"></div>
+            <div class="chart-bar" style="height:100%" title="14"></div>
+            <div class="chart-bar" style="height:0%"></div>
+            <div class="chart-bar" style="height:0%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ VISTA: PERFIL DE LA EMPRESA ============ -->
+    <div class="brete-view" id="view-perfil">
+      <div class="brete-crumbbar">
+        <h1>Perfil de la empresa</h1>
+        <div class="brete-crumb-pill">Inicio <span class="sep">›</span> Perfil de la empresa</div>
+      </div>
+      <div class="profile-grid">
+        <div class="profile-card">
+          <div class="profile-logo">ED</div>
+          <h4>📇 Datos generales</h4>
+          <div class="pv-form" style="grid-template-columns:1fr">
+            <div class="pv-field"><label><span class="req">*</span>Razón social</label><input type="text" value="Empresa Demo S.A."></div>
+            <div class="pv-field"><label><span class="req">*</span>Cédula jurídica</label><input type="text" value="3-101-000000"></div>
+            <div class="pv-field"><label>Nombre comercial</label><input type="text" value="Empresa Demo"></div>
+            <div class="pv-field"><label>Sector / actividad económica</label><select><option>Servicios</option><option>Comercio</option><option>Industria</option><option>Tecnología</option><option>Agricultura</option></select></div>
+          </div>
+        </div>
+        <div class="profile-card">
+          <h4>📞 Contacto</h4>
+          <div class="pv-form" style="grid-template-columns:1fr">
+            <div class="pv-field"><label>Teléfono</label><input type="text" value="2200-0000"></div>
+            <div class="pv-field"><label>Correo de contacto</label><input type="text" value="contacto@empresademo.cr"></div>
+            <div class="pv-field"><label>Sitio web</label><input type="text" placeholder="https://"></div>
+            <div class="pv-field"><label>Dirección</label><textarea>San José, Costa Rica</textarea></div>
+          </div>
+          <div style="text-align:right;margin-top:10px"><button class="set-btn" onclick="breteShowToast('Perfil guardado (demo)')">Guardar cambios</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ VISTAS SIMPLES (Empresas / Citas / Encargo / Contáctenos) ============ -->
+    <div class="brete-view" id="view-empresas">
+      <div class="brete-crumbbar"><h1>Empresas</h1><div class="brete-crumb-pill">Inicio <span class="sep">›</span> Empresas</div></div>
+      <div class="brete-card"><div class="brete-card-head">🏢 Empresas vinculadas a su cuenta</div>
+        <div class="mis-datos-row">Sección de ejemplo — aquí se listarían las empresas asociadas al usuario.</div>
+      </div>
+    </div>
+    <div class="brete-view" id="view-citas">
+      <div class="brete-crumbbar"><h1>Citas</h1><div class="brete-crumb-pill">Inicio <span class="sep">›</span> Citas</div></div>
+      <div class="brete-card"><div class="brete-card-head">📅 Citas agendadas con la ANE</div>
+        <div class="mis-datos-row">Sección de ejemplo — aquí se listarían las citas de intermediación agendadas.</div>
+      </div>
+    </div>
+    <div class="brete-view" id="view-encargo">
+      <div class="brete-crumbbar"><h1>Encargo de datos</h1><div class="brete-crumb-pill">Inicio <span class="sep">›</span> Encargo de datos</div></div>
+      <div class="brete-card"><div class="brete-card-head">📊 Autorización de tratamiento de datos</div>
+        <div class="mis-datos-row">Sección de ejemplo — aquí se gestiona la autorización de uso de datos conforme a la Ley 8968.</div>
+      </div>
+    </div>
+    <div class="brete-view" id="view-contactenos">
+      <div class="brete-crumbbar"><h1>Contáctenos</h1><div class="brete-crumb-pill">Inicio <span class="sep">›</span> Contáctenos</div></div>
+      <div class="brete-card"><div class="brete-card-head">📞 Canales de atención ANE</div>
+        <div class="mis-datos-row">
+          <div class="it">📞 <b>Teléfono:</b> 2200-0000</div>
+          <div class="it">✉️ <b>Correo:</b> ayuda@ane.cr</div>
+          <div class="it">💬 <b>Chat en línea:</b> disponible en horario de oficina</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ VISTA: AJUSTES ============ -->
+    <div class="brete-view" id="view-ajustes">
+      <div class="brete-crumbbar">
+        <h1>Ajustes</h1>
+        <div class="brete-crumb-pill">Inicio <span class="sep">›</span> Ajustes</div>
+      </div>
+      <div class="settings-grid">
+        <div class="set-card">
+          <h4>🔒 Seguridad de la cuenta</h4>
+          <div class="set-field"><label><span class="req">*</span>Contraseña Actual</label><input type="password"></div>
+          <div class="set-field"><label><span class="req">*</span>Nueva Contraseña <span style="color:#8a8a8a;font-weight:400">ⓘ</span></label><input type="password"></div>
+          <div class="set-field"><label><span class="req">*</span>Confirmar Nueva Contraseña</label><input type="password"></div>
+          <button class="set-btn" onclick="breteShowToast('Contraseña actualizada (demo)')">Realizar cambio de contraseña</button>
+        </div>
+        <div class="set-card">
+          <h4>✉️ Información de la cuenta</h4>
+          <div class="set-field"><label><span class="req">*</span>Correo Electrónico Asociado <span style="color:#8a8a8a;font-weight:400">ⓘ</span></label>
+            <div class="set-btn-row"><input type="text" value="contacto@empresademo.cr"><button class="set-btn" onclick="breteShowToast('Correo actualizado (demo)')">Editar</button></div>
+          </div>
+          <div class="set-field"><label><span class="req">*</span>Nombre de Usuario</label>
+            <div style="font-size:11.5px;color:#777;margin-bottom:6px">Nombre de usuario actual: <b>empresa</b></div>
+            <div class="set-btn-row"><input type="text" placeholder="Nuevo nombre de usuario"><button class="set-btn" onclick="breteShowToast('Usuario actualizado (demo)')">Editar</button></div>
+          </div>
+        </div>
+        <div class="set-card">
+          <h4>✏️ Estado de la cuenta</h4>
+          <p style="font-size:13px;margin-bottom:10px">Estado actual: <b style="color:#1e9e4a">Cuenta activa</b></p>
+          <div class="set-warning">⚠️ Advertencia: si cambia el estado de su cuenta a inactiva, dejará de recibir notificaciones por parte de la plataforma</div>
+          <button class="set-btn" onclick="breteShowToast('(demo) esta acción desactivaría la cuenta')">Desactivar cuenta</button>
+        </div>
+        <div class="set-card">
+          <h4>🗑 Eliminación de la cuenta</h4>
+          <div class="set-danger-note">Esta cuenta tiene empleos publicados, los puestos ya no estarán disponibles en la plataforma.</div>
+          <div class="set-field"><label>Por seguridad, ingrese la denominación dada al registro</label><input type="text" value="empresa" readonly style="background:#f5f5f5"></div>
+          <div class="set-field"><label>Confirme la denominación</label><input type="text" placeholder="empresa"></div>
+          <div class="set-field"><label>Motivo de la eliminación de la cuenta</label>
+            <select><option>Seleccione un motivo</option><option>Ya no contratamos por este medio</option><option>Encontramos otra plataforma</option><option>Otro motivo</option></select>
+          </div>
+          <button class="set-btn" style="background:#c0392b" onclick="breteShowToast('(demo) esta acción eliminaría la cuenta')">Eliminar Cuenta</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div id="toast"></div>
+<a class="ane-help-btn" href="manual-dashboard-intermediacion-ane.html" target="_blank" rel="noopener">❔ Manual y FAQ</a>
+
+<script>
+// ============================================================
+// DEMO BRETE — lógica de navegación y datos de ejemplo.
+// Todo es local/simulado: no hay backend real detrás de este demo.
+// ============================================================
+
+function breteShowView(name, navEl){
+  document.querySelectorAll('.brete-view').forEach(v=>v.classList.remove('active'));
+  const target = document.getElementById('view-'+name);
+  if(target) target.classList.add('active');
+  document.querySelectorAll('.brete-nav-item').forEach(n=>n.classList.remove('active'));
+  if(navEl) navEl.classList.add('active');
+  document.querySelector('.brete-main').scrollTop = 0;
+}
+
+function breteToggleAccordion(headEl){
+  const item = headEl.closest('.accordion-item');
+  item.classList.toggle('open');
+}
+
+let toastTimer=null;
+function breteShowToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent='✓ '+msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+// ── Datos de ejemplo: puestos publicados ──
+let breteJobs=[
+  {codigo:103505,titulo:'ASDASDASSD',ocupacion:'Director de organización empresarial',pub:'viernes, 10 de abril del 2026',fin:'domingo, 10 de mayo del 2026',fechaInicioCorta:'10/04/2026',fechaFinCorta:'10/05/2026',estado:'anulado',ubic:'San José / Desamparados',plazas:1},
+  {codigo:97606,titulo:'ASDASDASSD',ocupacion:'Director de organización empresarial',pub:'sábado, 24 de enero del 2026',fin:'martes, 24 de febrero del 2026',fechaInicioCorta:'24/01/2026',fechaFinCorta:'24/02/2026',estado:'anulado',ubic:'San José / Desamparados',plazas:1},
+  {codigo:97603,titulo:'erwerwerewew',ocupacion:'Director de departamento de administración de empresa privada',pub:'sábado, 24 de enero del 2026',fin:'martes, 24 de febrero del 2026',fechaInicioCorta:'24/01/2026',fechaFinCorta:'24/02/2026',estado:'anulado',ubic:'Alajuela / Grecia',plazas:1},
+  {codigo:97597,titulo:'PRUEBA',ocupacion:'Gerente general de empresa',pub:'sábado, 24 de enero del 2026',fin:'martes, 24 de febrero del 2026',fechaInicioCorta:'24/01/2026',fechaFinCorta:'24/02/2026',estado:'anulado',ubic:'San José / Escazú',plazas:1},
+  {codigo:33299,titulo:'Bailarín de Danza contemporánea accesible',ocupacion:'Bailarín profesional',pub:'miércoles, 23 de agosto del 2023',fin:'sábado, 23 de septiembre del 2023',fechaInicioCorta:'23/08/2023',fechaFinCorta:'23/09/2023',estado:'caducado',ubic:'San José / Desamparados',plazas:2}
+];
+const breteCandTabs={
+  recomendados:[
+    {nombre:'María Fernanda Rojas Vargas',meta:'Bachillerato universitario · 3 años de experiencia',match:92},
+    {nombre:'Carlos Andrés Mora Salas',meta:'Licenciatura · 5 años de experiencia',match:87},
+    {nombre:'Jimena Castro Solano',meta:'Técnico · 2 años de experiencia',match:74},
+    {nombre:'Luis Diego Vega Chinchilla',meta:'Bachillerato universitario · 1 año de experiencia',match:61}
+  ],
+  aplicantes:[
+    {nombre:'Andrea Sánchez Brenes',meta:'Aplicó el 12/06/2026 · Licenciatura',match:null},
+    {nombre:'Kevin Alonso Umaña',meta:'Aplicó el 10/06/2026 · Técnico',match:null}
+  ],
+  preselecciones:[]
+};
+let breteCurrentJobIndex=null;
+
+function breteEstadoBadge(estado){
+  if(estado==='publicado') return '<span class="job-badge badge-publicado">Publicado</span>';
+  if(estado==='pendiente') return '<span class="job-badge badge-pendiente">Pendiente de Publicar</span>';
+  if(estado==='caducado') return '<span class="job-badge badge-pendiente">Caducado</span>';
+  return '<span class="job-badge badge-anulado">Anulado</span>';
+}
+
+function breteRenderJobs(){
+  const grid=document.getElementById('job-grid');
+  if(!grid) return;
+  grid.innerHTML = breteJobs.map((j,i)=>`
+    <div class="job-card">
+      <div class="job-card-body">
+        <div class="job-card-code">Código: ${j.codigo}</div>
+        <h3>${j.titulo}</h3>
+        <div class="role">${j.ocupacion}</div>
+        <div class="row"><span class="ic">📅</span><span>Publicado el ${j.pub}<br>Finaliza el ${j.fin}</span></div>
+        <div class="row"><span class="ic">ⓘ</span><span>Estado: ${breteEstadoBadge(j.estado)}</span></div>
+        <div class="job-card-loc">📍 Ubicaciones del puesto:<br>&nbsp;&nbsp;📍 ${j.ubic}</div>
+      </div>
+      <div class="job-card-actions">
+        <span onclick="breteOpenCandidatos(${i})">👁 Candidatos</span>
+        <span onclick="breteOpenDetalles(${i})">👁 Detalles</span>
+        <span onclick="breteCerrarPuesto(${i})">✕ Cerrar</span>
+        <span onclick="breteDuplicarPuesto(${i})">⧉ Duplicar</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function breteOpenCandidatos(i){
+  breteCurrentJobIndex=i;
+  const job=breteJobs[i];
+  document.getElementById('cand-job-title').innerHTML='Gestión de candidatos del puesto <b>'+job.titulo+'</b>';
+  document.querySelectorAll('.cand-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelector('.cand-tab[data-tab=recomendados]').classList.add('active');
+  breteRenderCandList('recomendados', job);
+  breteShowView('candidatos', document.querySelector('[data-view=empresas]'));
+}
+
+function breteCandTab(tab, el){
+  document.querySelectorAll('.cand-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  breteRenderCandList(tab, breteJobs[breteCurrentJobIndex]);
+}
+
+function breteRenderCandList(tab, job){
+  const titles={recomendados:'👤 Candidatos recomendados por la plataforma',aplicantes:'👤 Personas aplicantes al puesto',preselecciones:'👤 Preselecciones'};
+  document.getElementById('cand-tab-title').textContent=titles[tab];
+  const list=document.getElementById('cand-list');
+  if(job && job.estado==='anulado'){
+    list.innerHTML='<div class="cand-blocked">⚠️ El puesto se encuentra <b>Anulado</b>, la información de los candidatos ya no se encuentra disponible.</div>';
+    return;
+  }
+  const items=breteCandTabs[tab]||[];
+  if(!items.length){
+    list.innerHTML='<div class="cand-blocked">No hay registros para mostrar en esta pestaña.</div>';
+    return;
+  }
+  list.innerHTML = items.map(c=>`
+    <div class="cand-row">
+      <div><div class="cand-name">${c.nombre}</div><div class="cand-meta">${c.meta}</div></div>
+      ${c.match!=null ? '<span class="cand-match">'+c.match+'% concordancia</span>' : ''}
+    </div>
+  `).join('');
+}
+
+function breteOpenDetalles(i){
+  const j=breteJobs[i];
+  document.getElementById('det-titulo').textContent=j.titulo;
+  document.getElementById('det-ocupacion').textContent=j.ocupacion;
+  document.getElementById('det-plazas').textContent=j.plazas;
+  document.getElementById('det-ubic').textContent=j.ubic;
+  document.getElementById('det-fin').textContent=j.fin;
+  breteShowView('detalles', document.querySelector('[data-view=empresas]'));
+}
+
+function breteCerrarPuesto(i){
+  breteJobs[i].estado='anulado';
+  breteRenderJobs();
+  breteRenderCerrados();
+  breteShowToast('Puesto cerrado (demo)');
+}
+function breteDuplicarPuesto(i){
+  const copy=Object.assign({}, breteJobs[i]);
+  copy.codigo=Math.floor(90000+Math.random()*20000);
+  copy.estado='pendiente';
+  breteJobs.unshift(copy);
+  breteRenderJobs();
+  breteShowToast('Puesto duplicado (demo)');
+}
+
+function bretePublishDemo(){
+  const nombre = document.querySelector('#view-publicar .pv-form input[type=text]')?.value?.trim() || 'Nueva vacante de ejemplo';
+  breteJobs.unshift({
+    codigo: Math.floor(90000+Math.random()*20000),
+    titulo: nombre,
+    ocupacion: 'Ocupación de ejemplo',
+    pub: 'hoy',
+    fin: 'en 30 días',
+    fechaInicioCorta:'hoy', fechaFinCorta:'en 30 días',
+    estado: 'publicado',
+    ubic: 'San José / Central',
+    plazas: 1
+  });
+  breteRenderJobs();
+  breteShowToast('¡Vacante publicada! (demo)');
+  breteShowView('puestos', document.querySelector('[data-view=empresas]'));
+}
+
+// ── Puestos cerrados: tabla de movimientos ──
+function breteRenderCerrados(){
+  const tbody=document.getElementById('pcerr-tbody');
+  if(!tbody) return;
+  const cerrados=breteJobs.filter(j=>j.estado==='anulado'||j.estado==='caducado');
+  tbody.innerHTML = cerrados.map(j=>`
+    <tr><td>${j.titulo}</td><td>${j.plazas}</td><td>${j.titulo}</td><td>${j.ocupacion}</td><td>${j.fechaInicioCorta}</td><td>${j.fechaFinCorta}</td></tr>
+  `).join('') || '<tr><td colspan="6" style="text-align:center;color:#888">Sin movimientos</td></tr>';
+  const countEl=document.getElementById('pcerr-count');
+  if(countEl) countEl.textContent='Mostrando 1 a '+cerrados.length+' de '+cerrados.length;
+}
+
+// ── Ubicación / Idiomas / Programas: agregar filas a las tablas ──
+function breteAddUbicacion(){
+  const prov=document.getElementById('ub-prov').value, canton=document.getElementById('ub-canton').value, dist=document.getElementById('ub-distrito').value;
+  const tbody=document.getElementById('ub-tbody');
+  if(tbody.querySelector('.empty-row')) tbody.innerHTML='';
+  const tr=document.createElement('tr');
+  tr.innerHTML='<td>'+prov+'</td><td>'+canton+'</td><td>'+dist+'</td><td><span style="color:#e11d48;cursor:pointer" onclick="this.closest(\'tr\').remove()">✕ Quitar</span></td>';
+  tbody.appendChild(tr);
+  breteShowToast('Ubicación agregada (demo)');
+}
+function breteAddIdioma(){
+  const idioma=document.getElementById('idi-nombre').value;
+  const nivelEl=document.querySelector('input[name="idi-nivel"]:checked');
+  const nivel=nivelEl?nivelEl.value:'—';
+  const obligatorio=document.getElementById('idi-obl').checked?'Sí':'No';
+  const tbody=document.getElementById('idi-tbody');
+  if(tbody.querySelector('.empty-row')) tbody.innerHTML='';
+  const tr=document.createElement('tr');
+  tr.innerHTML='<td>'+idioma+'</td><td>'+nivel+'</td><td>'+obligatorio+'</td><td><span style="color:#e11d48;cursor:pointer" onclick="this.closest(\'tr\').remove()">✕ Quitar</span></td>';
+  tbody.appendChild(tr);
+  breteShowToast('Idioma agregado (demo)');
+}
+function breteAddPrograma(){
+  const programa=document.getElementById('prog-nombre').value;
+  const nivel=document.getElementById('prog-nivel').value;
+  const obligatorio=document.getElementById('prog-obl').checked?'Sí':'No';
+  const tbody=document.getElementById('prog-tbody');
+  if(tbody.querySelector('.empty-row')) tbody.innerHTML='';
+  const tr=document.createElement('tr');
+  tr.innerHTML='<td>'+programa+'</td><td>'+nivel+'</td><td>'+obligatorio+'</td><td><span style="color:#e11d48;cursor:pointer" onclick="this.closest(\'tr\').remove()">✕ Quitar</span></td>';
+  tbody.appendChild(tr);
+  breteShowToast('Programa agregado (demo)');
+}
+
+// ── Prioridades: drag & drop entre columnas ──
+function bretePriorityDrag(ev){
+  ev.dataTransfer.setData('text/plain','dragging');
+  ev.dataTransfer.effectAllowed='move';
+  window._breteDragItem=ev.target;
+}
+function bretePriorityDrop(ev, col){
+  ev.preventDefault();
+  col.classList.remove('dragover');
+  if(window._breteDragItem) col.appendChild(window._breteDragItem);
+  window._breteDragItem=null;
+}
+
+breteRenderJobs();
+breteRenderCerrados();
+</script>
+</body>
+</html>
