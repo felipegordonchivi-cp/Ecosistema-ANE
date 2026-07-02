@@ -743,6 +743,13 @@ a { color: inherit; }
           <span class="nav-badge new">IA v15</span>
           <div class="loading-dot"></div>
         </button>
+        <button class="nav-btn" aria-label="Módulo Demo Empresas" data-panel="demo" data-src="app-demo-brete-empresas-ane.html"
+          onclick="loadModule('demo','app-demo-brete-empresas-ane.html',this,'Demo Empresas','Recreación de la plataforma Brete para capacitar usuarios en visitas')">
+          <span class="nav-ico">🏢</span>
+          <span>Demo Empresas</span>
+          <span class="nav-badge new">Demo</span>
+          <div class="loading-dot"></div>
+        </button>
       </nav>
     </div>
 
@@ -953,6 +960,23 @@ a { color: inherit; }
               <a class="mod-manual" href="manual-laboratorio-ia-ane.html" target="_blank" rel="noopener" onclick="event.stopPropagation()">📘 Manual</a>
             </div>
           </div>
+
+          <div class="module-card" onclick="loadModule('demo','app-demo-brete-empresas-ane.html',document.querySelector('[data-panel=demo]'),'Demo Empresas','Recreación de la plataforma Brete para capacitar usuarios en visitas')">
+            <div class="mod-top">
+              <div class="mod-icon">🏢</div>
+              <span class="mod-status ia">Demo</span>
+            </div>
+            <h3>Demo Empresas</h3>
+            <p>Recreación interactiva de la plataforma Brete (ane.cr) para el lado de empresas — publicar vacante, ver candidatos, ajustes — pensada para capacitar usuarios durante visitas presenciales. Datos de ejemplo, no conectado al sistema real.</p>
+            <div class="mod-tags">
+              <span class="mod-tag">Modo demo</span>
+              <span class="mod-tag">Publicar vacante</span>
+              <span class="mod-tag">Puestos y candidatos</span>
+            </div>
+            <div class="mod-cta">
+              <button class="mod-open">🏢 Abrir módulo</button>
+            </div>
+          </div>
         </div>
 
         <!-- Flow -->
@@ -1089,6 +1113,7 @@ a { color: inherit; }
       <iframe class="module-frame" id="frame-sim" title="Simulador de Entrevistas STAR"></iframe>
       <iframe class="module-frame" id="frame-dash" title="Centro de Control Intermediación"></iframe>
       <iframe class="module-frame" id="frame-lab" title="Laboratorio IA ESCO-CR"></iframe>
+      <iframe class="module-frame" id="frame-demo" title="Demo Empresas"></iframe>
       <iframe class="module-frame" id="frame-help" title="Centro de Ayuda"></iframe>
       <iframe class="module-frame" id="frame-informe" title="Informe Ejecutivo"></iframe>
 
@@ -1114,6 +1139,7 @@ const panels = {
   sim: { el: document.getElementById('frame-sim'), type: 'frame' },
   dash: { el: document.getElementById('frame-dash'), type: 'frame' },
   lab: { el: document.getElementById('frame-lab'), type: 'frame' },
+  demo: { el: document.getElementById('frame-demo'), type: 'frame' },
   help: { el: document.getElementById('frame-help'), type: 'frame' },
   informe: { el: document.getElementById('frame-informe'), type: 'frame' },
 };
