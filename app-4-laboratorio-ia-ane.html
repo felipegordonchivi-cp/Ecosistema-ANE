@@ -6,7 +6,7 @@
 .academic-card{position:relative;overflow:hidden}.academic-card:before{content:"";position:absolute;inset:auto 0 0 0;height:4px;background:linear-gradient(90deg,var(--teal),var(--teal2))}
 .academic-meta{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}.academic-meta span{font-size:11px;border:1px solid var(--line);border-radius:999px;padding:6px 8px;color:var(--muted);font-weight:800}
 .academic-link{display:inline-flex;margin-top:10px;text-decoration:none;color:#fff;background:linear-gradient(135deg,var(--teal),var(--teal2));border-radius:12px;padding:9px 12px;font-size:12px;font-weight:900}
-.academic-note{border:1px solid var(--line);border-radius:18px;background:rgba(20,184,166,.08);padding:14px;color:var(--muted);font-size:13px}
+.academic-note{border:1px solid var(--line);border-radius:18px;background:rgba(20,184,166,.08);padding:14px;color:var(--muted);font-size:13px}.ac-list{margin:8px 0 0;padding-left:18px}.ac-list li{margin:6px 0;line-height:1.5}
 @media(max-width:920px){.academic-tools{grid-template-columns:1fr}}
 
 
@@ -456,7 +456,7 @@ function renderAcademicSearch(){
 function renderAcademicRecommendations(gaps,main,detected){
   if(!$('academicSummary'))return;
   let top=academicTop(main,gaps,detected,8);
-  $('academicSummary').innerHTML=top.length?`<b>${top.length} rutas académicas priorizadas.</b><br>${top.slice(0,5).map(r=>`• ${esc(r.curso_programa)} · ${esc(r.institucion)} · ${esc(r.fuente_regulatoria)}`).join('<br>')}`:'No se encontraron rutas automáticas. Use el buscador por competencia.';
+  $('academicSummary').innerHTML=top.length?`<b>${top.length} rutas académicas priorizadas.</b><ul class="ac-list">${top.slice(0,5).map(r=>`<li>${esc(r.curso_programa)} · ${esc(r.institucion)} · ${esc(r.fuente_regulatoria)}</li>`).join('')}</ul>`:'No se encontraron rutas automáticas. Use el buscador por competencia.';
   renderAcademicGrid(top.length?top:ACADEMIC_CR.slice(0,24));
 }
 
