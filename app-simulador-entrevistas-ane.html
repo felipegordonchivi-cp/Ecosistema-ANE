@@ -434,6 +434,23 @@ function escHtml(s){
       }
       window._fbOn('salas/'+salaId+'/pregunta', handlePregunta);
       window._fbPollBackup('salas/'+salaId+'/pregunta', 3000, handlePregunta);
+
+      // El entrevistador puede finalizar la sesión desde su panel — al
+      // candidato le mostramos una pantalla de cierre y liberamos cámara/mic.
+      function handleFinalizada(val){
+        if(!val) return;
+        try{
+          if(typeof candCamStream !== 'undefined' && candCamStream) candCamStream.getTracks().forEach(function(t){ t.stop(); });
+          if(typeof isCandRecording !== 'undefined' && isCandRecording && typeof stopCandRecording === 'function') stopCandRecording();
+          if(window._candPC) window._candPC.close();
+        }catch(e){}
+        var ov=document.getElementById('cand-ended-overlay');
+        if(ov) ov.style.display='flex';
+        setTimeout(function(){ window.close(); }, 1200);
+      }
+      window._fbOn('salas/'+salaId+'/finalizada', handleFinalizada);
+      window._fbPollBackup('salas/'+salaId+'/finalizada', 3000, handleFinalizada);
+
       window._fbSolicitarEntrada = function(nombre){
         var settled = false;
         var sdkDone = false, restDone = false;
@@ -596,6 +613,9 @@ function escHtml(s){
       };
       window._fbBroadcastClear = function(sid){
         window._fbRemove('salas/'+sid+'/pregunta');
+      };
+      window._fbFinalizar = function(sid){
+        return window._fbSetReliable ? window._fbSetReliable('salas/'+sid+'/finalizada', true) : window._fbSet('salas/'+sid+'/finalizada', true);
       };
 
       // ── Firebase connection monitor ──
@@ -801,6 +821,7 @@ function escHtml(s){
           { urls: 'turns:standard.relay.metered.ca:443?transport=tcp', username: 'b9b7ddf13c911b6311f49b77', credential: 'zEqPvin9GyexlMWb' }
         ]};
         candPC = new RTCPeerConnection(cfg);
+        window._candPC = candPC;
         stream.getTracks().forEach(function(t){ candPC.addTrack(t, stream); });
         var candIceQueue = [];
         candPC.onicecandidate = function(e){
@@ -989,6 +1010,13 @@ function escHtml(s){
 <!-- ║   VISTA CANDIDATO (ventana Teams)         ║ -->
 <!-- ╚═══════════════════════════════════════════╝ -->
 <div id="v-candidato">
+  <!-- Overlay: entrevista finalizada por el entrevistador -->
+  <div id="cand-ended-overlay" style="display:none;position:fixed;inset:0;z-index:99999;background:#020e0e;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px">
+    <div style="font-size:52px">✅</div>
+    <div style="font-size:20px;font-weight:800;color:#7dd3d3">La entrevista ha finalizado</div>
+    <div style="font-size:13px;color:#4a7a7a;max-width:360px">Gracias por participar. El entrevistador cerró la sesión — ya puede cerrar esta pestaña.</div>
+    <button onclick="window.close()" style="margin-top:8px;background:var(--teal);color:#fff;border:none;border-radius:10px;padding:11px 22px;font-size:13px;font-weight:800;cursor:pointer">Cerrar pestaña</button>
+  </div>
   <!-- Header -->
   <div class="hdr" style="background:#020e0e;border-bottom-color:#0a2020">
     <div style="display:flex;align-items:center;gap:12px">
@@ -1603,6 +1631,7 @@ function escHtml(s){
             <div id="iv-speaking-dot" style="display:none;align-items:center;gap:5px;font-size:10px;color:#22c55e;font-weight:700">
               <span style="width:7px;height:7px;border-radius:50%;background:#22c55e;animation:pulse-teal 1s infinite;display:inline-block"></span>HABLANDO
             </div>
+            <button id="iv-end-btn" onclick="finalizarEntrevista()" title="Termina la sesión para ambos lados" style="background:rgba(239,68,68,.15);border:2px solid #ef4444;color:#fca5a5;padding:6px 12px;border-radius:10px;font-size:10px;font-weight:800;letter-spacing:.03em;cursor:pointer;white-space:nowrap">⏻ FINALIZAR</button>
           </div>
         </div>
 
@@ -3852,6 +3881,24 @@ function scoreColor(pct){
   return '#ef4444';
 }
 
+// showToast() se llamaba en varios puntos del archivo sin estar definida
+// (ReferenceError en runtime, ej. al enviar chat sin sala activa) — crea
+// el elemento de aviso flotante bajo demanda, sin depender de HTML previo.
+function showToast(msg, color){
+  let t = document.getElementById('ane-toast');
+  if(!t){
+    t = document.createElement('div');
+    t.id = 'ane-toast';
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:12px 20px;border-radius:10px;font-size:13px;font-weight:700;color:#fff;z-index:999999;box-shadow:0 8px 24px rgba(0,0,0,.4);transition:opacity .3s;pointer-events:none';
+    document.body.appendChild(t);
+  }
+  t.style.background = color || '#0d7373';
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(window._aneToastTimer);
+  window._aneToastTimer = setTimeout(()=>{ t.style.opacity='0'; }, 2800);
+}
+
 
 // ════════════════════════════════════════════════
 //  BROADCAST CHANNEL — sincroniza preguntas entre tabs
@@ -4600,6 +4647,24 @@ function animCandWave(on){
   } catch(e){ console.error('[ANE] detectView error:', e); }
 })();
 
+// ── Recuperación al volver de segundo plano ─────────────────
+// En "Modo videollamada" el candidato suele cambiar a la app de Teams/Meet/Zoom
+// para la llamada y volver al navegador para responder — en móvil, los
+// navegadores pausan el <video> y pueden matar el reconocimiento de voz
+// mientras la pestaña está en segundo plano, y no siempre se recuperan solos.
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState !== 'visible') return;
+  document.querySelectorAll('video').forEach(function(v){
+    if(v.srcObject && v.paused) v.play().catch(function(){});
+  });
+  if(typeof isCandRecording !== 'undefined' && isCandRecording
+     && typeof candRecognition !== 'undefined' && !candRecognition
+     && typeof _candSRSession === 'function'){
+    console.warn('[ANE] Reconocimiento de voz caído tras volver de segundo plano — reiniciando');
+    _candSRSession();
+  }
+});
+
 function solicitarEntrada(){
   const nombre=(document.getElementById('sala-espera-nombre').value||'').trim();
   if(!nombre){
@@ -4621,6 +4686,28 @@ let ivCamStream = null;
 let ivMicStream = null;
 let ivMicOn     = false;
 let ivMicMuted  = false;
+
+// Termina la sesión para ambos lados. Un navegador no puede forzar el
+// cierre de la pestaña de otro dispositivo — en vez de eso, se le avisa
+// al candidato por Firebase para que suelte su cámara/mic y vea una
+// pantalla de cierre; su propio botón "Cerrar pestaña" hace el resto
+// (funciona si el navegador lo permite; si no, el mensaje ya deja claro
+// que puede cerrarla manualmente). De este lado sí liberamos cámara/mic
+// y cerramos la conexión WebRTC del entrevistador.
+function finalizarEntrevista(){
+  const salaId = window._activeSalaId || document.getElementById('_sala-id-store')?.value;
+  if(!confirm('¿Finalizar la entrevista? Esto cierra la sala para el candidato también.')) return;
+  if(salaId && typeof window._fbFinalizar === 'function') window._fbFinalizar(salaId);
+  try{
+    [ivCamStream, ivMicStream].forEach(function(s){ if(s) s.getTracks().forEach(function(t){ t.stop(); }); });
+    if(window._ivPC) window._ivPC.close();
+  }catch(e){}
+  const vid = document.getElementById('iv-local-video');
+  const ph = document.getElementById('iv-local-ph');
+  if(vid){ vid.srcObject=null; vid.style.display='none'; }
+  if(ph) ph.style.display='flex';
+  showToast('Entrevista finalizada — sala cerrada para el candidato', '#ef4444');
+}
 
 function toggleIvMic(){
   const btn = document.getElementById('iv-mic-btn');
