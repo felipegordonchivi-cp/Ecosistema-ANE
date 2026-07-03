@@ -1,7 +1,7 @@
 {
   "name": "Ecosistema ANE · Agencia Nacional del Empleo",
   "short_name": "ANE Suite",
-  "description": "Suite integrada de herramientas de intermediación laboral: ATS, Simulador STAR, Dashboard y Laboratorio IA ESCO-CR",
+  "description": "Suite integrada de herramientas de intermediación laboral: ATS, Simulador STAR y Laboratorio IA ESCO-CR",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#041616",
@@ -28,7 +28,7 @@
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Dashboard de Intermediación"
+      "label": "Portal Ecosistema ANE"
     }
   ],
   "shortcuts": [
@@ -43,12 +43,6 @@
       "short_name": "Simulador",
       "url": "./app-simulador-entrevistas-ane.html",
       "description": "Simulador STAR con grabación y evaluación IA"
-    },
-    {
-      "name": "Dashboard de Intermediación",
-      "short_name": "Dashboard",
-      "url": "./app-dashboard-intermediacion-ane.html",
-      "description": "Centro de control y KPIs del equipo"
     },
     {
       "name": "Laboratorio IA ESCO-CR",
