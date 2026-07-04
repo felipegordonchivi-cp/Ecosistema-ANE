@@ -775,19 +775,13 @@ a { color: inherit; }
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;opacity:.5;"><path d="M6 9l6 6 6-6"/></svg>
       </div>
 
-      <!-- BACKUP / RESTAURAR -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
-        <button class="util-btn" onclick="exportBackup()" title="Exportar todos los datos a un archivo JSON" aria-label="Exportar backup" style="font-size:10px;padding:7px 4px;">💾 Backup</button>
-        <button class="util-btn" onclick="document.getElementById('importFile').click()" title="Restaurar datos desde un backup" aria-label="Importar backup" style="font-size:10px;padding:7px 4px;">📂 Restaurar</button>
-        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(this)">
-      </div>
       <div style="margin-bottom:10px;" id="pwa-install-wrap">
         <button class="util-btn" id="pwa-install-btn" onclick="installPWA()" style="width:100%;font-size:10px;padding:7px;display:none;">📲 Instalar como app</button>
       </div>
 
       <div class="sidecard">
         <b>ANE Impulsa <span style="font-size:10px;opacity:.6;font-weight:400">v2.0</span></b>
-        <p>3/3 módulos · 100% offline · <span id="backup-date" style="color:var(--mint)">Sin backup</span></p>
+        <p>3/3 módulos · 100% offline</p>
         <div id="storage-bar-wrap" style="margin-top:6px;display:none">
           <div style="font-size:10px;color:var(--amber);margin-bottom:3px" id="storage-label"></div>
           <div style="height:4px;border-radius:2px;background:rgba(125,211,211,.15);overflow:hidden"><div id="storage-bar" style="height:100%;background:var(--teal2);transition:width .4s"></div></div>
@@ -1376,73 +1370,6 @@ window.saveUser = function(){
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeUserModal(); });
 renderUserPill();
 
-// ── Backup / Restore ─────────────────────────────────
-const BACKUP_KEYS = [
-  'ane_eval_hist',
-  'ane_lab_profiles',
-  'ane_dash_roster',
-  'ane_dash_sheet',
-  'ane_active_user',
-  'ane_lab_theme',
-  'aneObsV4',
-  'ane_bridge_perfil',
-];
-
-function updateBackupDate(){
-  const d = localStorage.getItem('ane_last_backup');
-  const el = document.getElementById('backup-date');
-  if(el) el.textContent = d ? 'Backup: '+d : 'Sin backup';
-}
-
-window.exportBackup = function(){
-  const data = { _version: 1, _app: 'ANE Suite', _date: new Date().toISOString(), _keys: {} };
-  // Collect all ANE-prefixed keys + known keys
-  Object.keys(localStorage).forEach(k=>{
-    if(k.startsWith('ane_') || k.startsWith('ANE') || BACKUP_KEYS.includes(k)){
-      try{ data._keys[k] = JSON.parse(localStorage.getItem(k)); }
-      catch(e){ data._keys[k] = localStorage.getItem(k); }
-    }
-  });
-  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  const fecha = new Date().toISOString().slice(0,10);
-  a.href = url; a.download = 'ane-backup-'+fecha+'.json';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  const label = fecha;
-  localStorage.setItem('ane_last_backup', label);
-  updateBackupDate();
-  showToast('✓ Backup exportado: ane-backup-'+fecha+'.json');
-};
-
-window.importBackup = function(input){
-  const file = input.files[0]; if(!file) return;
-  if(file.size > 20*1024*1024){ showToast('Archivo demasiado grande (máx 20 MB)'); return; }
-  const reader = new FileReader();
-  reader.onload = function(e){
-    try{
-      const data = JSON.parse(e.target.result);
-      if(!data._version || !data._keys) throw new Error('Formato inválido');
-      const count = Object.keys(data._keys).length;
-      if(!confirm('¿Restaurar '+count+' registros del backup del '+data._date?.slice(0,10)+'? Esto reemplazará los datos actuales.')){ input.value=''; return; }
-      Object.entries(data._keys).forEach(([k,v])=>{
-        try{ localStorage.setItem(k, typeof v==='string'?v:JSON.stringify(v)); }catch(ex){}
-      });
-      localStorage.setItem('ane_last_backup', data._date?.slice(0,10)||'restaurado');
-      updateBackupDate();
-      renderUserPill();
-      showToast('✓ Backup restaurado — '+count+' registros');
-    }catch(err){
-      showToast('Error al leer el backup: '+err.message);
-    }
-    input.value = '';
-  };
-  reader.readAsText(file);
-};
-
-updateBackupDate();
-
 // ── Monitor de almacenamiento localStorage ─────────────────────────────────
 function checkStorage(){
   try{
@@ -1461,16 +1388,13 @@ function checkStorage(){
       bar.style.background = pct >= 90 ? '#ef4444' : pct >= 80 ? '#f59e0b' : 'var(--teal2)';
       lbl.textContent = 'Almacenamiento: ' + pct + '% usado';
       lbl.style.color = pct >= 90 ? '#ef4444' : '#f59e0b';
-      if(pct >= 95) showToast('⚠ Almacenamiento casi lleno ('+pct+'%). Exporta un backup ahora.');
+      if(pct >= 95) showToast('⚠ Almacenamiento casi lleno ('+pct+'%). Contacta a soporte técnico.');
     } else {
       wrap.style.display = 'none';
     }
   }catch(e){}
 }
 checkStorage();
-// Verificar después de cada backup/restauración
-const _origExport = window.exportBackup;
-window.exportBackup = function(){ _origExport(); checkStorage(); };
 
 // ── Aviso HTTPS para Simulador ─────────────────────────────────────────────
 function checkHTTPS(moduleName){
