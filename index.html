@@ -344,6 +344,25 @@ a { color: inherit; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .load-overlay p { color: var(--muted); font-size: 13px; font-weight: 700; }
 
+/* ---- Consent modal ---- */
+.consent-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,.65);
+  display: none; align-items: center; justify-content: center;
+  z-index: 500; padding: 20px;
+}
+.consent-backdrop.show { display: flex; }
+.consent-box {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+  padding: 26px; max-width: 460px; width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,.4);
+}
+.consent-box h3 { margin: 0 0 12px; font-size: 17px; }
+.consent-box p { color: var(--muted); font-size: 13px; line-height: 1.7; margin: 0 0 16px; }
+.consent-box .btn-row { display: flex; gap: 10px; justify-content: flex-end; }
+.consent-box .btn-row button { padding: 9px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; }
+.consent-box .btn-cancel { background: transparent; border: 1px solid var(--line) !important; color: var(--muted); }
+.consent-box .btn-accept { background: var(--teal, #0d7373); color: #fff; }
+
 /* ---- HOME content ---- */
 .hero-home {
   border: 1px solid var(--line);
@@ -781,7 +800,7 @@ a { color: inherit; }
 
       <div class="sidecard">
         <b>ANE Impulsa <span style="font-size:10px;opacity:.6;font-weight:400">v2.0</span></b>
-        <p>3/3 módulos · procesamiento local por defecto</p>
+        <p>3 núcleo + 1 demo · Modo local de validación</p>
         <div id="storage-bar-wrap" style="margin-top:6px;display:none">
           <div style="font-size:10px;color:var(--amber);margin-bottom:3px" id="storage-label"></div>
           <div style="height:4px;border-radius:2px;background:rgba(125,211,211,.15);overflow:hidden"><div id="storage-bar" style="height:100%;background:var(--teal2);transition:width .4s"></div></div>
@@ -845,9 +864,9 @@ a { color: inherit; }
       <div class="home-panel visible" id="panel-home">
         <!-- Hero -->
         <div class="hero-home">
-          <div class="eyebrow"><span class="pulse"></span> Uso interno · ANE Costa Rica</div>
+          <div class="eyebrow"><span class="pulse"></span> Uso interno · ANE Costa Rica · Prototipo funcional avanzado</div>
           <h1>Un solo portal.<br><span>Tres capacidades.</span></h1>
-          <p class="hero-lead">Sistema digital para fortalecer la gestión de empleabilidad nacional. ANE Impulsa integra evaluación curricular ATS, simulación de entrevistas STAR y Laboratorio IA con recomendación responsable basada en ESCO-CR, todo en un portal unificado.</p>
+          <p class="hero-lead">Sistema digital para fortalecer la gestión de empleabilidad nacional. ANE Impulsa integra evaluación curricular ATS, simulación de entrevistas STAR y Laboratorio IA con recomendación responsable basada en ESCO-CR, todo en un portal unificado, más una demo complementaria para capacitación. Procesamiento local por defecto · Revisión humana requerida · Preparado para piloto institucional.</p>
           <div class="hero-actions">
             <button class="btn primary" onclick="loadModule('ats','app-ats-ane.html',document.querySelector('[data-panel=ats]'),'ATS ANE · Preselección curricular','Motor de ranking y evaluación de CV por competencias ESCO-CR')">⚡ Abrir ATS ANE</button>
             <button class="btn" onclick="loadModule('sim','app-simulador-entrevistas-ane.html',document.querySelector('[data-panel=sim]'),'Simulador de Entrevistas STAR','Evaluación por competencias con metodología STAR, audio y reportes')">🎙 Simulador STAR</button>
@@ -857,7 +876,7 @@ a { color: inherit; }
 
         <!-- KPIs -->
         <div class="kpi-grid">
-          <div class="kpi"><small>Módulos integrados</small><b>3/3</b><span>100% operativo</span></div>
+          <div class="kpi"><small>Módulos integrados</small><b>3 núcleo</b><span>+ 1 demo complementaria</span></div>
           <div class="kpi"><small>Flujo candidato</small><b>360°</b><span>CV · STAR · Seguimiento</span></div>
           <div class="kpi"><small>Marco de competencias</small><b>ESCO-CR</b><span>2 000 perfiles</span></div>
           <div class="kpi"><small>Procesamiento</small><b>Local</b><span>Privacidad por diseño</span></div>
@@ -1049,12 +1068,50 @@ a { color: inherit; }
 
         <div class="audit-card" style="background:rgba(13,115,115,.08);border:1px solid rgba(13,115,115,.2)">
           <h3>🔒 Privacidad y uso de datos</h3>
-          <p style="font-size:13px;color:var(--muted);line-height:1.7">Todo el procesamiento ocurre en el navegador del asesor — ningún dato se envía a servidores externos. Los CV, audios y diagnósticos permanecen en tu dispositivo. Esta herramienta no toma decisiones automatizadas vinculantes; todo resultado requiere revisión humana.</p>
+          <p style="font-size:13px;color:var(--muted);line-height:1.7">El procesamiento ocurre por defecto en el navegador del asesor — los CV, audios y diagnósticos permanecen en tu dispositivo. Dos funciones opcionales usan servicios externos solo si TI las configura: la sala virtual del Simulador (Firebase) y el análisis con IA (Gemini). Esta herramienta no toma decisiones automatizadas vinculantes; todo resultado requiere revisión humana.</p>
           <div class="tag-row" style="margin-top:10px">
-            <span class="atag ok">✓ Sin servidores externos</span>
+            <span class="atag ok">✓ Local por defecto</span>
             <span class="atag ok">✓ Datos en tu dispositivo</span>
             <span class="atag ok">✓ Revisión humana requerida</span>
             <span class="atag ok">✓ Ley 8968 CR</span>
+          </div>
+        </div>
+
+        <div class="section-h" style="margin-bottom:14px">
+          <div><h2>Estado de madurez del ecosistema</h2><p>En qué etapa está cada nivel de uso, y qué permite cada uno</p></div>
+        </div>
+
+        <div class="audit-card">
+          <div style="display:flex;align-items:flex-start;gap:12px;padding:6px 0;border-bottom:1px solid var(--line)">
+            <span class="atag ok" style="flex-shrink:0;min-width:74px;text-align:center">Listo</span>
+            <div><b style="font-size:14px">Demo funcional</b><p style="margin:4px 0 0;font-size:13px;color:var(--muted)">Presentar módulos, capacitar asesores, validar el flujo completo con datos ficticios.</p></div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)">
+            <span class="atag warn" style="flex-shrink:0;min-width:74px;text-align:center">Siguiente fase</span>
+            <div><b style="font-size:14px">Piloto controlado</b><p style="margin:4px 0 0;font-size:13px;color:var(--muted)">Usar datos ficticios o anonimizados con asesores reales de la ANE, para medir utilidad, tiempos y errores.</p></div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;padding-top:12px">
+            <span class="atag" style="flex-shrink:0;min-width:74px;text-align:center;color:var(--muted);background:rgba(148,163,184,.1);border-color:rgba(148,163,184,.25)">Futuro</span>
+            <div><b style="font-size:14px">Producción institucional</b><p style="margin:4px 0 0;font-size:13px;color:var(--muted)">Requiere backend, autenticación, roles, bitácora de acciones y consentimiento formal — ver requisitos abajo.</p></div>
+          </div>
+        </div>
+
+        <div class="section-h" style="margin-bottom:14px">
+          <div><h2>Requisitos para producción</h2><p>Lo que falta antes de usar este sistema con datos reales de candidatos, a definir con TI y Legal</p></div>
+        </div>
+
+        <div class="audit-card">
+          <div class="tag-row">
+            <span class="atag warn">Autenticación institucional</span>
+            <span class="atag warn">Roles: asesor, supervisor, administrador</span>
+            <span class="atag warn">Base de datos segura</span>
+            <span class="atag warn">Bitácora de acciones</span>
+            <span class="atag warn">Registro formal de consentimiento</span>
+            <span class="atag warn">Política de retención y eliminación de datos</span>
+            <span class="atag warn">Validación legal y técnica</span>
+            <span class="atag warn">Integración con sistemas ANE/Brete</span>
+            <span class="atag warn">Protocolo de IA responsable</span>
+            <span class="atag warn">Pruebas con datos anonimizados</span>
           </div>
         </div>
 
@@ -1077,6 +1134,18 @@ a { color: inherit; }
 </div><!-- /shell -->
 
 <div class="toast" id="toast"></div>
+
+<!-- Consentimiento de uso para prototipo -->
+<div class="consent-backdrop" id="consentBackdrop">
+  <div class="consent-box">
+    <h3>⚠️ Consentimiento de uso para prototipo</h3>
+    <p>Esta herramienta se utiliza con fines de orientación, simulación o validación institucional. Los resultados son <b>asistidos, no vinculantes</b> y requieren revisión humana. No deben cargarse datos sensibles ni documentos reales de candidatos sin autorización institucional.</p>
+    <div class="btn-row">
+      <button class="btn-cancel" onclick="cancelConsent()">Cancelar</button>
+      <button class="btn-accept" onclick="acceptConsent()">Acepto continuar en modo prototipo</button>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ================================================================
@@ -1116,7 +1185,34 @@ function switchPanel(id, btn, title, subtitle) {
   document.getElementById('sidebar').classList.remove('open');
 }
 
+const SENSITIVE_MODULES = ['ats', 'sim', 'lab'];
+let pendingModuleLoad = null;
+
 function loadModule(id, src, btn, title, subtitle) {
+  if (SENSITIVE_MODULES.includes(id) && !localStorage.getItem('ane_prototype_consent')) {
+    pendingModuleLoad = { id, src, btn, title, subtitle };
+    document.getElementById('consentBackdrop').classList.add('show');
+    return;
+  }
+  _loadModuleInner(id, src, btn, title, subtitle);
+}
+
+function acceptConsent() {
+  localStorage.setItem('ane_prototype_consent', new Date().toISOString());
+  document.getElementById('consentBackdrop').classList.remove('show');
+  if (pendingModuleLoad) {
+    const { id, src, btn, title, subtitle } = pendingModuleLoad;
+    pendingModuleLoad = null;
+    _loadModuleInner(id, src, btn, title, subtitle);
+  }
+}
+
+function cancelConsent() {
+  document.getElementById('consentBackdrop').classList.remove('show');
+  pendingModuleLoad = null;
+}
+
+function _loadModuleInner(id, src, btn, title, subtitle) {
   const frame = panels[id]?.el;
   if (!frame) return;
 
