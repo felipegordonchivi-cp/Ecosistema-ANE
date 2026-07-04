@@ -1330,6 +1330,7 @@ function escHtml(s){
           <div><b style="color:#7dd3d3">Modo videollamada:</b> Teams, Meet o Zoom compartiendo Vista Candidato.</div>
           <div><b style="color:#fbbf24">Modo sala virtual:</b> Requiere Firebase configurado institucionalmente.</div>
         </div>
+        <div style="margin-top:10px;font-size:11px;color:#eab308;background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.3);border-radius:8px;padding:8px 10px">⚠️ Un mismo dispositivo solo puede usar la cámara en una aplicación a la vez. Si ya estás en una llamada de Teams/Zoom/Meet con el candidato, pausa la cámara ahí antes de "Admitir candidato" en la Sala Virtual — si no, esta app no podrá activarla y verás un aviso de "cámara en uso".</div>
       </div>
       <div style="background:rgba(13,115,115,.08);border:1px solid rgba(13,115,115,.25);border-radius:12px;padding:16px;margin-bottom:14px">
         <div style="font-size:11px;font-weight:800;color:#7dd3d3;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Cómo funciona la sala virtual</div>
@@ -1867,7 +1868,11 @@ function escHtml(s){
       <div style="flex:1;overflow-y:auto;padding:16px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
           <h2 style="font-size:16px;font-weight:700">📂 Historial de Evaluaciones <span id="hist-count" style="background:var(--teal);border-radius:10px;padding:2px 8px;font-size:12px">0</span></h2>
-          <div style="display:flex;gap:8px">
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="reportScope" title="Alcance del informe consolidado" style="background:rgba(13,115,115,.15);border:1px solid var(--teal);color:var(--tl);padding:6px 8px;border-radius:8px;font-size:11px">
+              <option value="candidate">Candidato actual</option>
+              <option value="all">Todo el historial</option>
+            </select>
             <button onclick="exportCSV()" style="background:rgba(13,115,115,.2);border:1px solid var(--teal);color:var(--tl);padding:6px 14px;border-radius:8px;font-size:12px">📊 Exportar CSV</button>
             <button onclick="generateReportAll()" class="pdf-btn" style="padding:6px 16px;font-size:12px">📄 PDF Consolidado</button>
           </div>
@@ -3690,7 +3695,24 @@ function generatePDFForEntry(e){
 
 function generateReportAll(){
   if(!evalHistory.length){ alert('No hay evaluaciones guardadas.'); return; }
-  const html = buildPDFAllHTML(evalHistory);
+  const scope = document.getElementById('reportScope')?.value || 'candidate';
+  let entries = evalHistory;
+  let scopeLabel = 'Historial completo';
+  if(scope === 'candidate'){
+    const currentName = (document.getElementById('cand-name')?.value || '').trim();
+    if(currentName){
+      const filtered = evalHistory.filter(e => (e.name||'').trim().toLowerCase() === currentName.toLowerCase());
+      if(!filtered.length){
+        alert('No hay evaluaciones guardadas para "'+currentName+'". Cambia el filtro a "Todo el historial" o guarda una evaluación primero.');
+        return;
+      }
+      entries = filtered;
+      scopeLabel = 'Candidato: '+currentName;
+    } else if(!confirm('No hay nombre de candidato cargado, así que no se puede filtrar. ¿Generar el consolidado de TODO el historial ('+evalHistory.length+' evaluaciones)?')){
+      return;
+    }
+  }
+  const html = buildPDFAllHTML(entries, scopeLabel);
   document.getElementById('pdf-preview').innerHTML = html;
   document.getElementById('pdf-modal').classList.remove('hidden');
 }
@@ -3815,14 +3837,14 @@ function buildPDFHTML(e){
 </div>`;
 }
 
-function buildPDFAllHTML(entries){
+function buildPDFAllHTML(entries, scopeLabel){
   const avgGlobal = Math.round(entries.reduce((a,e)=>a+e.globalScore,0)/entries.length);
   const avgStar = Math.round(entries.reduce((a,e)=>a+e.starPct,0)/entries.length);
-  
+
   return `<div style="font-family:Arial,sans-serif;color:#000;padding:0;font-size:12px">
   <div style="background:#0d7373;color:#fff;padding:20px 24px">
     <div style="font-size:18px;font-weight:800">Informe Consolidado de Evaluaciones · ANE Costa Rica</div>
-    <div style="font-size:11px;opacity:.85">Metodología STAR · ${entries.length} evaluaciones · Generado: ${new Date().toLocaleString('es-CR')}</div>
+    <div style="font-size:11px;opacity:.85">${escHtml(scopeLabel||'Historial completo')} · Metodología STAR · ${entries.length} evaluaciones · Generado: ${new Date().toLocaleString('es-CR')}</div>
   </div>
   <div style="padding:16px 24px;background:#f0fafa;border-bottom:2px solid #0d7373;display:flex;gap:20px">
     <div style="text-align:center;flex:1">
@@ -4433,7 +4455,7 @@ async function toggleCandCam(){
       let msg='No se pudo acceder a la cámara.';
       if(err.name==='NotAllowedError') msg='Permiso denegado. Haz clic en el ícono de cámara en la barra del navegador y permite el acceso.';
       else if(err.name==='NotFoundError') msg='No se encontró cámara en este dispositivo.';
-      else if(err.name==='NotReadableError') msg='La cámara está siendo usada por otra aplicación. Ciérrala e intenta.';
+      else if(err.name==='NotReadableError') msg='La cámara ya está en uso — probablemente por Teams, Zoom o Meet abiertos en otra pestaña/app. Pausa o apaga la cámara ahí (puedes seguir con el audio de esa llamada) y reintenta aquí.';
       else if(err.name==='TimeoutError') msg='La cámara no respondió. Si abriste este enlace desde WhatsApp/Instagram, copia el link y ábrelo directo en Chrome o Safari.';
       const ph=document.getElementById('cand-video-ph');
       if(ph) ph.innerHTML=`<div style="text-align:center;padding:20px"><div style="font-size:28px;margin-bottom:8px">📵</div><div style="font-size:13px;color:#ef4444;font-weight:600;margin-bottom:12px">${msg}</div><button onclick="toggleCandCam()" style="padding:8px 18px;background:#0d9488;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">🔄 Reintentar</button></div>`;
@@ -4857,6 +4879,11 @@ function admitirCandidato(){
     }).catch(function(err){
       var errName = err && err.name || 'Error';
       console.error('[ANE] No se pudo activar cámara+mic del entrevistador:', errName, err && err.message);
+      if(errName==='NotReadableError'){
+        showToast('⚠️ La cámara ya está en uso (probablemente por Teams/Zoom/Meet). Pausa la cámara ahí y reintenta, o continúa solo con audio.', '#eab308');
+      } else if(typeof showToast === 'function'){
+        showToast('⚠️ No se pudo activar tu cámara: '+errName+'. La entrevista continúa solo con audio si está disponible.', '#eab308');
+      }
       // Si no hay cámara, intentar solo audio
       navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(function(aStream){
         ivMicStream = aStream; ivMicOn = true; ivMicMuted = false;
