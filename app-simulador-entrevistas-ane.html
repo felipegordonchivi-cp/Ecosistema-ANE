@@ -1364,8 +1364,7 @@ function escHtml(s){
       <!-- Error Firebase banner (oculto por defecto) -->
       <div id="fb-error-banner" style="display:none;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.4);border-radius:10px;padding:14px;margin-bottom:10px">
         <div style="font-size:12px;font-weight:800;color:#fca5a5;margin-bottom:8px">⚠️ Sala virtual no disponible. Use modo presencial/mismo equipo o solicite configuración institucional.</div>
-        <div style="font-size:11px;color:#9a5a5a;line-height:1.6;margin-bottom:10px">Las reglas de la base de datos Firebase han vencido (caducan a los 30 días en modo de prueba). Debes actualizarlas en la consola:</div>
-        <div style="background:rgba(0,0,0,.3);border-radius:8px;padding:10px;font-family:monospace;font-size:10px;color:#e0f2f2;margin-bottom:10px;white-space:pre">{"rules": {"salas": {".read": true, ".write": true}}}</div>
+        <div style="font-size:11px;color:#9a5a5a;line-height:1.6;margin-bottom:10px">Las reglas de la base de datos Firebase han vencido (caducan a los 30 días en modo de prueba). Solicita a TI que actualice las reglas de producción — ver <code>tools/firebase-database-rules.json</code> en el repositorio (restringe lectura/escritura solo a la ruta <code>/salas</code>, con validación de datos). No uses reglas abiertas (<code>.read/.write: true</code> a nivel raíz).</div>
         <button onclick="window.open('https://console.firebase.google.com/project/simulador-de-entrevista-a883d/database/simulador-de-entrevista-a883d-default-rtdb/rules','_blank')" style="width:100%;background:#ef4444;border:none;color:#fff;padding:9px;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer">🔗 Abrir Firebase Console → Reglas</button>
       </div>
       <!-- Estado conexión BC -->
@@ -1776,8 +1775,17 @@ function escHtml(s){
 
             <!-- API Key UI -->
             <div id="api-key-ui" style="display:none;background:rgba(13,115,115,.1);border-radius:8px;padding:10px;margin-bottom:10px;border:1px solid rgba(13,115,115,.3)">
-              <label style="color:var(--tl);font-size:11px;font-weight:700;display:block;margin-bottom:4px">API Key de Google Gemini</label>
-              <p style="color:#4a8a8a;font-size:10px;margin-bottom:6px">🔒 Guardada en <b>localStorage</b> — persiste entre sesiones</p>
+              <label style="color:var(--tl);font-size:11px;font-weight:700;display:block;margin-bottom:4px">✅ Proxy institucional (recomendado)</label>
+              <p style="color:#4a8a8a;font-size:10px;margin-bottom:6px">Si el equipo TI desplegó un proxy (ver <code>tools/gemini-proxy-worker.js</code>), la clave de Gemini nunca sale del servidor ni del navegador. Configúralo aquí y omite la API Key directa de abajo.</p>
+              <div style="display:flex;gap:6px">
+                <input id="proxy-url-input" type="text" placeholder="https://tu-proxy.workers.dev" style="flex:1;background:rgba(0,0,0,.3);border:1px solid rgba(13,115,115,.5);color:#e0f0f0;padding:6px 10px;border-radius:6px;font-size:12px;font-family:monospace">
+                <button onclick="saveProxyUrl()" style="background:var(--teal);border:none;color:#fff;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:700">Guardar</button>
+                <button onclick="clearProxyUrl()" style="background:rgba(200,50,50,.2);border:1px solid rgba(200,50,50,.4);color:#ff8888;padding:6px 10px;border-radius:6px;font-size:11px">🗑</button>
+              </div>
+              <p id="proxy-url-status" style="color:#4a8a8a;font-size:10px;margin-top:4px"></p>
+
+              <label style="color:var(--tl);font-size:11px;font-weight:700;display:block;margin-top:14px;margin-bottom:4px">⚠️ API Key de Google Gemini directa (solo si no hay proxy)</label>
+              <p style="color:#4a8a8a;font-size:10px;margin-bottom:6px">🔒 Se guarda en <b>localStorage</b> del navegador — queda expuesta a quien tenga acceso a ese equipo o a un ataque XSS. No usar con claves institucionales de producción; preferir siempre el proxy de arriba.</p>
               <div style="display:flex;gap:6px">
                 <input id="api-key-input" type="password" placeholder="AIzaSy..." style="flex:1;background:rgba(0,0,0,.3);border:1px solid rgba(13,115,115,.5);color:#e0f0f0;padding:6px 10px;border-radius:6px;font-size:12px;font-family:monospace">
                 <button onclick="(function(b){var i=document.getElementById('api-key-input');var show=i.type==='password';i.type=show?'text':'password';b.textContent=show?'🙈':'👁';})(this)" title="Mostrar/ocultar" style="background:rgba(13,115,115,.15);border:1px solid rgba(13,115,115,.4);color:var(--tl);padding:6px 10px;border-radius:6px;font-size:11px">👁</button>
@@ -1786,15 +1794,6 @@ function escHtml(s){
               </div>
               <p id="api-key-status" style="color:#4a8a8a;font-size:10px;margin-top:4px"></p>
               <p style="color:#e0a800;font-size:11px;margin-top:6px;line-height:1.5">⚠️ IA externa opcional. No ingrese datos sensibles sin autorización institucional. El uso de API externa debe estar validado por la institución.</p>
-
-              <label style="color:var(--tl);font-size:11px;font-weight:700;display:block;margin-top:10px;margin-bottom:4px">Proxy institucional (opcional)</label>
-              <p style="color:#4a8a8a;font-size:10px;margin-bottom:6px">Si el equipo TI desplegó un proxy (ver <code>tools/gemini-proxy-worker.js</code>), la clave de Gemini nunca sale del servidor. Si se configura, reemplaza el uso de la API Key de arriba.</p>
-              <div style="display:flex;gap:6px">
-                <input id="proxy-url-input" type="text" placeholder="https://tu-proxy.workers.dev" style="flex:1;background:rgba(0,0,0,.3);border:1px solid rgba(13,115,115,.5);color:#e0f0f0;padding:6px 10px;border-radius:6px;font-size:12px;font-family:monospace">
-                <button onclick="saveProxyUrl()" style="background:var(--teal);border:none;color:#fff;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:700">Guardar</button>
-                <button onclick="clearProxyUrl()" style="background:rgba(200,50,50,.2);border:1px solid rgba(200,50,50,.4);color:#ff8888;padding:6px 10px;border-radius:6px;font-size:11px">🗑</button>
-              </div>
-              <p id="proxy-url-status" style="color:#4a8a8a;font-size:10px;margin-top:4px"></p>
             </div>
 
             <div style="display:flex;gap:6px;margin-bottom:10px">
