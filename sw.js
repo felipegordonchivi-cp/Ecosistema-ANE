@@ -1,4 +1,4 @@
-// ANE Suite — Service Worker v1.1
+// ANE Impulsa — Service Worker v1.1
 // Estrategia: Cache-first para assets estáticos, Network-first para HTML
 const CACHE_NAME = 'ane-suite-v2';
 const CACHE_STATIC = 'ane-static-v2';
