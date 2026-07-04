@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caso de Uso Demostrativo · ANE Impulsa</title>
+<style>
+@page{size:letter;margin:18mm 16mm 18mm 16mm}
+:root{--teal:#0d7373;--teal2:#14b8a6;--ink:#16302d;--muted:#526d69;--line:#cfe4e1;--soft:#f4fbf9;--gold:#b78f3d}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#eef6f4;color:var(--ink)}
+.wrapper{max-width:960px;margin:24px auto;padding:0 16px}.page{background:#fff;box-shadow:0 18px 60px rgba(13,38,35,.12);border:1px solid #dbecea}
+.header{padding:20px 28px 14px;border-bottom:3px solid var(--teal);background:linear-gradient(90deg,#f9fdfc,#f1fbf8)}
+.brand{display:flex;align-items:center;gap:16px}.brandmark{width:70px;height:70px;border-radius:18px;background:linear-gradient(135deg,var(--teal),var(--teal2));display:grid;place-items:center;color:#fff;font-weight:800;font-size:21px;letter-spacing:.05em}.titles h1{margin:0;font-size:26px;letter-spacing:-.02em}.titles p{margin:6px 0 0;color:var(--muted);font-size:13px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}.meta .box{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff}.meta b{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}.meta span{display:block;margin-top:3px;font-size:13px;font-weight:700}
+.content{padding:24px 28px 18px}.hero{border:1px solid var(--line);border-radius:18px;background:linear-gradient(135deg,#f7fcfb,#eef8f6);padding:18px 20px}.hero h2{margin:0 0 10px;font-size:22px}.hero p{margin:0;color:var(--muted);line-height:1.65}
+.section{margin-top:22px}.section h3{margin:0 0 10px;font-size:18px;padding-bottom:7px;border-bottom:1px solid var(--line)}.section p{margin:0 0 10px;line-height:1.7}.section ul{margin:8px 0 0 18px;padding:0}.section li{margin:0 0 8px;line-height:1.6}
+.step{display:flex;gap:14px;border:1px solid var(--line);border-radius:16px;padding:16px;background:#fff;margin-bottom:14px}
+.stepnum{flex:0 0 auto;width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal2));color:#fff;display:grid;place-items:center;font-weight:800;font-size:15px}
+.stepbody h4{margin:0 0 6px;font-size:15px}.stepbody p{margin:0 0 6px;color:var(--muted);font-size:13px;line-height:1.6}
+.mini{margin-top:8px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--soft)}.mini b{display:block;font-size:11.5px;margin-bottom:4px;color:var(--teal)}.mini span{display:block;color:var(--muted);font-size:12px;line-height:1.55}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:10.5px;font-weight:800;background:#e6f7f4;color:var(--teal);margin:0 4px 4px 0}
+.footer{display:flex;justify-content:space-between;align-items:center;border-top:2px solid var(--teal);padding:10px 28px 16px;color:var(--muted);font-size:11px}.seal{font-weight:700;color:var(--teal)}
+.small{font-size:12px;color:var(--muted)}
+@media print{body{background:#fff}.wrapper{max-width:none;margin:0;padding:0}.page{box-shadow:none;border:none}}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <article class="page">
+    <header class="header">
+      <div class="brand">
+        <div class="brandmark">ANE</div>
+        <div class="titles">
+          <h1>Caso de Uso Demostrativo</h1>
+          <p>ANE Impulsa · Agencia Nacional de Empleo, Costa Rica</p>
+        </div>
+      </div>
+      <div class="meta">
+        <div class="box"><b>Documento</b><span>3 de 3 · Paquete de piloto</span></div>
+        <div class="box"><b>Vacante ficticia</b><span>Analista de Datos</span></div>
+        <div class="box"><b>Datos</b><span>100% ficticios</span></div>
+      </div>
+    </header>
+    <main class="content">
+      <section class="hero">
+        <h2>Recorrido completo del flujo ANE Impulsa</h2>
+        <p>Este documento ilustra, con un caso enteramente ficticio, cómo los tres módulos del ecosistema se conectan en un mismo proceso de intermediación laboral: desde la publicación de una vacante hasta el informe final del asesor. Ningún dato aquí corresponde a una persona real — se puede usar como guion de demostración en presentaciones o como referencia de entrenamiento para nuevos asesores.</p>
+      </section>
+
+      <section class="section">
+        <h3>Paso 1 · Vacante</h3>
+        <div class="step">
+          <div class="stepnum">1</div>
+          <div class="stepbody">
+            <h4>Configuración de la vacante en el ATS</h4>
+            <p>El asesor registra una vacante de <b>Analista de Datos</b> (Inteligencia de Negocios, modalidad híbrida, San José) con un umbral de recomendación del 70%. Define un filtro eliminatorio (incorporación al Colegio Profesional respectivo) y competencias ponderadas: SQL y Python como técnicas obligatorias, Power BI y ETL como deseables, más comunicación y trabajo en equipo como competencias blandas.</p>
+            <div class="mini"><b>Dato clave</b><span>El umbral y los pesos quedan documentados en la configuración — cualquier persona que revise el caso después puede ver exactamente qué se pidió, no solo el resultado.</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h3>Paso 2 · CV ficticio y ranking ATS</h3>
+        <div class="step">
+          <div class="stepnum">2</div>
+          <div class="stepbody">
+            <h4>Carga de candidatura y evaluación</h4>
+            <p>Se pega el texto de un CV ficticio: <i>"Ana Rodríguez — analista de datos con 4 años de experiencia en business intelligence y reportes gerenciales. Manejo avanzado de Excel, Power BI y SQL. Incorporada al Colegio de Profesionales en Ciencias Económicas. Inglés intermedio."</i> El ATS genera un puntaje ponderado y, por categoría, muestra qué se cumple y qué no.</p>
+            <div class="mini"><b>Salida del sistema</b><span><span class="tag">Fortalezas</span> Cumple 2 de 8 competencias buscadas · Colegiatura profesional verificada en el CV.<br><span class="tag">Brechas</span> Sin evidencia de la competencia obligatoria "Python" · No se detectan certificaciones (Power BI Data Analyst, Google Data Analytics) · Inglés no acreditado a nivel B1.</span></div>
+            <p style="margin-top:8px">El informe PDF exportado incluye esta misma evidencia, más una "Ruta de crecimiento" con formación ESCO-CR sugerida para cerrar cada brecha (ej. Python vía INA/Cisco NetAcad), y el bloque de <b>Registro de revisión humana</b> para que el asesor firme su decisión final.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h3>Paso 3 · Entrevista STAR</h3>
+        <div class="step">
+          <div class="stepnum">3</div>
+          <div class="stepbody">
+            <h4>Simulación de entrevista por competencias</h4>
+            <p>El asesor cita a la candidata ficticia a una entrevista simulada sobre la competencia "Orientación al logro". Durante la sesión, califica cada componente S-T-A-R usando la rúbrica de 1 a 5 (por ejemplo: Situación 4, Tarea 3, Acción 4, Resultado 3 — respuesta STAR completa, con un resultado presente pero mencionado de forma general).</p>
+            <div class="mini"><b>Dato clave</b><span>La rúbrica visible en pantalla (con la descripción de qué distingue un 3 de un 4) permite que dos asesores distintos califiquen la misma respuesta de forma más consistente entre sí.</span></div>
+            <p style="margin-top:8px">El informe individual exportado en PDF muestra el desglose STAR, la transcripción (si se grabó con consentimiento), y el mismo bloque de registro de revisión humana.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h3>Paso 4 · Diagnóstico Laboratorio IA</h3>
+        <div class="step">
+          <div class="stepnum">4</div>
+          <div class="stepbody">
+            <h4>Diagnóstico de empleabilidad y ruta académica</h4>
+            <p>Con el mismo perfil ficticio, el asesor genera un diagnóstico en el Laboratorio IA. El sistema detecta competencias ESCO-CR en el texto, calcula un nivel de empleabilidad, sugiere hasta tres familias ocupacionales afines (cada una con su propio nivel de confianza) y calcula el porcentaje de ajuste específico al puesto "Analista de Datos", mostrando qué competencias clave ya tiene la candidata y cuáles le faltan.</p>
+            <div class="mini"><b>Salida del sistema</b><span><span class="tag">Confianza: Alta</span> familia "Análisis de datos e inteligencia de negocios" (evidencia textual suficiente)<br><span class="tag">Ajuste al puesto</span> competencias que ya tiene (Excel, Power BI, análisis de datos) vs. las que faltan (Python, SQL avanzado)<br><span class="tag">Plan sugerido</span> cursos priorizados de INA/CENFOTEC para cerrar la brecha de Python, con nota de que cada acción requiere validación con la candidata.</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h3>Paso 5 · Informe final del asesor</h3>
+        <div class="step">
+          <div class="stepnum">5</div>
+          <div class="stepbody">
+            <h4>Consolidación y decisión humana</h4>
+            <p>El asesor revisa los tres informes (ATS, STAR y Laboratorio), completa en cada uno el bloque de <b>Registro de revisión humana</b> con su nombre, oficina y fecha, y redacta su decisión final: por ejemplo, <i>"Candidata con buen ajuste técnico y de comunicación; se recomienda avanzar a segunda entrevista y sugerir el curso de Python del INA como requisito de incorporación en los primeros 3 meses."</i></p>
+            <p>Esta decisión — no el puntaje del sistema — es la que queda registrada como la recomendación oficial del proceso.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h3>Cómo usar este caso en una demostración</h3>
+        <ul>
+          <li>Cargar exactamente los mismos datos ficticios de este documento en un ambiente de prueba, para que la audiencia vea el flujo completo en minutos.</li>
+          <li>Detenerse en cada paso a mostrar la explicación (fortalezas/brechas, rúbrica, confianza) antes de pasar al siguiente — el valor del sistema está en el razonamiento visible, no solo en el puntaje final.</li>
+          <li>Cerrar siempre mostrando el bloque de registro de revisión humana, para dejar claro que la decisión final es del asesor.</li>
+        </ul>
+      </section>
+      <p class="small">Este documento forma parte del paquete de piloto controlado de ANE Impulsa (3 documentos). Preparado para impresión o exportación a PDF en tamaño carta.</p>
+    </main>
+    <footer class="footer">
+      <div>Agencia Nacional de Empleo · Costa Rica<br>Caso de uso demostrativo · ANE Impulsa</div>
+      <div class="seal">Documento institucional · Uso interno</div>
+      <div>Página 3</div>
+    </footer>
+  </article>
+</div>
+</body>
+</html>
