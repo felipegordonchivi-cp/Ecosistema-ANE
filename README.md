@@ -1,8 +1,8 @@
-# Ecosistema ANE · Portal Integrado v16
+# ANE Impulsa · Portal Integrado v16
 
 **Agencia Nacional del Empleo · Costa Rica**
 
-Portal web integrado con los 3 módulos del ecosistema de reclutamiento y orientación laboral de la ANE.
+Sistema digital para fortalecer la gestión de empleabilidad nacional. Portal web integrado con los 3 módulos de reclutamiento y orientación laboral de la ANE.
 
 ## Módulos incluidos
 
@@ -79,4 +79,4 @@ El portal incluye una sección de **Auditoría técnica** integrada con:
 
 ---
 
-*Ecosistema ANE v16 · Recomendación responsable · Costa Rica 2026*
+*ANE Impulsa v16 · Recomendación responsable · Costa Rica 2026*

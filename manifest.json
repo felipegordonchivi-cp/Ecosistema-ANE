@@ -1,7 +1,7 @@
 {
-  "name": "Ecosistema ANE · Agencia Nacional del Empleo",
-  "short_name": "ANE Suite",
-  "description": "Suite integrada de herramientas de intermediación laboral: ATS, Simulador STAR y Laboratorio IA ESCO-CR",
+  "name": "ANE Impulsa · Agencia Nacional del Empleo",
+  "short_name": "ANE Impulsa",
+  "description": "Sistema digital para fortalecer la gestión de empleabilidad nacional",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#041616",
@@ -28,7 +28,7 @@
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Portal Ecosistema ANE"
+      "label": "Portal ANE Impulsa"
     }
   ],
   "shortcuts": [
