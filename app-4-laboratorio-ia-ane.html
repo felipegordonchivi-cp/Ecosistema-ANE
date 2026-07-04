@@ -370,8 +370,18 @@ const GROUP_RECOMMENDATIONS={
   ciberseguridad:{label:'Ciberseguridad',tip:'CompTIA Security+, Cisco CyberOps — INA, Coursera, Cisco Networking Academy.'}
 };
 function jobMatchAnalysis(main,detected){
-  const fGroups=new Set(main.groups);
-  const fSkills=ESCO_CR_500.filter(s=>fGroups.has(s.group)).sort((a,b)=>b.priority-a.priority).slice(0,25);
+  // Ordenar solo por prioridad dejaba que un grupo genérico compartido entre
+  // muchas familias (transversal, comunicación, digital_basico — con más
+  // competencias de prioridad máxima que el grupo técnico real del oficio)
+  // acaparara las 25 posiciones, mostrando "adaptabilidad" o "manejo de Excel"
+  // como si fueran las competencias clave de un ingeniero civil. FAMILIES
+  // lista sus grupos de más a menos específico para ese oficio — se usa ese
+  // orden como criterio principal, y la prioridad solo como desempate dentro
+  // del mismo grupo.
+  const groupRank=new Map(main.groups.map((g,i)=>[g,i]));
+  const fSkills=ESCO_CR_500.filter(s=>groupRank.has(s.group))
+    .sort((a,b)=>(groupRank.get(a.group)-groupRank.get(b.group))||(b.priority-a.priority))
+    .slice(0,25);
   const detIds=new Set(detected.map(s=>s.id));
   const detNorms=new Set(detected.map(s=>norm(s.skill)));
   const have=fSkills.filter(s=>detIds.has(s.id)||detNorms.has(norm(s.skill)));
