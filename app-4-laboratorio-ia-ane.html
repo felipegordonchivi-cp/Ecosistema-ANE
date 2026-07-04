@@ -399,6 +399,16 @@ function explainFamily(main,detected){
   return reasons.length?reasons:['se encontraron competencias relacionadas con la familia ocupacional sugerida'];
 }
 
+// Confianza por recomendación: no es un valor nuevo, sino el mismo puntaje de
+// ajuste de la familia (familyScore) traducido a una etiqueta cualitativa —
+// para que el asesor sepa, por cada familia sugerida, cuánta evidencia real
+// respalda esa sugerencia y cuándo conviene validarla directamente con la persona.
+function familyConfidence(score){
+  if(score>=65) return {label:'Alta',cls:'good'};
+  if(score>=40) return {label:'Media',cls:'warn'};
+  return {label:'Baja',cls:'bad'};
+}
+
 function academicText(r){return norm([r.competencia,r.familia,r.brecha,r.curso_programa,r.institucion,r.tipo_institucion,r.fuente_regulatoria,r.nivel_formacion,r.modalidad,r.provincia_sede,r.estado_verificacion,r.observaciones,r.keywords].join(' '))}
 // Prioriza opciones cortas para cerrar brechas rápido (semanas/meses): cursos,
 // técnicos y certificaciones —pagos o gratuitos— sobre carreras universitarias
@@ -542,7 +552,7 @@ function report(o){
   const detChips=o.detected.slice(0,24).map(s=>`<span class="chip">${esc(s.skill)}</span>`).join('');
   const gapChips=o.gaps.slice(0,12).map(s=>`<span class="chip warn">${esc(s.skill)}</span>`).join('');
   const acadRows=academicTop(o.main,o.gaps,o.detected,6).map(academicRowHTML).join('')||`<tr><td colspan="4" style="color:var(--muted)">Verificar oferta formativa según brecha detectada.</td></tr>`;
-  const familyRows=top3.map(f=>{const fm=CR_MARKET[f.id]||{d:2,t:'estable',s:[350,900]};return `<tr><td>${esc(f.icon)} ${esc(f.name)}</td><td><span class="informe-badge ${f.score>=75?'good':f.score>=50?'warn':'bad'}">${f.score}/100</span></td><td>₡${fm.s[0]}K–${fm.s[1]}K/mes</td><td>${DEMANDA_ICON[fm.d]} ${DEMANDA_LABEL[fm.d]}</td><td>${TENDENCIA_ICON[fm.t]} ${TENDENCIA_LABEL[fm.t]}</td></tr>`;}).join('');
+  const familyRows=top3.map(f=>{const fm=CR_MARKET[f.id]||{d:2,t:'estable',s:[350,900]};const fc=familyConfidence(f.score);return `<tr><td>${esc(f.icon)} ${esc(f.name)}</td><td><span class="informe-badge ${f.score>=75?'good':f.score>=50?'warn':'bad'}">${f.score}/100</span></td><td><span class="informe-badge ${fc.cls}">${fc.label}</span></td><td>₡${fm.s[0]}K–${fm.s[1]}K/mes</td><td>${DEMANDA_ICON[fm.d]} ${DEMANDA_LABEL[fm.d]}</td><td>${TENDENCIA_ICON[fm.t]} ${TENDENCIA_LABEL[fm.t]}</td></tr>`;}).join('');
   const justif=explainFamily(o.main,o.detected).map(x=>`<li style="margin:4px 0">${esc(x)}</li>`).join('');
   const jm=jobMatchAnalysis(o.main,o.detected);
   const mc=jm.matchPct>=65?'#14b8a6':jm.matchPct>=40?'#f59e0b':'#ef4444';
@@ -553,7 +563,7 @@ function report(o){
   const missingChips=jm.missing.map(s=>`<span class="chip warn">${esc(s.skill)}</span>`).join('')||'<span class="chip good">Sin brechas prioritarias detectadas</span>';
   const planGroups=[...new Set(jm.missing.map(s=>s.group))].slice(0,4);
   const planSteps=planGroups.map(g=>GROUP_RECOMMENDATIONS[g]).filter(Boolean);
-  const planHtml=planSteps.length?`<div class="informe-divider"></div><div class="informe-block"><h4>📋 Plan de mejora recomendado</h4>${planSteps.map((p,i)=>`<div class="plan-step"><div class="plan-num">${i+1}</div><div><b style="font-size:13px">${esc(p.label)}</b><p class="plan-tip">${esc(p.tip)}</p></div></div>`).join('')}</div>`:'';
+  const planHtml=planSteps.length?`<div class="informe-divider"></div><div class="informe-block"><h4>📋 Plan de mejora recomendado</h4>${planSteps.map((p,i)=>`<div class="plan-step"><div class="plan-num">${i+1}</div><div><b style="font-size:13px">${esc(p.label)}</b><p class="plan-tip">${esc(p.tip)}</p></div></div>`).join('')}<p style="margin:8px 0 0;color:var(--muted);font-size:11px;font-style:italic">Confianza: ${esc(o.confidence.label)} · Cada acción sugerida requiere validación con la persona candidata antes de aplicarse.</p></div>`:'';
   const today=new Date().toLocaleDateString('es-CR',{year:'numeric',month:'long',day:'numeric'});
   $('reportHtml').innerHTML=`
 <div class="informe-section" style="border-left:4px solid var(--accent)">
@@ -583,7 +593,9 @@ function report(o){
 
 <div class="informe-section">
   <div class="informe-block"><h4>Familias ocupacionales recomendadas</h4>
-  <table class="informe-table"><thead><tr><th>Familia</th><th>Ajuste</th><th>Salario orientativo</th><th>Demanda</th><th>Tendencia</th></tr></thead><tbody>${familyRows}</tbody></table></div>
+  <table class="informe-table"><thead><tr><th>Familia</th><th>Ajuste</th><th>Confianza</th><th>Salario orientativo</th><th>Demanda</th><th>Tendencia</th></tr></thead><tbody>${familyRows}</tbody></table>
+  <p style="margin:8px 0 0;color:var(--muted);font-size:11px">La confianza refleja cuánta evidencia textual respalda cada sugerencia — a menor confianza, mayor necesidad de validar directamente con la persona candidata.</p>
+  </div>
 </div>
 
 <div class="informe-section">
@@ -625,6 +637,20 @@ function report(o){
     <li>Enviar al simulador de entrevista ANE para evidenciar competencias blandas.</li>
     <li>Registrar seguimiento y actualizar diagnóstico con nueva evidencia.</li>
   </ol></div>
+</div>
+
+<div class="informe-section">
+  <div class="informe-block"><h4>📋 Registro de revisión humana</h4>
+  <table class="informe-table"><tbody>
+    <tr><td style="width:50%">Nombre del asesor: ______________________</td><td>Oficina: ______________________</td></tr>
+    <tr><td>Fecha de revisión: ______________________</td><td>Módulo: Laboratorio IA · Versión: ESCO-CR v15</td></tr>
+    <tr><td colspan="2">Observación humana:</td></tr>
+    <tr><td colspan="2" style="height:32px;border-top:none"></td></tr>
+    <tr><td colspan="2">Decisión / recomendación final del asesor:</td></tr>
+    <tr><td colspan="2" style="height:32px;border-top:none"></td></tr>
+  </tbody></table>
+  <p style="margin:8px 0 0;color:var(--muted);font-size:11px;font-style:italic">Este resultado es asistido y orientativo — no constituye una decisión automática. Firma: ______________________</p>
+  </div>
 </div>
 
 <div class="informe-note">⚠️ <b>Nota institucional:</b> Este informe es apoyo para el asesor u orientador. No sustituye criterio humano, entrevista, revisión documental, requisitos del empleador ni fuentes oficiales. Uso interno ANE · Ley 8968 CR.</div>`;

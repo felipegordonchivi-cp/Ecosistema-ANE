@@ -1744,6 +1744,10 @@ function escHtml(s){
               <span id="star-pct-badge" style="margin-left:auto;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);border-radius:999px;padding:2px 10px;font-size:12px;color:#86efac;font-weight:900">0%</span>
             </h4>
             <div style="background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.3);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:#e0a800;line-height:1.5">⚠️ Evaluación asistida. Requiere revisión y validación humana. No constituye decisión automática de contratación.</div>
+            <details style="margin-bottom:10px;border:1px solid rgba(13,115,115,.3);border-radius:8px;background:rgba(13,115,115,.06)">
+              <summary style="cursor:pointer;padding:8px 12px;font-size:11px;font-weight:700;color:#7dd3d3">📏 Rúbrica de puntuación (1-5) — clic para ver criterios</summary>
+              <div id="star-rubric" style="padding:0 12px 10px;font-size:11px;color:#c8e6e6;line-height:1.6"></div>
+            </details>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="star-grid"></div>
           </div>
         </div>
@@ -2544,6 +2548,25 @@ const STAR_C = [
   {k:'R',l:'Resultado',d:'Impacto medible, aprendizaje o logro obtenido',col:'#8b5cf6'},
 ];
 
+// Rúbrica estándar 1-5 para cada componente STAR — da un criterio consistente
+// al entrevistador sobre qué distingue un puntaje de otro, en vez de dejarlo
+// puramente subjetivo.
+const STAR_RUBRIC = [
+  {n:1,l:'No responde / muy vago',d:'No hay información suficiente para evaluar la competencia.'},
+  {n:2,l:'Describe la situación, sin acción clara',d:'Hay contexto, pero no queda claro qué hizo la persona.'},
+  {n:3,l:'Acción clara, resultado débil',d:'Se entiende qué hizo, pero el resultado es poco relevante o no se menciona.'},
+  {n:4,l:'Respuesta STAR completa',d:'Situación, tarea, acción y resultado presentes y coherentes entre sí.'},
+  {n:5,l:'STAR completa con impacto medible',d:'Incluye un resultado cuantificable o verificable, con logro claro.'},
+];
+function renderStarRubric(){
+  const c = document.getElementById('star-rubric');
+  if(!c) return;
+  c.innerHTML = STAR_RUBRIC.map(r=>`<div style="display:flex;gap:8px;padding:4px 0;border-top:1px solid rgba(13,115,115,.15)">
+    <b style="flex:0 0 16px;color:#7dd3d3">${r.n}</b>
+    <div><b style="color:#e0f2f2">${r.l}.</b> <span style="color:#8fb8b8">${r.d}</span></div>
+  </div>`).join('');
+}
+
 // ── STAR GUIDE ENGINE ────────────────────────────────────────
 const STAR_GUIDES = {
   conflicto:{
@@ -2725,6 +2748,7 @@ function init(){
   renderSectorFilters();
   renderProfiles();
   renderStarGrid();
+  renderStarRubric();
   updateStarDisplay();
   updateGlobalScore(5);
   setupTTSRate();
@@ -3076,7 +3100,7 @@ function renderStarGrid(){
       <div class="sc-label" style="color:${col}">${ICONS[k]} ${l}</div>
       <div class="sc-desc">${d}</div>
       <div class="pip-row">
-        ${[1,2,3,4,5].map(n=>`<button class="pip${v>=n?' on':''}" onclick="setStarScore('${k}',${n})" style="${v>=n?'--sc-col:'+col+';background:'+col:''};">${n}</button>`).join('')}
+        ${[1,2,3,4,5].map(n=>`<button class="pip${v>=n?' on':''}" onclick="setStarScore('${k}',${n})" title="${STAR_RUBRIC[n-1].l}" style="${v>=n?'--sc-col:'+col+';background:'+col:''};">${n}</button>`).join('')}
       </div>
       <textarea class="sc-note" id="sc-note-${k}" placeholder="Nota ${l.toLowerCase()}…" rows="1" style="display:${v>0?'block':'none'}">${document.getElementById('sc-note-'+k)?.value||''}</textarea>
     </div>`;
@@ -3736,6 +3760,21 @@ function doPrintPDF(){
   setTimeout(()=>{ win.focus(); win.print(); },500);
 }
 
+function reviewBlockHTML(moduleLabel){
+  return `<div style="padding:16px 24px;background:#fff;border-bottom:1px solid #e0f0f0;page-break-inside:avoid">
+    <div style="font-size:12px;font-weight:700;color:#041616;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px">📋 Registro de Revisión Humana</div>
+    <table style="width:100%;font-size:11px;border-collapse:collapse">
+      <tr><td style="padding:4px 0;width:50%">Nombre del asesor: ______________________</td><td style="padding:4px 0">Oficina: ______________________</td></tr>
+      <tr><td style="padding:4px 0">Fecha de revisión: ______________________</td><td style="padding:4px 0">Módulo: ${escHtml(moduleLabel)}</td></tr>
+      <tr><td colspan="2" style="padding:8px 0 4px">Observación humana:</td></tr>
+      <tr><td colspan="2" style="padding:0 0 8px;border-bottom:1px solid #d0eaea;height:32px"></td></tr>
+      <tr><td colspan="2" style="padding:8px 0 4px">Decisión / recomendación final del asesor:</td></tr>
+      <tr><td colspan="2" style="padding:0 0 8px;border-bottom:1px solid #d0eaea;height:32px"></td></tr>
+    </table>
+    <div style="font-size:10px;color:#5a9898;margin-top:8px;font-style:italic">Este resultado es asistido y orientativo — no constituye una decisión automática. Firma: ______________________</div>
+  </div>`;
+}
+
 function buildPDFHTML(e){
   const secLabel = SECTORS.find(s=>s.id===e.sector)?.label||e.sector;
   const gColor = scoreColorNum(e.globalScore);
@@ -3808,6 +3847,7 @@ function buildPDFHTML(e){
       </div>
       <div style="background:#e0f0f0;border-radius:4px;height:8px"><div style="background:${starColor};height:8px;border-radius:4px;width:${e.starPct}%"></div></div>
     </div>
+    <div style="margin-top:10px;font-size:9px;color:#5a9898;line-height:1.5">Rúbrica: ${STAR_RUBRIC.map(r=>`<b>${r.n}</b>=${r.l}`).join(' · ')}</div>
   </div>
 
   <!-- TRANSCRIPT -->
@@ -3827,6 +3867,8 @@ function buildPDFHTML(e){
     <div style="font-size:12px;font-weight:700;color:#041616;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">📝 Notas del Entrevistador</div>
     <div style="font-size:12px;line-height:1.6;color:#041616;white-space:pre-wrap">${escHtml(e.notes)}</div>
   </div>`:''}
+
+  ${reviewBlockHTML('Simulador de Entrevistas STAR')}
 
   <!-- FOOTER -->
   <div style="background:#0d7373;color:#fff;padding:12px 24px;display:flex;justify-content:space-between;align-items:center">
@@ -3890,6 +3932,7 @@ function buildPDFAllHTML(entries, scopeLabel){
       </tbody>
     </table>
   </div>
+  ${reviewBlockHTML('Simulador de Entrevistas STAR · Informe consolidado')}
   <div style="background:#0d7373;color:#fff;padding:10px 24px;font-size:10px;display:flex;justify-content:space-between">
     <span>ANE Costa Rica · MTSS · Confidencial · Ley 8968</span>
     <span>Simulador de Entrevistas v7.0</span>
