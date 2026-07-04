@@ -1330,6 +1330,7 @@ function escHtml(s){
           <div><b style="color:#7dd3d3">Modo videollamada:</b> Teams, Meet o Zoom compartiendo Vista Candidato.</div>
           <div><b style="color:#fbbf24">Modo sala virtual:</b> Requiere Firebase configurado institucionalmente.</div>
         </div>
+        <div style="margin-top:10px;font-size:11px;color:#eab308;background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.3);border-radius:8px;padding:8px 10px">⚠️ Un mismo dispositivo solo puede usar la cámara en una aplicación a la vez. Si ya estás en una llamada de Teams/Zoom/Meet con el candidato, pausa la cámara ahí antes de "Admitir candidato" en la Sala Virtual — si no, esta app no podrá activarla y verás un aviso de "cámara en uso".</div>
       </div>
       <div style="background:rgba(13,115,115,.08);border:1px solid rgba(13,115,115,.25);border-radius:12px;padding:16px;margin-bottom:14px">
         <div style="font-size:11px;font-weight:800;color:#7dd3d3;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Cómo funciona la sala virtual</div>
@@ -4433,7 +4434,7 @@ async function toggleCandCam(){
       let msg='No se pudo acceder a la cámara.';
       if(err.name==='NotAllowedError') msg='Permiso denegado. Haz clic en el ícono de cámara en la barra del navegador y permite el acceso.';
       else if(err.name==='NotFoundError') msg='No se encontró cámara en este dispositivo.';
-      else if(err.name==='NotReadableError') msg='La cámara está siendo usada por otra aplicación. Ciérrala e intenta.';
+      else if(err.name==='NotReadableError') msg='La cámara ya está en uso — probablemente por Teams, Zoom o Meet abiertos en otra pestaña/app. Pausa o apaga la cámara ahí (puedes seguir con el audio de esa llamada) y reintenta aquí.';
       else if(err.name==='TimeoutError') msg='La cámara no respondió. Si abriste este enlace desde WhatsApp/Instagram, copia el link y ábrelo directo en Chrome o Safari.';
       const ph=document.getElementById('cand-video-ph');
       if(ph) ph.innerHTML=`<div style="text-align:center;padding:20px"><div style="font-size:28px;margin-bottom:8px">📵</div><div style="font-size:13px;color:#ef4444;font-weight:600;margin-bottom:12px">${msg}</div><button onclick="toggleCandCam()" style="padding:8px 18px;background:#0d9488;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">🔄 Reintentar</button></div>`;
@@ -4857,6 +4858,11 @@ function admitirCandidato(){
     }).catch(function(err){
       var errName = err && err.name || 'Error';
       console.error('[ANE] No se pudo activar cámara+mic del entrevistador:', errName, err && err.message);
+      if(errName==='NotReadableError'){
+        showToast('⚠️ La cámara ya está en uso (probablemente por Teams/Zoom/Meet). Pausa la cámara ahí y reintenta, o continúa solo con audio.', '#eab308');
+      } else if(typeof showToast === 'function'){
+        showToast('⚠️ No se pudo activar tu cámara: '+errName+'. La entrevista continúa solo con audio si está disponible.', '#eab308');
+      }
       // Si no hay cámara, intentar solo audio
       navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(function(aStream){
         ivMicStream = aStream; ivMicOn = true; ivMicMuted = false;
