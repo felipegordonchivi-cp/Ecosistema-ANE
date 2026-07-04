@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ecosistema ANE · Agencia Nacional del Empleo · Costa Rica</title>
-<meta name="description" content="Portal integrado del Ecosistema ANE: ATS, Simulador de Entrevistas y Laboratorio IA ESCO-CR.">
+<title>ANE Impulsa · Agencia Nacional del Empleo · Costa Rica</title>
+<meta name="description" content="ANE Impulsa · Sistema digital para fortalecer la gestión de empleabilidad nacional.">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0d7373">
 <meta name="mobile-web-app-capable" content="yes">
@@ -691,7 +691,7 @@ a { color: inherit; }
         </svg>
       </div>
       <div class="brand-text">
-        <b>Ecosistema ANE</b>
+        <b>ANE Impulsa</b>
         <span>Costa Rica · v16</span>
       </div>
     </div>
@@ -786,7 +786,7 @@ a { color: inherit; }
       </div>
 
       <div class="sidecard">
-        <b>Ecosistema ANE <span style="font-size:10px;opacity:.6;font-weight:400">v2.0</span></b>
+        <b>ANE Impulsa <span style="font-size:10px;opacity:.6;font-weight:400">v2.0</span></b>
         <p>3/3 módulos · 100% offline · <span id="backup-date" style="color:var(--mint)">Sin backup</span></p>
         <div id="storage-bar-wrap" style="margin-top:6px;display:none">
           <div style="font-size:10px;color:var(--amber);margin-bottom:3px" id="storage-label"></div>
@@ -853,7 +853,7 @@ a { color: inherit; }
         <div class="hero-home">
           <div class="eyebrow"><span class="pulse"></span> Uso interno · ANE Costa Rica</div>
           <h1>Un solo portal.<br><span>Tres capacidades.</span></h1>
-          <p class="hero-lead">El ecosistema ANE integra evaluación curricular ATS, simulación de entrevistas STAR y Laboratorio IA con recomendación responsable basada en ESCO-CR. Todo en un portal unificado.</p>
+          <p class="hero-lead">Sistema digital para fortalecer la gestión de empleabilidad nacional. ANE Impulsa integra evaluación curricular ATS, simulación de entrevistas STAR y Laboratorio IA con recomendación responsable basada en ESCO-CR, todo en un portal unificado.</p>
           <div class="hero-actions">
             <button class="btn primary" onclick="loadModule('ats','app-ats-ane.html',document.querySelector('[data-panel=ats]'),'ATS ANE · Preselección curricular','Motor de ranking y evaluación de CV por competencias ESCO-CR')">⚡ Abrir ATS ANE</button>
             <button class="btn" onclick="loadModule('sim','app-simulador-entrevistas-ane.html',document.querySelector('[data-panel=sim]'),'Simulador de Entrevistas STAR','Evaluación por competencias con metodología STAR, audio y reportes')">🎙 Simulador STAR</button>
@@ -982,7 +982,7 @@ a { color: inherit; }
         <!-- Footer -->
         <div class="home-footer">
           <div>
-            <b>Ecosistema ANE · Agencia Nacional del Empleo · Costa Rica</b><br>
+            <b>ANE Impulsa · Agencia Nacional del Empleo · Costa Rica</b><br>
             Portal integrado v16 · Recomendación responsable · Privacidad por diseño
           </div>
           <div style="text-align:right">
@@ -995,9 +995,9 @@ a { color: inherit; }
       <!-- ABOUT panel -->
       <div class="audit-panel" id="panel-about">
         <div class="hero-home" style="margin-bottom:22px">
-          <div class="eyebrow">ℹ Ecosistema ANE</div>
+          <div class="eyebrow">ℹ ANE Impulsa</div>
           <h1>Acerca <span>del ecosistema</span></h1>
-          <p class="hero-lead">Suite de herramientas digitales para la Agencia Nacional del Empleo de Costa Rica. Procesamiento 100% local — sin servidores externos, sin envío de datos.</p>
+          <p class="hero-lead">ANE Impulsa · Sistema digital para fortalecer la gestión de empleabilidad nacional. Procesamiento 100% local — sin servidores externos, sin envío de datos.</p>
         </div>
 
         <div class="audit-grid" style="margin-bottom:20px">
@@ -1065,7 +1065,7 @@ a { color: inherit; }
         </div>
 
         <div class="home-footer" style="margin-top:0">
-          <div><b>Ecosistema ANE v2.0</b><br>Suite de herramientas de intermediación laboral · Costa Rica 2026</div>
+          <div><b>ANE Impulsa v2.0</b><br>Sistema digital para fortalecer la gestión de empleabilidad nacional · Costa Rica 2026</div>
           <div style="text-align:right">Agencia Nacional del Empleo<br>Brete.cr</div>
         </div>
       </div>
@@ -1114,7 +1114,7 @@ function switchPanel(id, btn, title, subtitle) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   // Update topbar
-  document.getElementById('topbar-title').textContent = title || 'Ecosistema ANE';
+  document.getElementById('topbar-title').textContent = title || 'ANE Impulsa';
   document.getElementById('topbar-sub').textContent = subtitle || 'Agencia Nacional del Empleo · Costa Rica';
   currentPanel = id;
   currentSrc = null;
