@@ -1868,7 +1868,11 @@ function escHtml(s){
       <div style="flex:1;overflow-y:auto;padding:16px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
           <h2 style="font-size:16px;font-weight:700">📂 Historial de Evaluaciones <span id="hist-count" style="background:var(--teal);border-radius:10px;padding:2px 8px;font-size:12px">0</span></h2>
-          <div style="display:flex;gap:8px">
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="reportScope" title="Alcance del informe consolidado" style="background:rgba(13,115,115,.15);border:1px solid var(--teal);color:var(--tl);padding:6px 8px;border-radius:8px;font-size:11px">
+              <option value="candidate">Candidato actual</option>
+              <option value="all">Todo el historial</option>
+            </select>
             <button onclick="exportCSV()" style="background:rgba(13,115,115,.2);border:1px solid var(--teal);color:var(--tl);padding:6px 14px;border-radius:8px;font-size:12px">📊 Exportar CSV</button>
             <button onclick="generateReportAll()" class="pdf-btn" style="padding:6px 16px;font-size:12px">📄 PDF Consolidado</button>
           </div>
@@ -3691,7 +3695,24 @@ function generatePDFForEntry(e){
 
 function generateReportAll(){
   if(!evalHistory.length){ alert('No hay evaluaciones guardadas.'); return; }
-  const html = buildPDFAllHTML(evalHistory);
+  const scope = document.getElementById('reportScope')?.value || 'candidate';
+  let entries = evalHistory;
+  let scopeLabel = 'Historial completo';
+  if(scope === 'candidate'){
+    const currentName = (document.getElementById('cand-name')?.value || '').trim();
+    if(currentName){
+      const filtered = evalHistory.filter(e => (e.name||'').trim().toLowerCase() === currentName.toLowerCase());
+      if(!filtered.length){
+        alert('No hay evaluaciones guardadas para "'+currentName+'". Cambia el filtro a "Todo el historial" o guarda una evaluación primero.');
+        return;
+      }
+      entries = filtered;
+      scopeLabel = 'Candidato: '+currentName;
+    } else if(!confirm('No hay nombre de candidato cargado, así que no se puede filtrar. ¿Generar el consolidado de TODO el historial ('+evalHistory.length+' evaluaciones)?')){
+      return;
+    }
+  }
+  const html = buildPDFAllHTML(entries, scopeLabel);
   document.getElementById('pdf-preview').innerHTML = html;
   document.getElementById('pdf-modal').classList.remove('hidden');
 }
@@ -3816,14 +3837,14 @@ function buildPDFHTML(e){
 </div>`;
 }
 
-function buildPDFAllHTML(entries){
+function buildPDFAllHTML(entries, scopeLabel){
   const avgGlobal = Math.round(entries.reduce((a,e)=>a+e.globalScore,0)/entries.length);
   const avgStar = Math.round(entries.reduce((a,e)=>a+e.starPct,0)/entries.length);
-  
+
   return `<div style="font-family:Arial,sans-serif;color:#000;padding:0;font-size:12px">
   <div style="background:#0d7373;color:#fff;padding:20px 24px">
     <div style="font-size:18px;font-weight:800">Informe Consolidado de Evaluaciones · ANE Costa Rica</div>
-    <div style="font-size:11px;opacity:.85">Metodología STAR · ${entries.length} evaluaciones · Generado: ${new Date().toLocaleString('es-CR')}</div>
+    <div style="font-size:11px;opacity:.85">${escHtml(scopeLabel||'Historial completo')} · Metodología STAR · ${entries.length} evaluaciones · Generado: ${new Date().toLocaleString('es-CR')}</div>
   </div>
   <div style="padding:16px 24px;background:#f0fafa;border-bottom:2px solid #0d7373;display:flex;gap:20px">
     <div style="text-align:center;flex:1">
