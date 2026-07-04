@@ -3476,6 +3476,11 @@ function analyzeStarLocally(text){
   const hits={};
   ['S','T','A','R'].forEach(k=>{ hits[k] = _starCountMatches(t, STAR_KW[k]); });
   const quant = _starQuantifiableResults(text);
+  const qualHits = hits.R; // señales de logro narrativo (p.ej. "logramos", "impacto", "éxito") antes del bono numérico
+  // Un resultado cuenta como demostrado tanto si trae cifras como si el logro
+  // queda claro en el relato (2+ señales narrativas) — ninguna de las dos vale
+  // más que la otra, ambas se suman al puntaje de R.
+  const hasResultSignal = quant.total>0 || qualHits>=2;
   if(quant.total>0) hits.R += Math.min(3, quant.total);
 
   const fillerCount = _starCountMatches(t, STAR_FILLERS);
@@ -3507,15 +3512,15 @@ function analyzeStarLocally(text){
   else mejoras.push('Precisar cuál era exactamente su rol o responsabilidad (no solo la del equipo).');
   if(s.A>=4) fortalezas.push('Detalla acciones concretas que tomó, en primera persona.');
   else mejoras.push('Detallar más las acciones específicas que ejecutó paso a paso.');
-  if(quant.total>0) fortalezas.push('Incluye resultados medibles (cifras/porcentajes/montos), lo cual da credibilidad al logro.');
-  else mejoras.push('Agregar resultados medibles y verificables (cifras, %, montos, tiempos) para respaldar el logro.');
+  if(hasResultSignal) fortalezas.push(quant.total>0 ? 'Incluye resultados medibles (cifras/porcentajes/montos), lo cual da credibilidad al logro.' : 'El logro queda claro y atribuible a su acción, aunque sea de forma cualitativa (sin cifras).');
+  else mejoras.push('El resultado no queda claro ni medible ni cualitativamente — precisar qué logró y cómo se supo que fue exitoso (cifras, %, tiempos, o una descripción concreta del cambio logrado).');
   if(wc<40) mejoras.push('La respuesta es muy breve para una evaluación STAR completa — se recomienda profundizar.');
   if(fillerCount>=3) mejoras.push('Se detectaron varias muletillas/relleno — practicar una comunicación más directa ayudaría.');
   if(ownershipNosotros > ownershipYo*1.5 && ownershipNosotros>=3) mejoras.push('Predomina el lenguaje de equipo ("nosotros") sobre el individual ("yo") — conviene distinguir su aporte personal.');
 
   const preguntas = [];
   if(s.T<3) preguntas.push('¿Cuál era específicamente su responsabilidad individual en ese proyecto?');
-  if(quant.total===0) preguntas.push('¿Puede cuantificar el resultado obtenido (en tiempo, dinero o %)?');
+  if(!hasResultSignal) preguntas.push('¿Cuál fue el resultado concreto de esa acción, en cifras o en un cambio observable?');
   if(preguntas.length<2) preguntas.push('¿Qué haría diferente si enfrentara la misma situación hoy?');
   if(preguntas.length<2) preguntas.push('¿Cómo midió el equipo o la organización el éxito de esa acción?');
 
@@ -3530,7 +3535,8 @@ function analyzeStarLocally(text){
     +'8. NOTAS DE COMUNICACIÓN (heurística de texto — no reemplaza el feedback de tono de voz)\n'
     +'  • Extensión: '+wc+' palabras, '+sentences.length+' oraciones (~'+avgSentLen+' palabras/oración).\n'
     +'  • Muletillas/relleno detectadas: '+fillerCount+'.\n'
-    +'  • Resultados cuantificables detectados: '+quant.total+' ('+([...quant.pct,...quant.money,...quant.nums].slice(0,5).join(', ')||'ninguno')+').\n\n'
+    +'  • Resultados cuantificables detectados: '+quant.total+' ('+([...quant.pct,...quant.money,...quant.nums].slice(0,5).join(', ')||'ninguno')+').\n'
+    +'  • Señales de logro cualitativo detectadas: '+qualHits+' — '+(hasResultSignal?'resultado demostrado':'no queda claro el resultado')+'.\n\n'
     +'─'.repeat(50)+'\n'
     +'⚠️ Este análisis es una heurística local por palabras clave y patrones de\n'
     +'texto — no usa modelos de lenguaje ni IA generativa. Es un apoyo objetivo\n'
