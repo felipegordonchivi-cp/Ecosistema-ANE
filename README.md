@@ -58,7 +58,7 @@ base-*.csv                              ← Datos ESCO-CR (2 000 perfiles)
 
 ## Notas técnicas
 
-- **Procesamiento 100% local**: ningún dato se envía a servidores externos
+- **Procesamiento local por defecto**: CV, entrevistas y diagnósticos se procesan en el navegador. Dos funciones opcionales usan servicios externos si el equipo TI las configura: la sala virtual del Simulador (Firebase) y el análisis con IA (Gemini, vía API Key o proxy institucional)
 - **Sin backend requerido**: archivos HTML estáticos puros
 - **Simulador de audio**: requiere HTTPS para MediaRecorder (incluido en cualquier despliegue web)
 - **Privacidad por diseño**: los CV y datos de candidatos nunca salen del navegador
