@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matriz de Riesgos y Controles · ANE Impulsa</title>
+<style>
+@page{size:letter;margin:18mm 16mm 18mm 16mm}
+:root{--teal:#0d7373;--teal2:#14b8a6;--ink:#16302d;--muted:#526d69;--line:#cfe4e1;--soft:#f4fbf9;--gold:#b78f3d;--red:#b91c1c;--redbg:#fef2f2;--amber:#b45309;--amberbg:#fef3e2;--green:#166534;--greenbg:#f0fdf4}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#eef6f4;color:var(--ink)}
+.wrapper{max-width:1040px;margin:24px auto;padding:0 16px}.page{background:#fff;box-shadow:0 18px 60px rgba(13,38,35,.12);border:1px solid #dbecea}
+.header{padding:20px 28px 14px;border-bottom:3px solid var(--teal);background:linear-gradient(90deg,#f9fdfc,#f1fbf8)}
+.brand{display:flex;align-items:center;gap:16px}.brandmark{width:70px;height:70px;border-radius:18px;background:linear-gradient(135deg,var(--teal),var(--teal2));display:grid;place-items:center;color:#fff;font-weight:800;font-size:21px;letter-spacing:.05em}.titles h1{margin:0;font-size:26px;letter-spacing:-.02em}.titles p{margin:6px 0 0;color:var(--muted);font-size:13px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}.meta .box{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff}.meta b{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}.meta span{display:block;margin-top:3px;font-size:13px;font-weight:700}
+.content{padding:24px 28px 18px}.hero{border:1px solid var(--line);border-radius:18px;background:linear-gradient(135deg,#f7fcfb,#eef8f6);padding:18px 20px}.hero h2{margin:0 0 10px;font-size:22px}.hero p{margin:0;color:var(--muted);line-height:1.65}
+.section{margin-top:22px}.section h3{margin:0 0 10px;font-size:18px;padding-bottom:7px;border-bottom:1px solid var(--line)}.section p{margin:0 0 10px;line-height:1.7}
+.table{width:100%;border-collapse:collapse;margin-top:10px}.table th,.table td{border:1px solid var(--line);padding:9px 10px;text-align:left;vertical-align:top;font-size:11.5px;line-height:1.55}.table th{background:#f2faf8;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.sev{display:inline-block;padding:2px 9px;border-radius:999px;font-size:10.5px;font-weight:800}
+.sev.alta{background:var(--redbg);color:var(--red)}
+.sev.media{background:var(--amberbg);color:var(--amber)}
+.sev.baja{background:var(--greenbg);color:var(--green)}
+.legend{display:flex;gap:16px;margin-top:8px;font-size:11.5px;color:var(--muted)}
+.footer{display:flex;justify-content:space-between;align-items:center;border-top:2px solid var(--teal);padding:10px 28px 16px;color:var(--muted);font-size:11px}.seal{font-weight:700;color:var(--teal)}
+.small{font-size:12px;color:var(--muted)}
+@media print{body{background:#fff}.wrapper{max-width:none;margin:0;padding:0}.page{box-shadow:none;border:none}}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <article class="page">
+    <header class="header">
+      <div class="brand">
+        <div class="brandmark">ANE</div>
+        <div class="titles">
+          <h1>Matriz de Riesgos y Controles</h1>
+          <p>ANE Impulsa · Agencia Nacional de Empleo, Costa Rica</p>
+        </div>
+      </div>
+      <div class="meta">
+        <div class="box"><b>Documento</b><span>2 de 3 · Paquete de piloto</span></div>
+        <div class="box"><b>Alcance</b><span>ATS · STAR · Laboratorio IA</span></div>
+        <div class="box"><b>Estado</b><span>Prototipo → Piloto</span></div>
+      </div>
+    </header>
+    <main class="content">
+      <section class="hero">
+        <h2>Cómo leer esta matriz</h2>
+        <p>Cada fila describe un riesgo identificado en el prototipo actual, el control que ya existe hoy (verificado directamente en el código del sistema), y el control adicional que se requiere antes de avanzar de piloto a producción con datos reales. La severidad indica el impacto si el riesgo se materializa <b>sin</b> el control requerido en su lugar.</p>
+        <div class="legend"><span><span class="sev alta">Alta</span> impacto legal, de privacidad o reputacional directo</span><span><span class="sev media">Media</span> impacto operativo o de confianza en el sistema</span><span><span class="sev baja">Baja</span> impacto menor, corregible en marcha</span></div>
+      </section>
+
+      <section class="section">
+        <h3>1. Datos personales y privacidad</h3>
+        <table class="table">
+          <thead><tr><th style="width:14%">Riesgo</th><th style="width:8%">Severidad</th><th style="width:34%">Control actual</th><th style="width:44%">Control requerido para producción</th></tr></thead>
+          <tbody>
+            <tr><td>Procesamiento de CV, audios y diagnósticos de personas reales sin base legal</td><td><span class="sev alta">Alta</span></td><td>Procesamiento 100% en el navegador del asesor; nada se envía a un servidor por defecto. Modal de consentimiento de prototipo antes de abrir ATS, Simulador o Laboratorio.</td><td>Registro formal de consentimiento (Ley 8968): finalidad, destinatarios, tratamiento, derechos y responsable de la base de datos, con constancia exportable por caso.</td></tr>
+            <tr><td>Ausencia de política de retención y eliminación de datos</td><td><span class="sev media">Media</span></td><td>No hay almacenamiento persistente en servidor; el historial del Simulador vive en el navegador del equipo.</td><td>Política institucional de cuánto tiempo se conservan diagnósticos, evaluaciones e informes, y procedimiento de eliminación a solicitud del titular.</td></tr>
+            <tr><td>API Key de Gemini expuesta en el navegador (localStorage)</td><td><span class="sev media">Media</span></td><td>La API Key directa se guarda en <code>localStorage</code> del equipo; la UI ahora recomienda explícitamente el proxy institucional como opción preferida y advierte del riesgo de la clave directa.</td><td>Uso exclusivo del proxy institucional (<code>tools/gemini-proxy-worker.js</code>) en producción — ninguna clave de IA debe vivir en el navegador de un usuario final.</td></tr>
+            <tr><td>Sala virtual del Simulador (Firebase) con reglas de acceso débiles</td><td><span class="sev media">Media</span></td><td>Se corrigió el banner que mostraba una regla abierta (<code>.read/.write: true</code>) como solución; ahora remite a las reglas restringidas de <code>tools/firebase-database-rules.json</code> (acceso solo a <code>/salas</code>, con validación).</td><td>Autenticación por sala y expiración automática, en vez de depender únicamente de que el identificador de sala sea difícil de adivinar.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="section">
+        <h3>2. Decisiones automatizadas y sesgo</h3>
+        <table class="table">
+          <thead><tr><th style="width:14%">Riesgo</th><th style="width:8%">Severidad</th><th style="width:34%">Control actual</th><th style="width:44%">Control requerido para producción</th></tr></thead>
+          <tbody>
+            <tr><td>Un resultado (ranking, evaluación STAR, diagnóstico) se use como decisión automática de contratación o descarte</td><td><span class="sev alta">Alta</span></td><td>Cada módulo declara explícitamente que el resultado es asistido/orientativo (footer, notas institucionales) y ahora incluye un bloque impreso de "Registro de revisión humana" (asesor, fecha, decisión final) en cada PDF exportado.</td><td>Política institucional formal que prohíba usar el resultado como único criterio, con proceso documentado de apelación para la persona candidata.</td></tr>
+            <tr><td>El ranking del ATS penaliza CV mal redactados en vez de perfiles poco calificados</td><td><span class="sev media">Media</span></td><td>El ATS ya muestra, por candidato, fortalezas detectadas y brechas específicas con la evidencia textual encontrada — no solo un puntaje — para que el asesor revise el razonamiento, no solo el número.</td><td>Validación metodológica del algoritmo de ranking con una muestra de CV reales (anonimizados) y retroalimentación de asesores, antes de usarlo como filtro eliminatorio automático.</td></tr>
+            <tr><td>Datos sensibles (edad, género, nacionalidad, foto, dirección exacta) influyan indebidamente en un resultado</td><td><span class="sev media">Media</span></td><td>El sistema no solicita explícitamente estos campos en sus formularios de entrada.</td><td>Auditoría de sesgo formal antes de producción: verificar que ninguna de estas variables, si aparece incidentalmente en el texto de un CV, cambie el resultado.</td></tr>
+            <tr><td>Sesgo cuantitativo/cualitativo en la evaluación STAR (penalizar logros sin cifras)</td><td><span class="sev baja">Baja</span></td><td>Corregido en esta sesión: la heurística local ahora valora igual evidencia cuantitativa y cualitativa de logro, y la rúbrica 1-5 estandariza el criterio del entrevistador.</td><td>Revisión periódica de la rúbrica con casos reales del piloto para ajustar los niveles si es necesario.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="section">
+        <h3>3. Trazabilidad y control de acceso</h3>
+        <table class="table">
+          <thead><tr><th style="width:14%">Riesgo</th><th style="width:8%">Severidad</th><th style="width:34%">Control actual</th><th style="width:44%">Control requerido para producción</th></tr></thead>
+          <tbody>
+            <tr><td>Falta de bitácora institucional de quién hizo qué y cuándo</td><td><span class="sev alta">Alta</span></td><td>Cada informe PDF (ATS, STAR, Laboratorio) incluye ahora un bloque de registro de revisión humana con espacio para nombre, oficina, fecha y decisión — pero es un registro en papel/PDF, no un log de sistema.</td><td>Bitácora de acciones en backend: usuario, acción, marca de tiempo y resultado, con acceso restringido para auditoría.</td></tr>
+            <tr><td>El sitio es público (GitHub Pages) sin autenticación</td><td><span class="sev alta">Alta</span></td><td>El portal muestra ahora explícitamente su estado de madurez ("prototipo funcional avanzado", no producción) y un modal de consentimiento antes de usar módulos sensibles.</td><td>Autenticación institucional, roles (asesor / supervisor / administrador) y despliegue en un entorno con control de acceso, no en un sitio estático público.</td></tr>
+            <tr><td>Falta de roles diferenciados (todo usuario ve y puede exportar todo)</td><td><span class="sev media">Media</span></td><td>No existe distinción de roles; es un prototipo de un solo nivel de acceso.</td><td>Definir roles con TI: qué puede ver/exportar un asesor vs. un supervisor vs. un administrador.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="section">
+        <h3>4. Consistencia e integridad del contenido</h3>
+        <table class="table">
+          <thead><tr><th style="width:14%">Riesgo</th><th style="width:8%">Severidad</th><th style="width:34%">Control actual</th><th style="width:44%">Control requerido para producción</th></tr></thead>
+          <tbody>
+            <tr><td>Datos de la matriz de competencias ESCO-CR generados por plantilla, con nombres o categorías incoherentes</td><td><span class="sev baja">Baja</span></td><td>Auditadas y corregidas en esta sesión las 913/2000 entradas templadas detectadas (nombre reescrito a lenguaje natural y grupo reasignado al dominio correcto).</td><td>Validación de la matriz completa con especialistas ocupacionales antes de una versión institucional ampliada.</td></tr>
+            <tr><td>Inconsistencias de cifras o nombres entre el portal y los manuales (p. ej. conteo de competencias)</td><td><span class="sev baja">Baja</span></td><td>Identificado como pendiente — ver Tarea de rehacer manuales del Centro de Ayuda.</td><td>Unificar la cifra oficial (500 vs. 2,000) y revisar todos los manuales antes de cualquier presentación externa formal.</td></tr>
+          </tbody>
+        </table>
+      </section>
+      <p class="small">Este documento forma parte del paquete de piloto controlado de ANE Impulsa (3 documentos). Preparado para impresión o exportación a PDF en tamaño carta.</p>
+    </main>
+    <footer class="footer">
+      <div>Agencia Nacional de Empleo · Costa Rica<br>Matriz de riesgos y controles · ANE Impulsa</div>
+      <div class="seal">Documento institucional · Uso interno</div>
+      <div>Página 2</div>
+    </footer>
+  </article>
+</div>
+</body>
+</html>
