@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ecosistema ANE · Agencia Nacional del Empleo · Costa Rica</title>
-<meta name="description" content="Portal integrado del Ecosistema ANE: ATS, Simulador de Entrevistas, Centro de Control de Intermediación y Laboratorio IA ESCO-CR.">
+<meta name="description" content="Portal integrado del Ecosistema ANE: ATS, Simulador de Entrevistas y Laboratorio IA ESCO-CR.">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0d7373">
 <meta name="mobile-web-app-capable" content="yes">
@@ -16,7 +16,7 @@
 <style>
 /* ================================================================
    ECOSISTEMA ANE — PORTAL INTEGRADO v16
-   4 módulos embebidos: ATS · Simulador · Dashboard · Laboratorio IA
+   3 módulos embebidos: ATS · Simulador · Laboratorio IA
    ================================================================ */
 :root {
   --bg: #041616;
@@ -729,13 +729,6 @@ a { color: inherit; }
           <span class="nav-badge live">Activo</span>
           <div class="loading-dot"></div>
         </button>
-        <button class="nav-btn" aria-label="Módulo Centro de Control" data-panel="dash" data-src="app-dashboard-intermediacion-ane.html"
-          onclick="loadModule('dash','app-dashboard-intermediacion-ane.html',this,'Centro de Control · Intermediación','Dashboard ejecutivo: citas, sesiones, referidos y productividad')">
-          <span class="nav-ico">📊</span>
-          <span>Centro de Control</span>
-          <span class="nav-badge live">Activo</span>
-          <div class="loading-dot"></div>
-        </button>
         <button class="nav-btn" aria-label="Módulo Laboratorio IA" data-panel="lab" data-src="app-4-laboratorio-ia-ane.html"
           onclick="loadModule('lab','app-4-laboratorio-ia-ane.html',this,'Laboratorio IA · ESCO-CR v15','Copiloto de orientación con confianza calibrada y trazabilidad')">
           <span class="nav-ico">⚡</span>
@@ -794,7 +787,7 @@ a { color: inherit; }
 
       <div class="sidecard">
         <b>Ecosistema ANE <span style="font-size:10px;opacity:.6;font-weight:400">v2.0</span></b>
-        <p>4/4 módulos · 100% offline · <span id="backup-date" style="color:var(--mint)">Sin backup</span></p>
+        <p>3/3 módulos · 100% offline · <span id="backup-date" style="color:var(--mint)">Sin backup</span></p>
         <div id="storage-bar-wrap" style="margin-top:6px;display:none">
           <div style="font-size:10px;color:var(--amber);margin-bottom:3px" id="storage-label"></div>
           <div style="height:4px;border-radius:2px;background:rgba(125,211,211,.15);overflow:hidden"><div id="storage-bar" style="height:100%;background:var(--teal2);transition:width .4s"></div></div>
@@ -839,7 +832,7 @@ a { color: inherit; }
       <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Menú">☰</button>
       <div class="topbar-info">
         <b id="topbar-title">Agencia Nacional del Empleo · Costa Rica</b>
-        <span id="topbar-sub">Portal integrado · 4 módulos activos</span>
+        <span id="topbar-sub">Portal integrado · 3 módulos activos</span>
       </div>
       <button class="topbar-btn" onclick="openCurrentInTab()" title="Abrir módulo en pestaña nueva">↗ Nueva pestaña</button>
       <button class="topbar-btn primary" onclick="loadModule('ats','app-ats-ane.html',document.querySelector('[data-panel=ats]'),'ATS ANE · Preselección curricular','Motor de ranking y evaluación de CV por competencias ESCO-CR')">⚡ Iniciar ATS</button>
@@ -859,19 +852,18 @@ a { color: inherit; }
         <!-- Hero -->
         <div class="hero-home">
           <div class="eyebrow"><span class="pulse"></span> Uso interno · ANE Costa Rica</div>
-          <h1>Un solo portal.<br><span>Cuatro capacidades.</span></h1>
-          <p class="hero-lead">El ecosistema ANE integra evaluación curricular ATS, simulación de entrevistas STAR, control ejecutivo de intermediación y Laboratorio IA con recomendación responsable basada en ESCO-CR. Todo en un portal unificado.</p>
+          <h1>Un solo portal.<br><span>Tres capacidades.</span></h1>
+          <p class="hero-lead">El ecosistema ANE integra evaluación curricular ATS, simulación de entrevistas STAR y Laboratorio IA con recomendación responsable basada en ESCO-CR. Todo en un portal unificado.</p>
           <div class="hero-actions">
             <button class="btn primary" onclick="loadModule('ats','app-ats-ane.html',document.querySelector('[data-panel=ats]'),'ATS ANE · Preselección curricular','Motor de ranking y evaluación de CV por competencias ESCO-CR')">⚡ Abrir ATS ANE</button>
             <button class="btn" onclick="loadModule('sim','app-simulador-entrevistas-ane.html',document.querySelector('[data-panel=sim]'),'Simulador de Entrevistas STAR','Evaluación por competencias con metodología STAR, audio y reportes')">🎙 Simulador STAR</button>
-            <button class="btn" onclick="loadModule('dash','app-dashboard-intermediacion-ane.html',document.querySelector('[data-panel=dash]'),'Centro de Control · Intermediación','Dashboard ejecutivo: citas, sesiones, referidos y productividad')">📊 Centro de Control</button>
             <button class="btn" onclick="loadModule('lab','app-4-laboratorio-ia-ane.html',document.querySelector('[data-panel=lab]'),'Laboratorio IA · ESCO-CR v15','Copiloto de orientación con confianza calibrada y trazabilidad')">⚡ Laboratorio IA</button>
           </div>
         </div>
 
         <!-- KPIs -->
         <div class="kpi-grid">
-          <div class="kpi"><small>Módulos integrados</small><b>4/4</b><span>100% operativo</span></div>
+          <div class="kpi"><small>Módulos integrados</small><b>3/3</b><span>100% operativo</span></div>
           <div class="kpi"><small>Flujo candidato</small><b>360°</b><span>CV · STAR · Seguimiento</span></div>
           <div class="kpi"><small>Marco de competencias</small><b>ESCO-CR</b><span>2 000 perfiles</span></div>
           <div class="kpi"><small>Procesamiento</small><b>Local</b><span>Privacidad por diseño</span></div>
@@ -923,25 +915,6 @@ a { color: inherit; }
             </div>
           </div>
 
-          <div class="module-card" onclick="loadModule('dash','app-dashboard-intermediacion-ane.html',document.querySelector('[data-panel=dash]'),'Centro de Control · Intermediación','Dashboard ejecutivo: citas, sesiones, referidos y productividad')">
-            <div class="mod-top">
-              <div class="mod-icon">📊</div>
-              <span class="mod-status">Activo</span>
-            </div>
-            <h3>Centro de Control · Intermediación</h3>
-            <p>Dashboard ejecutivo de intermediación laboral. Gestiona citas, sesiones, talleres, referidos y productividad del equipo. Importa/exporta Excel (XLSX).</p>
-            <div class="mod-tags">
-              <span class="mod-tag">BI ejecutivo</span>
-              <span class="mod-tag">Citas y sesiones</span>
-              <span class="mod-tag">XLSX import/export</span>
-              <span class="mod-tag">Chart.js</span>
-            </div>
-            <div class="mod-cta">
-              <button class="mod-open">⚡ Abrir módulo</button>
-              <a class="mod-manual" href="manual-dashboard-intermediacion-ane.html" target="_blank" rel="noopener" onclick="event.stopPropagation()">📘 Manual</a>
-            </div>
-          </div>
-
           <div class="module-card" onclick="loadModule('lab','app-4-laboratorio-ia-ane.html',document.querySelector('[data-panel=lab]'),'Laboratorio IA · ESCO-CR v15','Copiloto de orientación con confianza calibrada y trazabilidad')">
             <div class="mod-top">
               <div class="mod-icon">⚡</div>
@@ -984,7 +957,7 @@ a { color: inherit; }
           <div class="section-h">
             <div>
               <h2>Flujo operacional integrado</h2>
-              <p>Arquitectura de 4 pasos: del ingreso de vacante hasta el control ejecutivo de resultados.</p>
+              <p>Arquitectura de 3 pasos: del ingreso de vacante hasta la entrevista por competencias.</p>
             </div>
           </div>
           <div class="flow">
@@ -1002,11 +975,6 @@ a { color: inherit; }
               <div class="step-num">3</div>
               <b>Entrevista STAR</b>
               <p>Evaluación por competencias con preguntas, transcripción, notas y reporte PDF.</p>
-            </div>
-            <div class="step">
-              <div class="step-num">4</div>
-              <b>Control ejecutivo</b>
-              <p>Seguimiento de citas, referidos, productividad y brechas en el Centro de Control.</p>
             </div>
           </div>
         </div>
@@ -1043,12 +1011,6 @@ a { color: inherit; }
             <div class="score-desc" style="padding:4px 0">
               <b class="status-ok" style="font-size:15px">Simulador STAR</b>
               <p style="margin:6px 0 0;font-size:13px;color:var(--muted)">Entrevistas estructuradas con metodología STAR. Panel doble entrevistador/candidato, grabación de audio y exportación de resultados.</p>
-            </div>
-          </div>
-          <div class="audit-card">
-            <div class="score-desc" style="padding:4px 0">
-              <b class="status-ok" style="font-size:15px">Centro de Control</b>
-              <p style="margin:6px 0 0;font-size:13px;color:var(--muted)">Dashboard ejecutivo con KPIs, gráficas, registro de citas, gestión del equipo asesor y exportación XLSX.</p>
             </div>
           </div>
           <div class="audit-card">
@@ -1111,7 +1073,6 @@ a { color: inherit; }
       <!-- MODULE iframes — se crean dinámicamente -->
       <iframe class="module-frame" id="frame-ats" title="ATS ANE" sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-same-origin allow-downloads"></iframe>
       <iframe class="module-frame" id="frame-sim" title="Simulador de Entrevistas STAR"></iframe>
-      <iframe class="module-frame" id="frame-dash" title="Centro de Control Intermediación"></iframe>
       <iframe class="module-frame" id="frame-lab" title="Laboratorio IA ESCO-CR"></iframe>
       <iframe class="module-frame" id="frame-demo" title="Demo Empresas"></iframe>
       <iframe class="module-frame" id="frame-help" title="Centro de Ayuda"></iframe>
@@ -1137,7 +1098,6 @@ const panels = {
   about: { el: document.getElementById('panel-about'), type: 'panel' },
   ats: { el: document.getElementById('frame-ats'), type: 'frame' },
   sim: { el: document.getElementById('frame-sim'), type: 'frame' },
-  dash: { el: document.getElementById('frame-dash'), type: 'frame' },
   lab: { el: document.getElementById('frame-lab'), type: 'frame' },
   demo: { el: document.getElementById('frame-demo'), type: 'frame' },
   help: { el: document.getElementById('frame-help'), type: 'frame' },
@@ -1265,8 +1225,7 @@ document.addEventListener('keydown', e => {
   if (e.ctrlKey || e.metaKey) {
     if (e.key === '1') { e.preventDefault(); document.querySelector('[data-panel="ats"]').click(); }
     if (e.key === '2') { e.preventDefault(); document.querySelector('[data-panel="sim"]').click(); }
-    if (e.key === '3') { e.preventDefault(); document.querySelector('[data-panel="dash"]').click(); }
-    if (e.key === '4') { e.preventDefault(); document.querySelector('[data-panel="lab"]').click(); }
+    if (e.key === '3') { e.preventDefault(); document.querySelector('[data-panel="lab"]').click(); }
     if (e.key === '0') { e.preventDefault(); switchPanel('home', document.querySelector('[data-panel="home"]'), 'Inicio ejecutivo', 'Panel maestro del ecosistema ANE'); }
   }
 });
@@ -1286,7 +1245,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Hash-based navigation
 function navigateFromHash() {
-  const map = { '#ats': 'ats', '#sim': 'sim', '#dash': 'dash', '#lab': 'lab', '#help': 'help', '#audit': 'audit', '#home': 'home' };
+  const map = { '#ats': 'ats', '#sim': 'sim', '#lab': 'lab', '#help': 'help', '#audit': 'audit', '#home': 'home' };
   const target = map[window.location.hash];
   if (target && target !== 'home' && target !== 'audit') {
     const btn = document.querySelector(`[data-panel="${target}"]`);
@@ -1298,7 +1257,7 @@ navigateFromHash();
 
 // ============================================================
 // BRIDGE inter-módulo via localStorage (namespace ANE_BRIDGE)
-// Permite que ATS pase candidatos al Simulador y al Dashboard
+// Permite que ATS pase candidatos al Simulador
 // ============================================================
 window.ANE = window.ANE || {};
 ANE.bridge = {
@@ -1318,7 +1277,7 @@ ANE.bridge = {
   notify: function(key, data) {
     this.set(key, data);
     // Broadcast to loaded iframes
-    ['frame-ats','frame-sim','frame-dash','frame-lab'].forEach(function(id){
+    ['frame-ats','frame-sim','frame-lab'].forEach(function(id){
       const f = document.getElementById(id);
       if(f && f.contentWindow) {
         try { f.contentWindow.postMessage({type:'ane_bridge', key:key, data:data}, window.location.origin); } catch(e){}
