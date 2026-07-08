@@ -258,6 +258,8 @@ textarea{resize:vertical}
   .iv-cockpit > div:last-child{min-width:200px;flex-shrink:0}
   /* Grabación y transcripción — ocultar en móvil dentro del cockpit horizontal */
   .iv-cockpit #waveform,.iv-cockpit #rec-timer{display:none}
+  /* Transcripción — en el cockpit horizontal móvil no hay espacio vertical extra, volver a tamaño compacto */
+  .iv-cockpit .iv-transcript-box{min-height:36px;max-height:70px}
   /* Botones AV del cockpit — más pequeños */
   .iv-ctrl-btn{min-width:44px;padding:6px 8px;font-size:8px}
   /* Quick-Q buttons */
@@ -1677,7 +1679,7 @@ function escHtml(s){
         <!-- ── 5. TRANSCRIPCIÓN ── -->
         <div class="iv-section" style="padding:8px 14px">
           <div style="font-size:9px;color:#2a5a5a;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px">Transcripción en vivo</div>
-          <div style="min-height:36px;max-height:70px;overflow-y:auto;background:rgba(0,0,0,.2);border-radius:8px;padding:7px 10px">
+          <div class="iv-transcript-box" style="min-height:120px;max-height:280px;overflow-y:auto;background:rgba(0,0,0,.2);border-radius:8px;padding:7px 10px">
             <span id="transcript-final" style="font-size:11px;color:#a8dede"></span>
             <span id="transcript-interim" style="font-size:11px;color:#5a9898;font-style:italic"></span>
           </div>
@@ -1775,7 +1777,7 @@ function escHtml(s){
 
           <!-- IA + Puntaje global -->
           <div class="eval2-card">
-            <h4>🤖 Análisis con IA · Gemini</h4>
+            <h4>⭐ Análisis de la respuesta</h4>
 
             <!-- API Key UI -->
             <div id="api-key-ui" style="display:none;background:rgba(13,115,115,.1);border-radius:8px;padding:10px;margin-bottom:10px;border:1px solid rgba(13,115,115,.3)">
@@ -1800,19 +1802,25 @@ function escHtml(s){
               <p style="color:#e0a800;font-size:11px;margin-top:6px;line-height:1.5">⚠️ IA externa opcional. No ingrese datos sensibles sin autorización institucional. El uso de API externa debe estar validado por la institución.</p>
             </div>
 
-            <div style="display:flex;gap:6px;margin-bottom:10px">
-              <button id="ai-btn" onclick="analyzeWithAI()" style="flex:1;background:linear-gradient(135deg,var(--teal),var(--tl));border:none;color:#fff;padding:9px;border-radius:9px;font-size:12px;font-weight:800">🔍 Analizar respuesta</button>
-              <button onclick="analyzeAndSave()" style="background:rgba(13,115,115,.2);border:1px solid var(--teal);color:var(--tl);padding:9px 10px;border-radius:9px;font-size:12px" title="Analizar y guardar">💾</button>
-              <button onclick="toggleApiKeyUI()" style="background:rgba(13,115,115,.15);border:1px solid rgba(13,115,115,.4);color:var(--tl);padding:9px 10px;border-radius:9px;font-size:12px" title="API Key">🔑</button>
-            </div>
-            <button onclick="analyzeLocalOnly()" style="width:100%;margin-bottom:10px;background:rgba(13,115,115,.08);border:1px dashed rgba(13,115,115,.4);color:#5a9898;padding:8px;border-radius:9px;font-size:11px;font-weight:700;cursor:pointer">🧮 Análisis local por palabras clave (sin IA, sin clave, gratis)</button>
+            <button onclick="analyzeLocalOnly()" style="width:100%;margin-bottom:8px;background:linear-gradient(135deg,var(--teal),var(--tl));border:none;color:#fff;padding:13px;border-radius:10px;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 3px 12px rgba(13,115,115,.4);display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;line-height:1.3">🧮 Analizar respuesta (local — sin IA, sin clave, gratis)<span style="background:rgba(255,255,255,.25);border-radius:999px;padding:1px 8px;font-size:9px;font-weight:800;letter-spacing:.04em">RECOMENDADO</span></button>
+            <p style="color:#4a8a8a;font-size:10px;margin:0 0 10px;line-height:1.5">✅ Instantáneo, funciona sin conexión ni clave, y no envía la respuesta del candidato a servicios externos.</p>
+
+            <details style="margin-bottom:10px">
+              <summary style="cursor:pointer;color:#3a7272;font-size:11px;font-weight:700;list-style:none">🔍 Análisis con IA externa (Gemini) — opcional, requiere clave API ▾</summary>
+              <div style="display:flex;gap:6px;margin-top:8px">
+                <button id="ai-btn" onclick="analyzeWithAI()" style="flex:1;background:rgba(13,115,115,.08);border:1px dashed rgba(13,115,115,.4);color:#5a9898;padding:8px;border-radius:9px;font-size:11px;font-weight:700;cursor:pointer">🔍 Analizar con IA</button>
+                <button onclick="analyzeAndSave()" style="background:rgba(13,115,115,.1);border:1px solid rgba(13,115,115,.25);color:#5a9898;padding:8px 10px;border-radius:9px;font-size:12px;cursor:pointer" title="Analizar con IA y guardar">💾</button>
+                <button onclick="toggleApiKeyUI()" style="background:rgba(13,115,115,.08);border:1px solid rgba(13,115,115,.25);color:#5a9898;padding:8px 10px;border-radius:9px;font-size:12px;cursor:pointer" title="API Key">🔑</button>
+              </div>
+              <p style="color:#4a8a8a;font-size:10px;margin-top:6px;line-height:1.5">⚠️ Envía la respuesta del candidato a un servicio externo (Google Gemini). Úsela solo si su institución lo autorizó.</p>
+            </details>
 
             <div id="ai-loading" style="display:none;text-align:center;padding:20px;color:var(--tl)">
               <div style="font-size:24px;margin-bottom:8px;animation:blink 1s infinite">⏳</div>Analizando con IA…
             </div>
             <div id="ai-result" style="background:rgba(13,115,115,.08);border:1px solid rgba(13,115,115,.25);border-radius:10px;padding:14px;font-size:12px;color:#c8e8e8;line-height:1.8;white-space:pre-wrap;max-height:280px;overflow-y:auto;display:none;border-left:3px solid var(--teal)"></div>
-            <p id="ai-hint" style="color:#4a8a8a;font-size:11px;margin-top:6px">Importa la transcripción de audio o escribe la respuesta, luego presiona <b style="color:var(--tl)">Analizar</b>.</p>
-            <p style="color:#4a8a8a;font-size:10px;margin-top:4px;line-height:1.5">🎙 Si el candidato respondió por Sala Virtual, el análisis incluye feedback de tono de voz (ritmo, claridad, muletillas) — es solo retroalimentación de coaching y no afecta el puntaje ni la recomendación. No se evalúa lenguaje corporal.</p>
+            <p id="ai-hint" style="color:#4a8a8a;font-size:11px;margin-top:6px">Importa la transcripción de audio o escribe la respuesta, luego presiona <b style="color:var(--tl)">Analizar respuesta (local)</b>.</p>
+            <p style="color:#4a8a8a;font-size:10px;margin-top:4px;line-height:1.5">🎙 Si el candidato respondió por Sala Virtual, el análisis con IA incluye feedback de tono de voz (ritmo, claridad, muletillas) — es solo retroalimentación de coaching y no afecta el puntaje ni la recomendación. No se evalúa lenguaje corporal.</p>
 
             <!-- Puntaje global -->
             <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(13,115,115,.2)">
@@ -2537,6 +2545,111 @@ qs:Q10([
 "Cuéntame sobre tu experiencia coordinando con gobiernos locales y organizaciones de base.",
 "Describe cómo garantizas la sostenibilidad de los procesos comunitarios después de que el proyecto termina.",
 "Háblame de una situación donde debiste manejar conflictos entre diferentes grupos dentro de una comunidad."
+])},
+// ── OFICIOS Y COMERCIO (perfiles básicos / entrada) ──
+{id:'bodeguero',name:'Bodeguero / Auxiliar de Bodega',icon:'🗃',sector:'industria',desc:'Recepción, acomodo, conteo y despacho de mercadería en bodega; control básico de inventario',
+qs:Q10([
+"Cuéntame sobre un día en que llegó más mercadería de la esperada y tuviste poco tiempo para acomodarla. ¿Qué hiciste?",
+"Describe una situación en que encontraste una diferencia entre lo que decía el sistema y lo que había físicamente en bodega. ¿Cómo lo manejaste?",
+"Háblame de una vez en que tuviste que levantar o mover cargas pesadas de forma segura. ¿Qué precauciones tomaste?",
+"Cuéntame sobre una ocasión en que despachaste el pedido equivocado o cometiste un error de conteo. ¿Qué pasó y cómo lo corregiste?",
+"Describe cómo organizas la bodega para encontrar rápido lo que se necesita. ¿Qué método usaste alguna vez para mejorar el orden?",
+"Háblame de un momento en que tuviste que cumplir con un tiempo de entrega muy ajustado. ¿Cómo te organizaste?",
+"Cuéntame sobre una situación en que notaste un producto dañado, vencido o mal etiquetado. ¿Qué hiciste al respecto?",
+"Describe una vez en que trabajaste en equipo para descargar un camión o preparar un pedido grande. ¿Cuál fue tu parte del trabajo?",
+"Háblame de una ocasión en que tu jefe de bodega no estaba presente y surgió un problema. ¿Qué decisión tomaste?",
+"Cuéntame sobre cómo te aseguras de seguir las normas de seguridad e higiene ocupacional en tu área de trabajo."
+])},
+{id:'miscelaneo',name:'Misceláneo / Operario de Limpieza',icon:'🧹',sector:'serv',desc:'Limpieza y mantenimiento general de instalaciones, manejo de insumos de limpieza y orden de espacios',
+qs:Q10([
+"Cuéntame sobre un día en que tuviste que limpiar varias áreas en poco tiempo antes de un evento o visita importante. ¿Cómo te organizaste?",
+"Describe una situación en que se te acabó o dañó un insumo de limpieza a mitad de tu turno. ¿Qué hiciste?",
+"Háblame de una vez en que notaste un riesgo (piso mojado, cable suelto, fuga) y actuaste para evitar un accidente.",
+"Cuéntame sobre una ocasión en que un compañero o supervisor te señaló que un área no quedó bien limpia. ¿Cómo reaccionaste?",
+"Describe cómo distribuyes tu tiempo cuando tienes que limpiar varias áreas distintas en un mismo turno.",
+"Háblame de una mejora que propusiste en la forma de hacer la limpieza o de usar los productos e insumos.",
+"Cuéntame sobre una situación en que tuviste que manejar productos químicos de limpieza con cuidado especial.",
+"Describe una vez en que apoyaste a un compañero de otra área para terminar una tarea a tiempo.",
+"Háblame de una ocasión en que debiste trabajar sin supervisión directa. ¿Cómo te aseguraste de cumplir con lo esperado?",
+"Cuéntame sobre cómo mantienes la puntualidad y la constancia en un trabajo con tareas repetitivas."
+])},
+{id:'cajero-tienda',name:'Cajero/a de Tienda o Supermercado',icon:'🛒',sector:'serv',desc:'Cobro en caja, manejo de efectivo, escaneo de productos y atención al cliente en punto de venta',
+qs:Q10([
+"Cuéntame sobre un momento en que tuviste una fila larga de clientes esperando y el sistema de caja falló. ¿Qué hiciste?",
+"Describe una situación en que un cliente reclamó por un cobro incorrecto. ¿Cómo lo resolviste?",
+"Háblame de una vez en que, al hacer el cierre de caja, el efectivo no cuadraba con lo vendido. ¿Qué pasos seguiste?",
+"Cuéntame sobre una ocasión en que un cliente fue grosero o impaciente contigo en caja. ¿Cómo mantuviste la calma?",
+"Describe cómo evitas o detectas errores al cobrar cuando hay mucha gente esperando.",
+"Háblame de una situación en que tuviste que rechazar un billete falso o una tarjeta con problemas. ¿Qué hiciste?",
+"Cuéntame sobre una vez en que ayudaste a un cliente que no encontraba un producto o tenía una duda, más allá de solo cobrar.",
+"Describe una ocasión en que tuviste que cubrir o coordinar con un compañero de otra caja por una emergencia o ausencia.",
+"Háblame de cómo manejas la responsabilidad de tener dinero en efectivo a tu cargo durante todo el turno.",
+"Cuéntame sobre una situación en que recibiste una queja del supervisor por algo relacionado con tu caja. ¿Qué aprendiste?"
+])},
+{id:'dependiente-tienda',name:'Dependiente de Tienda / Vendedor de Mostrador',icon:'🏪',sector:'serv',desc:'Atención y venta directa al cliente en tienda, acomodo de exhibición y manejo básico de inventario',
+qs:Q10([
+"Cuéntame sobre una venta difícil que lograste cerrar con un cliente indeciso. ¿Qué hiciste para convencerlo?",
+"Describe una situación en que un cliente quiso devolver o cambiar un producto fuera de política. ¿Cómo lo manejaste?",
+"Háblame de un día de mucha afluencia de clientes en que estabas solo o con poco personal en la tienda. ¿Cómo te organizaste?",
+"Cuéntame sobre una ocasión en que no sabías responder una pregunta de un cliente sobre un producto. ¿Qué hiciste?",
+"Describe cómo decides cómo acomodar o exhibir la mercadería para que se venda mejor.",
+"Háblame de una vez en que detectaste que faltaba mercadería o había una diferencia de inventario. ¿Qué hiciste?",
+"Cuéntame sobre una situación en que superaste tu meta de ventas del mes o del día. ¿Qué hiciste diferente?",
+"Describe una ocasión en que tuviste que trabajar en equipo con otros compañeros de tienda para cumplir con una meta.",
+"Háblame de cómo manejas a un cliente que compara precios con la competencia y amenaza con irse.",
+"Cuéntame sobre una vez en que tu jefe o encargado de tienda no estaba y tuviste que tomar una decisión importante tú solo/a."
+])},
+{id:'reponedor',name:'Reponedor/a de Mercadería',icon:'🏷',sector:'serv',desc:'Surtido y acomodo de productos en anaqueles, rotación de inventario y orden de sala de ventas',
+qs:Q10([
+"Cuéntame sobre un turno en que llegó mucha mercadería nueva y tuviste poco tiempo para surtir los anaqueles antes de la apertura.",
+"Describe una situación en que encontraste producto vencido o próximo a vencer en el anaquel. ¿Qué hiciste?",
+"Háblame de una vez en que te equivocaste al poner un precio o etiqueta incorrecta en un producto. ¿Cómo lo corregiste?",
+"Cuéntame sobre una ocasión en que tuviste que reorganizar rápidamente una sección por una promoción de último momento.",
+"Describe cómo decides qué producto va primero al anaquel cuando hay varios lotes con fechas distintas.",
+"Háblame de una situación en que un cliente te interrumpió mientras surtías para pedirte ayuda. ¿Cómo respondiste?",
+"Cuéntame sobre una vez en que trabajaste en equipo con otros reponedores para terminar una sección completa a tiempo.",
+"Describe una ocasión en que notaste que un anaquel se veía desordenado o incompleto y tomaste la iniciativa de arreglarlo sin que te lo pidieran.",
+"Háblame de cómo manejas el cansancio físico de un trabajo que implica estar de pie y cargar cajas todo el turno.",
+"Cuéntame sobre una situación en que tu supervisor te corrigió por la forma en que surtiste una sección. ¿Qué aprendiste?"
+])},
+{id:'ayudante-cocina',name:'Ayudante de Cocina / Auxiliar de Cocina',icon:'🔪',sector:'serv',desc:'Apoyo en preparación de alimentos, limpieza de área de cocina y cumplimiento de normas de higiene',
+qs:Q10([
+"Cuéntame sobre un momento de mucha presión en cocina, con varios pedidos a la vez. ¿Cómo te organizaste?",
+"Describe una situación en que notaste un alimento en mal estado o próximo a vencer. ¿Qué hiciste?",
+"Háblame de una vez en que cometiste un error en la preparación de un platillo. ¿Cómo reaccionaste y qué pasó después?",
+"Cuéntame sobre una ocasión en que tuviste que seguir estrictamente normas de higiene y manipulación de alimentos aunque tuvieras prisa.",
+"Describe cómo te organizas para tener todo listo (mise en place) antes de que empiece el servicio.",
+"Háblame de una situación en que un compañero de cocina no cumplió con su parte y tú tuviste que cubrir el trabajo extra.",
+"Cuéntame sobre una vez en que el chef o encargado te llamó la atención por algo. ¿Cómo lo tomaste?",
+"Describe una ocasión en que ayudaste a mejorar el orden o la limpieza del área de cocina por iniciativa propia.",
+"Háblame de cómo manejas trabajar de pie durante turnos largos, con calor y bajo presión de tiempo.",
+"Cuéntame sobre una situación en que tuviste que coordinarte con meseros o el área de servicio para que un pedido saliera a tiempo."
+])},
+{id:'peon-construccion',name:'Peón de Construcción / Ayudante General',icon:'🧱',sector:'industria',desc:'Apoyo en labores de construcción, carga de materiales y asistencia a oficiales de obra',
+qs:Q10([
+"Cuéntame sobre un día de trabajo físicamente exigente en la obra. ¿Cómo lo manejaste?",
+"Describe una situación en que notaste una condición insegura en la obra (andamio, herramienta, materiales mal ubicados). ¿Qué hiciste?",
+"Háblame de una vez en que el oficial o maestro de obra te dio una instrucción que no entendiste bien. ¿Cómo lo resolviste?",
+"Cuéntame sobre una ocasión en que cometiste un error al preparar mezcla, cargar materiales o alguna tarea asignada. ¿Qué pasó?",
+"Describe cómo te aseguras de usar correctamente el equipo de protección personal (casco, guantes, botas) durante la jornada.",
+"Háblame de una situación en que trabajaste en equipo con otros peones para terminar una tarea antes de que lloviera o se acabara el día.",
+"Cuéntame sobre una vez en que tuviste que adaptarte a un cambio repentino de tarea o de sitio de trabajo en la obra.",
+"Describe una ocasión en que ayudaste a un compañero nuevo a entender cómo se hacían las cosas en la obra.",
+"Háblame de cómo manejas los días de mucho calor o lluvia trabajando a la intemperie.",
+"Cuéntame sobre una situación en que demostraste responsabilidad y puntualidad aunque el trabajo fuera temporal o por obra."
+])},
+{id:'cuidador-personas',name:'Cuidador/a de Personas',icon:'🤲',sector:'salud',desc:'Cuido y acompañamiento de adultos mayores, niños o personas con dependencia, apoyo en actividades básicas',
+qs:Q10([
+"Cuéntame sobre una situación de emergencia o susto de salud que viviste cuidando a una persona. ¿Qué hiciste?",
+"Describe una vez en que la persona a tu cargo se negó a comer, tomar medicamento o seguir una indicación. ¿Cómo lo manejaste?",
+"Háblame de una ocasión en que tuviste que tener mucha paciencia ante un comportamiento difícil (frustración, confusión, berrinche).",
+"Cuéntame sobre cómo organizas tu día para cumplir con horarios de medicamentos, comidas o actividades de la persona que cuidas.",
+"Describe una situación en que debiste comunicarte con la familia o un profesional de salud sobre un cambio en la condición de la persona.",
+"Háblame de una vez en que mantuviste la calma y la seguridad de la persona ante una caída o accidente menor.",
+"Cuéntame sobre cómo generas confianza y una buena relación con la persona que cuidas y con su familia.",
+"Describe una ocasión en que tuviste que respetar la confidencialidad o dignidad de la persona en una situación delicada.",
+"Háblame de cómo manejas el cansancio físico y emocional que implica el cuido de otra persona.",
+"Cuéntame sobre una situación en que tomaste una decisión importante sola/o porque no había nadie más disponible en ese momento."
 ])},
 ];
 
@@ -3382,10 +3495,16 @@ Proporciona:
 2. PUNTAJE SUGERIDO por componente (1-5): S:X T:X A:X R:X
 3. PUNTAJE GLOBAL (1-10): X/10
 4. FORTALEZAS (2-3 puntos concretos)
-5. ÁREAS DE MEJORA (2-3 puntos accionables)
+5. ÁREAS DE MEJORA (2-3 puntos accionables) — sé preciso: si el candidato SÍ mencionó su rol/responsabilidad, resultado o acciones (aunque sea brevemente), no afirmes que "no lo indicó"; en ese caso sugiere precisarlo o ampliarlo, no que está ausente.
 6. RECOMENDACIÓN: Muy Recomendado / Recomendado / Condicionado / Con Reservas / No Recomendado
-7. PREGUNTAS DE SEGUIMIENTO (2 preguntas para profundizar)${audioPart ? `
-8. FEEDBACK DE TONO DE VOZ: Se adjunta un fragmento de audio de la respuesta del candidato. Comenta únicamente sobre ritmo, volumen aparente, claridad de dicción, muletillas y pausas — como retroalimentación de coaching para que el candidato mejore su comunicación oral. Este punto es solo informativo: NO lo uses para ajustar el PUNTAJE GLOBAL, los puntajes STAR ni la RECOMENDACIÓN, y no infieras rasgos de personalidad ni emociones a partir de la voz.` : ''}
+7. PREGUNTAS DE SEGUIMIENTO (2 preguntas para profundizar)
+8. CÓMO LLEGAR A UN 10/10: Para cada componente STAR que no obtuvo 5/5, explica brevemente por qué no alcanzó el máximo y luego da un ejemplo concreto de cómo el candidato podría haber redactado esa parte de la respuesta para lograr 10/10 — usando datos de SU propia respuesta (no un ejemplo genérico). Formato:
+   Situación: "..."
+   Tarea: "..."
+   Acción: "..."
+   Resultado: "..."
+   (omite el componente que ya esté en 5/5)${audioPart ? `
+9. FEEDBACK DE TONO DE VOZ: Se adjunta un fragmento de audio de la respuesta del candidato. Comenta únicamente sobre ritmo, volumen aparente, claridad de dicción, muletillas y pausas — como retroalimentación de coaching para que el candidato mejore su comunicación oral. Este punto es solo informativo: NO lo uses para ajustar el PUNTAJE GLOBAL, los puntajes STAR ni la RECOMENDACIÓN, y no infieras rasgos de personalidad ni emociones a partir de la voz.` : ''}
 
 Sé específico, constructivo y objetivo. Considera el contexto del mercado laboral costarricense y la normativa del MTSS cuando sea relevante.`;
 
@@ -3474,7 +3593,12 @@ Sé específico, constructivo y objetivo. Considera el contexto del mercado labo
 // ============================================================
 const STAR_KW = {
   S:['cuando','situación','contexto','empresa','equipo','departamento','período','durante','proyecto','cliente','caso','problema','desafío','reto','en aquel momento','en esa época','la empresa','el área','el mercado','antecedente'],
-  T:['mi responsabilidad','mi tarea','debía','me encargué','mi rol','mi objetivo','tenía que','estaba a cargo','meta','se me asignó','mi función','el objetivo era','debía lograr','me pidieron','me correspondía'],
+  T:['mi responsabilidad','mi tarea','debía','me encargué','mi rol','mi objetivo','tenía que','estaba a cargo','meta','se me asignó','mi función','el objetivo era','debía lograr','me pidieron','me correspondía',
+     'era el encargado','era la encargada','fui el encargado','fui la encargada','fui responsable','soy responsable','como encargado','como encargada','como responsable',
+     'como líder','como coordinador','como coordinadora','como supervisor','como supervisora','como gestor','como gestora',
+     'a mi cargo','bajo mi responsabilidad','mi papel era','mi papel fue','mi puesto era','mi puesto consistía','mi trabajo consistía','mi labor era',
+     'me tocaba','desempeñé el rol','desempeñaba el rol','fungí como','en mi puesto de','en mi rol de','yo lideraba','yo dirigía',
+     'encargado de','encargada de','responsable de','a cargo de','mi función era'],
   A:['decidí','implementé','propuse','realicé','hice','tomé','llamé','coordiné','desarrollé','apliqué','gestioné','organicé','inmediatamente','primero','luego','después','entonces','elaboré','diseñé','negocié','contacté','revisé','analicé','presenté','capacité','lideré','dirigí','ejecuté'],
   R:['resultado','logré','mejoré','reduje','aumenté','conseguí','finalmente','impacto','logramos','ahorramos','aprendí','éxito','se logró','como resultado','gracias a esto','esto permitió','se incrementó','se disminuyó']
 };
@@ -3510,7 +3634,10 @@ function analyzeStarLocally(text){
   const ownershipYo = (t.match(/\byo\b/g)||[]).length;
   const ownershipNosotros = (t.match(/\bnosotros\b|\bnos\b/g)||[]).length;
 
-  const score = k => Math.min(5, Math.max(1, hits[k]>=5?5:hits[k]>=3?4:hits[k]>=2?3:hits[k]>=1?2:1));
+  // Umbral deliberadamente permisivo: una respuesta natural suele mencionar
+  // cada componente UNA vez, no repetidamente — exigir varias coincidencias
+  // para dar puntaje alto generaba falsos "no lo mencionó" (p.ej. en Tarea/rol).
+  const score = k => Math.min(5, Math.max(1, hits[k]>=4?5:hits[k]>=2?4:hits[k]>=1?3:1));
   const s = { S:score('S'), T:score('T'), A:score('A'), R:score('R') };
   const total = s.S+s.T+s.A+s.R;
   const pct = Math.round((total/20)*100);
@@ -3527,13 +3654,20 @@ function analyzeStarLocally(text){
     return '  • '+compLabel[k]+' ('+k+'): '+s[k]+'/5 — '+nivel;
   }).join('\n');
 
+  // 3 niveles en vez de binario: una mención clara (score 3, "Presente pero
+  // mejorable") ya cuenta como logrado — solo score 1-2 (ausente/débil) se
+  // reporta como área de mejora real. Esto evita marcar "no indicó su rol"
+  // cuando el candidato sí lo dijo, aunque fuera una sola vez.
   const fortalezas = [];
   const mejoras = [];
   if(s.S>=4) fortalezas.push('Describe con claridad el contexto y la situación de partida.');
+  else if(s.S>=3) fortalezas.push('Da una idea del contexto y la situación, aunque podría precisarla más (cuándo, dónde, con quién).');
   else mejoras.push('Contextualizar mejor la situación: ¿cuándo ocurrió, en qué empresa/proyecto, cuál era el problema?');
   if(s.T>=4) fortalezas.push('Deja clara cuál era su responsabilidad u objetivo personal en la situación.');
+  else if(s.T>=3) fortalezas.push('Menciona su rol o responsabilidad, aunque podría distinguirlo mejor del rol del equipo.');
   else mejoras.push('Precisar cuál era exactamente su rol o responsabilidad (no solo la del equipo).');
   if(s.A>=4) fortalezas.push('Detalla acciones concretas que tomó, en primera persona.');
+  else if(s.A>=3) fortalezas.push('Menciona acciones que tomó, aunque podría detallar mejor los pasos concretos.');
   else mejoras.push('Detallar más las acciones específicas que ejecutó paso a paso.');
   if(hasResultSignal) fortalezas.push(quant.total>0 ? 'Incluye resultados medibles (cifras/porcentajes/montos), lo cual da credibilidad al logro.' : 'El logro queda claro y atribuible a su acción, aunque sea de forma cualitativa (sin cifras).');
   else mejoras.push('El resultado no queda claro ni medible ni cualitativamente — precisar qué logró y cómo se supo que fue exitoso (cifras, %, tiempos, o una descripción concreta del cambio logrado).');
@@ -3546,6 +3680,16 @@ function analyzeStarLocally(text){
   if(!hasResultSignal) preguntas.push('¿Cuál fue el resultado concreto de esa acción, en cifras o en un cambio observable?');
   if(preguntas.length<2) preguntas.push('¿Qué haría diferente si enfrentara la misma situación hoy?');
   if(preguntas.length<2) preguntas.push('¿Cómo midió el equipo o la organización el éxito de esa acción?');
+
+  // Guía "cómo llegar a 10/10" — por cada componente que no esté en su punto
+  // máximo, explica el porqué y da una plantilla concreta de qué agregar,
+  // igual que pediría un evaluador humano al dar retroalimentación.
+  const tenTips = { S:[], T:[], A:[], R:[] };
+  if(s.S<5) tenTips.S.push('Agregue cuándo ocurrió, en qué empresa/proyecto y cuál era el problema o desafío concreto, en 1-2 oraciones (ej. "En [empresa/proyecto], durante [momento], enfrentábamos [problema]...").');
+  if(s.T<5) tenTips.T.push('Diga explícitamente cuál era SU rol o responsabilidad individual, distinto del equipo (ej. "Mi responsabilidad específica era... / Yo era el encargado de...").');
+  if(s.A<5) tenTips.A.push('Liste los pasos concretos que usted (no el equipo) ejecutó, en orden, con verbos en primera persona (ej. "Primero hice X, luego Y, después Z...").');
+  if(!hasResultSignal || quant.total===0) tenTips.R.push('Cierre con un resultado medible: una cifra, porcentaje, tiempo o monto que demuestre el impacto (ej. "Esto redujo el tiempo de X a Y" o "logramos un aumento del Z%").');
+  const tenTipsLines = ['S','T','A','R'].filter(k=>tenTips[k].length).map(k=>'  • '+compLabel[k]+': '+tenTips[k].join(' '));
 
   return 'ANÁLISIS STAR LOCAL — heurística experta (sin IA externa)\n'+'═'.repeat(50)+'\n\n'
     +'1. DESGLOSE STAR\n'+desglose+'\n\n'
@@ -3560,6 +3704,8 @@ function analyzeStarLocally(text){
     +'  • Muletillas/relleno detectadas: '+fillerCount+'.\n'
     +'  • Resultados cuantificables detectados: '+quant.total+' ('+([...quant.pct,...quant.money,...quant.nums].slice(0,5).join(', ')||'ninguno')+').\n'
     +'  • Señales de logro cualitativo detectadas: '+qualHits+' — '+(hasResultSignal?'resultado demostrado':'no queda claro el resultado')+'.\n\n'
+    +'9. CÓMO LLEGAR A UN 10/10\n'
+    +(tenTipsLines.length ? tenTipsLines.join('\n')+'\n\n' : '  • Ya cubre los 4 componentes STAR de forma sólida — mantenga este nivel de detalle.\n\n')
     +'─'.repeat(50)+'\n'
     +'⚠️ Este análisis es una heurística local por palabras clave y patrones de\n'
     +'texto — no usa modelos de lenguaje ni IA generativa. Es un apoyo objetivo\n'
@@ -3887,15 +4033,20 @@ function buildPDFHTML(e){
 function buildPDFAllHTML(entries, scopeLabel){
   const avgGlobal = Math.round(entries.reduce((a,e)=>a+e.globalScore,0)/entries.length);
   const avgStar = Math.round(entries.reduce((a,e)=>a+e.starPct,0)/entries.length);
+  const avgSS = { S:0, T:0, A:0, R:0 };
+  ['S','T','A','R'].forEach(k=>{ avgSS[k] = Math.round((entries.reduce((a,e)=>a+(e.ss[k]||0),0)/entries.length)*10)/10; });
+  const isSingleInterview = entries.length>1 && new Set(entries.map(e=>(e.name||'').trim().toLowerCase())).size===1;
+  const finalRecomendacion = scoreLabelNum(avgGlobal);
+  const orderedByDate = [...entries].sort((a,b)=>(a.id||0)-(b.id||0));
 
   return `<div style="font-family:Arial,sans-serif;color:#000;padding:0;font-size:12px">
   <div style="background:#0d7373;color:#fff;padding:20px 24px">
-    <div style="font-size:18px;font-weight:800">Informe Consolidado de Evaluaciones · ANE Costa Rica</div>
-    <div style="font-size:11px;opacity:.85">${escHtml(scopeLabel||'Historial completo')} · Metodología STAR · ${entries.length} evaluaciones · Generado: ${new Date().toLocaleString('es-CR')}</div>
+    <div style="font-size:18px;font-weight:800">${isSingleInterview?'Informe de Entrevista Completa':'Informe Consolidado de Evaluaciones'} · ANE Costa Rica</div>
+    <div style="font-size:11px;opacity:.85">${escHtml(scopeLabel||'Historial completo')} · Metodología STAR · ${entries.length} pregunta${entries.length===1?'':'s'} evaluada${entries.length===1?'':'s'} · Generado: ${new Date().toLocaleString('es-CR')}</div>
   </div>
   <div style="padding:16px 24px;background:#f0fafa;border-bottom:2px solid #0d7373;display:flex;gap:20px">
     <div style="text-align:center;flex:1">
-      <div style="font-size:11px;color:#0d7373;text-transform:uppercase;font-weight:700">Total Evaluaciones</div>
+      <div style="font-size:11px;color:#0d7373;text-transform:uppercase;font-weight:700">${isSingleInterview?'Preguntas evaluadas':'Total Evaluaciones'}</div>
       <div style="font-size:32px;font-weight:900;color:#041616">${entries.length}</div>
     </div>
     <div style="text-align:center;flex:1">
@@ -3907,20 +4058,44 @@ function buildPDFAllHTML(entries, scopeLabel){
       <div style="font-size:32px;font-weight:900;color:${scoreColor(avgStar)}">${avgStar}%</div>
     </div>
   </div>
+
+  ${isSingleInterview?`
+  <!-- RESUMEN EJECUTIVO (una sola entrevista, todas sus preguntas) -->
+  <div style="padding:16px 24px;background:#fff;border-bottom:1px solid #e0f0f0;page-break-inside:avoid">
+    <div style="font-size:12px;font-weight:700;color:#041616;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px">📊 Resumen Ejecutivo</div>
+    <div style="display:flex;gap:12px;align-items:flex-start">
+      <div style="flex:1">
+        <div style="font-size:13px;color:#041616;line-height:1.7">
+          Candidato <b>${escHtml(orderedByDate[0].name)}</b> — perfil evaluado: <b>${escHtml(orderedByDate[0].prof)}</b>.
+          Se evaluaron <b>${entries.length} pregunta${entries.length===1?'':'s'}</b> con metodología STAR, obteniendo un puntaje global promedio de
+          <b style="color:${scoreColorNum(avgGlobal)}">${avgGlobal}/10</b> (${finalRecomendacion}) y un cumplimiento STAR promedio de
+          <b style="color:${scoreColor(avgStar)}">${avgStar}%</b>.
+        </div>
+        <div style="margin-top:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+          ${STAR_C.map(({k,l,col})=>`<div style="background:#f8fffe;border:1px solid #d0eaea;border-radius:8px;padding:8px;text-align:center">
+            <div style="font-size:10px;color:#5a9898;text-transform:uppercase">${l}</div>
+            <div style="font-size:18px;font-weight:900;color:${col}">${avgSS[k]}<span style="font-size:11px">/5</span></div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`:''}
+
   <div style="padding:16px 24px">
+    <div style="font-size:11px;font-weight:700;color:#0d7373;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">${isSingleInterview?'Resumen por pregunta':'Resumen por candidato/evaluación'}</div>
     <table style="width:100%;border-collapse:collapse;font-size:11px">
       <thead><tr style="background:#0d7373;color:#fff">
-        <th style="padding:8px;text-align:left">Candidato</th>
-        <th style="padding:8px">Perfil</th>
+        <th style="padding:8px;text-align:left">${isSingleInterview?'Pregunta':'Candidato'}</th>
+        <th style="padding:8px;text-align:left">${isSingleInterview?'Competencia':'Perfil'}</th>
         <th style="padding:8px">S</th><th style="padding:8px">T</th><th style="padding:8px">A</th><th style="padding:8px">R</th>
         <th style="padding:8px">STAR%</th>
         <th style="padding:8px">Global</th>
         <th style="padding:8px;text-align:left">Recomendación</th>
       </tr></thead>
       <tbody>
-        ${entries.map((e,i)=>`<tr style="background:${i%2===0?'#f8fffe':'#fff'};border-bottom:1px solid #e0f0f0">
-          <td style="padding:7px;font-weight:700">${e.name}</td>
-          <td style="padding:7px;text-align:center">${e.prof}</td>
+        ${orderedByDate.map((e,i)=>`<tr style="background:${i%2===0?'#f8fffe':'#fff'};border-bottom:1px solid #e0f0f0">
+          <td style="padding:7px;font-weight:700">${isSingleInterview?('P'+(i+1)+'. '+escHtml((e.question||'').substring(0,60))+((e.question||'').length>60?'…':'')):escHtml(e.name)}</td>
+          <td style="padding:7px;text-align:${isSingleInterview?'left':'center'}">${escHtml(isSingleInterview?(e.competency||''):e.prof)}</td>
           <td style="padding:7px;text-align:center">${e.ss.S}</td>
           <td style="padding:7px;text-align:center">${e.ss.T}</td>
           <td style="padding:7px;text-align:center">${e.ss.A}</td>
@@ -3932,7 +4107,38 @@ function buildPDFAllHTML(entries, scopeLabel){
       </tbody>
     </table>
   </div>
-  ${reviewBlockHTML('Simulador de Entrevistas STAR · Informe consolidado')}
+
+  <!-- DETALLE POR PREGUNTA -->
+  <div style="padding:0 24px 8px">
+    <div style="font-size:11px;font-weight:700;color:#0d7373;margin:8px 0;text-transform:uppercase;letter-spacing:1px">📝 Detalle por pregunta</div>
+  </div>
+  ${orderedByDate.map((e,i)=>`
+  <div style="padding:14px 24px;background:#fff;border-bottom:1px solid #e0f0f0;page-break-inside:avoid">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px">
+      <div style="flex:1">
+        <div style="font-size:10px;color:#0d7373;text-transform:uppercase;letter-spacing:1px;font-weight:700">Pregunta ${i+1}${isSingleInterview?'':' · '+escHtml(e.name)} · Competencia: ${escHtml(e.competency||'—')}</div>
+        <div style="background:#f0fafa;border-left:3px solid #0d7373;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;font-style:italic;line-height:1.5;color:#041616;margin-top:5px">"${escHtml(e.question||'No especificada')}"</div>
+      </div>
+      <div style="text-align:center;min-width:64px;flex-shrink:0">
+        <div style="width:44px;height:44px;border-radius:50%;border:3px solid ${scoreColorNum(e.globalScore)};display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;color:${scoreColorNum(e.globalScore)};margin:0 auto">${e.globalScore}</div>
+        <div style="font-size:9px;color:${scoreColorNum(e.globalScore)};margin-top:2px">${scoreLabelNum(e.globalScore)}</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px">
+      ${STAR_C.map(({k,l,col})=>`<div style="background:#f8fffe;border:1px solid #d0eaea;border-radius:6px;padding:6px;text-align:center">
+        <div style="font-size:9px;color:#5a9898">${k} · ${l}</div>
+        <div style="font-size:14px;font-weight:800;color:${col}">${e.ss[k]||0}/5</div>
+      </div>`).join('')}
+    </div>
+    ${e.transcript?`<div style="font-size:10px;color:#0d7373;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🎤 Transcripción</div>
+    <div style="background:#f8fffe;border:1px solid #d0eaea;border-radius:6px;padding:8px 10px;font-size:11px;line-height:1.6;color:#041616;font-style:italic;margin-bottom:8px">"${escHtml(e.transcript)}"</div>`:''}
+    ${e.ai?`<div style="font-size:10px;color:#0d7373;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🔍 Análisis STAR</div>
+    <div style="background:#f8fffe;border-left:3px solid #0d7373;border-radius:0 6px 6px 0;padding:8px 10px;font-size:10px;line-height:1.6;color:#041616;white-space:pre-wrap">${escHtml(e.ai.substring(0,1200))}${e.ai.length>1200?'…':''}</div>`:''}
+    ${e.notes?`<div style="font-size:10px;color:#0d7373;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin:8px 0 4px">📝 Notas del entrevistador</div>
+    <div style="font-size:11px;line-height:1.6;color:#041616">${escHtml(e.notes)}</div>`:''}
+  </div>`).join('')}
+
+  ${reviewBlockHTML('Simulador de Entrevistas STAR · Informe '+(isSingleInterview?'de entrevista completa':'consolidado'))}
   <div style="background:#0d7373;color:#fff;padding:10px 24px;font-size:10px;display:flex;justify-content:space-between">
     <span>ANE Costa Rica · MTSS · Confidencial · Ley 8968</span>
     <span>Simulador de Entrevistas v7.0</span>
