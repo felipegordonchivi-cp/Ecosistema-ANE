@@ -1679,9 +1679,10 @@ function escHtml(s){
         <!-- ── 5. TRANSCRIPCIÓN ── -->
         <div class="iv-section" style="padding:8px 14px">
           <div style="font-size:9px;color:#2a5a5a;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px">Transcripción en vivo</div>
-          <div class="iv-transcript-box" style="min-height:120px;max-height:280px;overflow-y:auto;background:rgba(0,0,0,.2);border-radius:8px;padding:7px 10px">
-            <span id="transcript-final" style="font-size:11px;color:#a8dede"></span>
-            <span id="transcript-interim" style="font-size:11px;color:#5a9898;font-style:italic"></span>
+          <div class="iv-transcript-box" style="min-height:120px;max-height:280px;overflow-y:auto;background:linear-gradient(180deg,rgba(13,115,115,.07),rgba(0,0,0,.25));border:1px solid rgba(13,115,115,.25);border-radius:10px;padding:10px 12px;line-height:1.6;box-shadow:inset 0 1px 6px rgba(0,0,0,.25)">
+            <span id="transcript-final" style="font-size:12px;color:#a8dede"></span>
+            <span id="transcript-interim" style="font-size:12px;color:#5a9898;font-style:italic"></span>
+            <span id="transcript-ph" style="font-size:11px;color:#3a7272">🎙 La transcripción del candidato aparecerá aquí en tiempo real…</span>
           </div>
           <button onclick="sendToEval()" style="margin-top:8px;width:100%;background:linear-gradient(135deg,rgba(13,115,115,.35),rgba(13,115,115,.2));border:1px solid rgba(13,115,115,.5);color:#7dd3d3;padding:9px;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s" onmouseover="this.style.background='rgba(13,115,115,.5)'" onmouseout="this.style.background='linear-gradient(135deg,rgba(13,115,115,.35),rgba(13,115,115,.2))'">
             📤 Enviar al Evaluador STAR →
@@ -3106,6 +3107,8 @@ async function startRecording(){
     }
     document.getElementById('transcript-final').textContent = finalTranscript;
     document.getElementById('transcript-interim').textContent = interim;
+    const ph = document.getElementById('transcript-ph');
+    if(ph && (finalTranscript || interim)) ph.style.display = 'none';
   };
   recognition.onerror = (e)=>{
     console.warn('Speech error:', e.error);
@@ -3190,6 +3193,8 @@ function clearResponse(){
   if(el){ el.value=''; updateWordCount(); }
   document.getElementById('transcript-final').textContent='';
   document.getElementById('transcript-interim').textContent='';
+  const ph = document.getElementById('transcript-ph');
+  if(ph) ph.style.display='';
   finalTranscript='';
   const ar = document.getElementById('ai-result');
   if(ar){ ar.textContent=''; ar.style.display='none'; }
