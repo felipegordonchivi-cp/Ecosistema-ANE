@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="es" data-theme="dark"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; frame-ancestors 'self'"><title>Laboratorio IA ESCO-CR · ANE</title><style>
+<!DOCTYPE html><html lang="es" data-theme="dark"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; frame-ancestors 'self'"><title>Laboratorio IA ESCO-CR · ANE</title><style>
 @import url('../vendor/fonts/fonts.css');
 :root{--bg:#041616;--bg2:#062121;--card:#082020;--card2:#0d2d2d;--line:rgba(125,211,211,.18);--ink:#f8ffff;--muted:#9dc8c8;--soft:#5a9898;--teal:#0d7373;--teal2:#14b8a6;--mint:#7dd3d3;--shadow:0 24px 80px rgba(0,0,0,.3)}:root[data-theme=light]{--bg:#f3f8f7;--bg2:#eef5f3;--card:#fff;--card2:#f7fbfa;--line:rgba(13,115,115,.16);--ink:#0b1f1c;--muted:#5f7270;--soft:#8a9c99;--shadow:0 22px 70px rgba(11,31,28,.12)}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}body:before{content:"";position:fixed;inset:0;z-index:-2;background:radial-gradient(850px 520px at 0 -5%,rgba(20,184,166,.18),transparent 60%),radial-gradient(760px 480px at 100% 5%,rgba(13,115,115,.16),transparent 56%),linear-gradient(135deg,var(--bg),var(--bg2))}body:after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:radial-gradient(rgba(125,211,211,.1) 1px,transparent 1px);background-size:34px 34px;opacity:.32}button,input,textarea,select{font:inherit}button{cursor:pointer}.shell{display:grid;grid-template-columns:306px 1fr;min-height:100vh}.sidebar{position:sticky;top:0;height:100vh;border-right:1px solid var(--line);background:linear-gradient(180deg,rgba(8,32,32,.94),rgba(4,22,22,.82));backdrop-filter:blur(18px);padding:22px 18px;display:flex;flex-direction:column;gap:18px}:root[data-theme=light] .sidebar{background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(244,250,248,.86))}.brand{display:flex;gap:12px;align-items:center;padding:8px 8px 18px;border-bottom:1px solid var(--line)}.mark{width:48px;height:48px;border-radius:15px;background:linear-gradient(135deg,var(--teal),var(--teal2));display:grid;place-items:center;color:#fff;font-weight:900;box-shadow:0 12px 34px rgba(13,115,115,.35)}.brand b{display:block}.brand span{color:var(--mint);font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:900}.navlabel{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--soft);font-weight:900;margin:8px 10px}.nav{display:grid;gap:7px}.nav button{border:1px solid transparent;background:transparent;color:var(--muted);border-radius:14px;padding:12px;text-align:left;font-weight:800;display:flex;gap:10px;align-items:center}.nav button:hover,.nav button.active{background:rgba(13,115,115,.2);border-color:rgba(125,211,211,.24);color:var(--ink)}:root[data-theme=light] .nav button:hover,:root[data-theme=light] .nav button.active{background:#e3f7f3}.ico{width:30px;height:30px;border-radius:10px;background:rgba(13,115,115,.18);display:grid;place-items:center}.sidecard{margin-top:auto;border:1px solid var(--line);border-radius:18px;background:rgba(13,45,45,.38);padding:16px}:root[data-theme=light] .sidecard{background:#fff}.sidecard p{color:var(--muted);font-size:12px;line-height:1.55}.topbar{position:sticky;top:0;z-index:10;height:76px;border-bottom:1px solid var(--line);background:rgba(4,22,22,.72);backdrop-filter:blur(18px);display:flex;align-items:center;gap:12px;padding:0 28px}:root[data-theme=light] .topbar{background:rgba(255,255,255,.88);box-shadow:0 8px 28px rgba(11,31,28,.06)}.crumb{margin-right:auto}.crumb b{display:block}.crumb span{display:block;color:var(--muted);font-size:12px}.utility,.btn{border:1px solid var(--line);background:rgba(13,45,45,.52);color:var(--ink);border-radius:14px;padding:11px 14px;display:inline-flex;gap:8px;align-items:center;text-decoration:none;font-weight:900}:root[data-theme=light] .utility,:root[data-theme=light] .btn{background:#fff}.primary{background:linear-gradient(135deg,var(--teal),var(--teal2))!important;border-color:transparent!important;color:#fff!important;box-shadow:0 12px 34px rgba(13,115,115,.32)}.content{padding:30px 28px 60px;overflow-x:hidden}.hero{position:relative;border:1px solid var(--line);border-radius:30px;overflow:hidden;background:linear-gradient(135deg,rgba(8,32,32,.88),rgba(13,45,45,.62));box-shadow:var(--shadow);padding:36px}.hero:before{content:"";position:absolute;inset:0;background:radial-gradient(700px 320px at 72% 15%,rgba(125,211,211,.16),transparent 60%);pointer-events:none}:root[data-theme=light] .hero{background:linear-gradient(135deg,#fff,#f4fbf8)}.hero>*{position:relative}.eyebrow{display:inline-flex;gap:8px;align-items:center;border:1px solid rgba(125,211,211,.26);background:rgba(13,115,115,.18);color:#c9ffff;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.1em}:root[data-theme=light] .eyebrow{color:#0d7373;background:#e3f7f3}.hero h1{font-family:Manrope,sans-serif;font-size:clamp(34px,5vw,66px);line-height:.92;letter-spacing:-.065em;margin:22px 0 14px}.hero h1 span{color:transparent;background:linear-gradient(90deg,#fff,var(--mint),#c7fffb);-webkit-background-clip:text;background-clip:text}:root[data-theme=light] .hero h1 span{background:linear-gradient(90deg,#0b1f1c,#0d7373,#0f8273);-webkit-background-clip:text;background-clip:text}.lead{color:var(--muted);font-size:16px;line-height:1.75;max-width:900px}.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}.section{margin-top:26px}.section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin-bottom:15px}.section h2{font-family:Manrope;margin:0;font-size:24px;letter-spacing:-.03em}.section p{margin:6px 0 0;color:var(--muted)}.grid{display:grid;gap:16px}.g2{grid-template-columns:1.1fr .9fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.card{border:1px solid var(--line);border-radius:24px;background:rgba(8,32,32,.72);box-shadow:0 18px 52px rgba(0,0,0,.22);padding:20px}:root[data-theme=light] .card{background:#fff;box-shadow:0 18px 52px rgba(11,31,28,.08)}.card h3{font-family:Manrope;margin:0 0 8px;font-size:18px}.card small{color:var(--soft);font-weight:900;text-transform:uppercase;letter-spacing:.09em}.field{display:grid;gap:7px;margin-bottom:12px}.field label{font-weight:900;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}.field input,.field textarea,.field select{width:100%;border:1px solid var(--line);background:rgba(13,45,45,.52);color:var(--ink);border-radius:13px;padding:11px 12px;outline:none}:root[data-theme=light] .field input,:root[data-theme=light] .field textarea,:root[data-theme=light] .field select{background:var(--card2)}.field textarea{min-height:150px;resize:vertical}.inline{display:grid;grid-template-columns:1fr 1fr;gap:12px}.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{border:1px solid var(--line);background:rgba(125,211,211,.08);border-radius:999px;padding:7px 10px;color:var(--muted);font-size:12px;font-weight:800}.good{color:#86efac!important;border-color:rgba(34,197,94,.28)!important;background:rgba(34,197,94,.1)!important}.warn{color:#fde68a!important;border-color:rgba(234,179,8,.28)!important;background:rgba(234,179,8,.1)!important}.bad{color:#fca5a5!important;border-color:rgba(239,68,68,.28)!important;background:rgba(239,68,68,.1)!important}:root[data-theme=light] .good{color:#166534!important}:root[data-theme=light] .warn{color:#92400e!important}:root[data-theme=light] .bad{color:#991b1b!important}.score-wrap{display:grid;place-items:center;padding:16px}.score{width:178px;height:178px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--teal2) 0deg,var(--teal2) var(--deg,0deg),rgba(125,211,211,.13) var(--deg,0deg));position:relative;box-shadow:0 20px 60px rgba(13,115,115,.22)}.score:after{content:"";position:absolute;inset:14px;border-radius:50%;background:var(--card)}.score-inner{position:relative;z-index:1;text-align:center}.score b{font-family:'IBM Plex Mono';font-size:44px;letter-spacing:-.06em}.score span{display:block;color:var(--muted);font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}.bars{display:grid;gap:12px;margin-top:14px}.bar .top{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;font-weight:800;margin-bottom:5px}.track{height:10px;border-radius:99px;background:rgba(125,211,211,.13);overflow:hidden}.fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--teal),var(--teal2));transition:width .6s}.timeline{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.phase{border:1px solid var(--line);background:rgba(13,45,45,.38);border-radius:20px;padding:16px}:root[data-theme=light] .phase{background:var(--card2)}.phase .num{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--teal),var(--teal2));color:#fff;font-weight:900;margin-bottom:12px}.phase h4{font-family:Manrope;margin:0 0 8px}.phase ul{margin:0;padding-left:18px;color:var(--muted);font-size:13px}.phase li{margin:7px 0}.alert{display:flex;gap:12px;border:1px solid var(--line);background:rgba(13,45,45,.38);border-radius:18px;padding:14px;margin-bottom:10px}:root[data-theme=light] .alert{background:var(--card2)}.aico{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;background:rgba(13,115,115,.18);flex:0 0 auto}.alert b{display:block}.alert p{margin:3px 0 0;color:var(--muted);font-size:13px}.report{white-space:pre-wrap;background:rgba(4,22,22,.58);border:1px dashed rgba(125,211,211,.25);border-radius:18px;padding:16px;min-height:220px;font-size:13px;line-height:1.65}:root[data-theme=light] .report{background:#fbfdfc}.skill-list{max-height:420px;overflow:auto;display:grid;gap:8px;padding-right:4px}.skill-row{display:grid;grid-template-columns:78px 1fr auto;gap:10px;align-items:center;border:1px solid var(--line);background:rgba(13,45,45,.34);border-radius:14px;padding:10px}:root[data-theme=light] .skill-row{background:var(--card2)}.skill-row b{font-size:13px}.skill-row span{color:var(--muted);font-size:11px}.pill{font-family:'IBM Plex Mono';font-size:10px;color:var(--mint)}.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:#071c1c;color:#d9ffff;border:1px solid rgba(125,211,211,.22);border-radius:999px;padding:12px 18px;font-weight:900;z-index:80;transition:.25s}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.footer{margin-top:26px;color:var(--muted);font-size:12px;border:1px solid var(--line);background:rgba(8,32,32,.62);border-radius:22px;padding:18px}:root[data-theme=light] .footer{background:#fff}@media(max-width:1050px){.shell{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.g2,.g3,.g4,.timeline,.inline{grid-template-columns:1fr}.topbar{padding:0 16px}.content{padding:20px 16px 44px}.sidecard{display:none}}
 
@@ -122,10 +122,13 @@
 .plan-tip{margin:3px 0 0;color:var(--muted);font-size:12px;line-height:1.5}
 
 </style>
+<script src="vendor/pdf.min.js"></script>
+<script>if(typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = 'vendor/pdf.worker.min.js';</script>
+<script src="vendor/mammoth.min.js"></script>
 </head><body>
 <div id="mob-sidebar-overlay" onclick="document.querySelector('.sidebar').classList.remove('mob-open');this.classList.remove('open')"></div>
 <div class="shell"><aside class="sidebar"><div class="brand"><div class="mark">ANE</div><div><b>Laboratorio IA ESCO-CR</b><span>2,000 competencias priorizadas</span></div></div><div class="navlabel">Módulos</div><nav class="nav"><button class="active" data-go="#diagnostico"><span class="ico">🧭</span>Diagnóstico ESCO</button><button data-go="#academica"><span class="ico">🎓</span>Oferta Académica CR</button><button data-go="#recomendador"><span class="ico">🎯</span>Recomendador</button></nav><div class="sidecard"><b>Enfoque</b><p>Diccionario ESCO-compatible adaptado a Costa Rica. Priorizado por ocupaciones frecuentes de ANE/Brete y sectores con mayor contratación.</p></div></aside><main class="main"><header class="topbar"><button class="mob-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('mob-open');document.getElementById('mob-sidebar-overlay').classList.toggle('open')">☰</button><div class="crumb"><b>Copiloto ANE V15 · Recomendación responsable</b><span>2,000 competencias, <span id="totalRoutesCrumb">100</span> rutas académicas, confianza, trazabilidad y revisión humana</span></div><button class="utility" id="themeBtn">◐</button><div class="demo-dropdown" id="demoDropdown"><button class="utility primary" onclick="toggleDemoMenu(event)">Cargar ejemplo ▾</button><div class="demo-menu" id="demoMenu" style="display:none"><button onclick="demo('admin')">👩‍💼 Asistente Administrativa</button><button onclick="demo('ingeniero')">🏗️ Ingeniero Civil</button><button onclick="demo('ventas')">📊 Asesor de Ventas</button><button onclick="demo('logistica')">📦 Bodega / Logística</button></div></div></header><div class="content"><section class="hero"><span class="eyebrow">🤖 ESCO-compatible · Uso interno ANE</span><h1>Diagnóstico basado en <span>2,000 competencias y <span id="totalRoutesHero">100</span> rutas académicas priorizadas para Costa Rica.</span></h1><p class="lead">El laboratorio usa una matriz ESCO-CR ampliada a 2,000 competencias y una base de <span id="totalRoutesLead">100</span> rutas académicas CR. Detecta brechas y orienta al candidato hacia cursos, carreras, certificaciones e instituciones verificables.</p><div class="hero-actions"><a href="#diagnostico" class="btn primary">🧭 Iniciar diagnóstico</a><a href="#academica" class="btn">🎓 Oferta académica CR</a></div></section><section class="section"><div class="grid g4"><div class="card"><small>Base ESCO-CR</small><h3><span id="totalSkills">2000</span> competencias</h3><p>Skill/competence + knowledge aplicado a empleabilidad.</p></div><div class="card"><small>Familias ocupacionales</small><h3>80 familias</h3><p>Orientación por familia ocupacional con mayor cantidad de opciones.</p></div><div class="card"><small>Resultado</small><h3 id="detectedCount">0 detectadas</h3><p>Competencias reconocidas en CV/resumen.</p></div><div class="card"><small>Brechas</small><h3 id="gapCount">0 sugeridas</h3><p>Competencias faltantes por familia ocupacional.</p></div></div></section><section class="section" id="diagnostico"><div class="section-head"><div><h2>Diagnóstico inteligente ESCO</h2><p>Ingrese información del candidato. El prototipo funciona localmente con reglas explicables.</p></div>
-<button class="btn primary" id="analyzeBtn">Generar diagnóstico</button></div><div class="grid g2"><div class="card"><small>Entrada del candidato</small><h3>Perfil base</h3><div class="inline"><div class="field"><label>Nombre</label><input id="name" placeholder="Nombre del candidato"></div><div class="field"><label>Puesto objetivo</label><input id="target" list="targetOptions" placeholder="Ej. Asesor de ventas — escriba para ver sugerencias" autocomplete="off"><datalist id="targetOptions"></datalist></div></div><div class="inline"><div class="field"><label>Zona</label><input id="zone" placeholder="Ej. Limón, GAM, Puntarenas"></div><div class="field"><label>Disponibilidad</label><select id="availability"><option>Inmediata</option><option>15 días</option><option>30 días</option><option>Parcial / fines de semana</option></select></div></div><div class="field"><label>Experiencia laboral</label><textarea id="experience" style="min-height:190px" placeholder="Puestos, funciones, logros, años de experiencia..."></textarea></div><div class="field"><label>Educación y cursos</label><textarea id="education" placeholder="Cursos INA, Excel, inglés, manipulación, seguridad, etc."></textarea></div><div class="field"><label>Habilidades</label><textarea id="skills" placeholder="Comunicación, ventas, Excel, inventario, caja, CRM, etc."></textarea></div><div class="field"><label>Texto del CV o resumen completo</label><textarea id="cvtext" style="min-height:220px" placeholder="Pegue el texto del CV o resumen del perfil..."></textarea></div><button class="btn primary" onclick="analyze()" style="width:100%;justify-content:center;margin-top:4px">Generar diagnóstico</button></div><div class="card"><small>Resultado IA explicable</small><h3>Nivel de empleabilidad</h3><div class="score-wrap"><div class="score" id="scoreCircle"><div class="score-inner"><b id="scoreValue">0</b><span>sobre 100</span></div></div></div><div class="chips" id="profileChips"><span class="chip">Sin diagnóstico</span></div>
+<button class="btn primary" id="analyzeBtn">Generar diagnóstico</button></div><div class="grid g2"><div class="card"><small>Entrada del candidato</small><h3>Perfil base</h3><div class="field" style="border:1px dashed var(--line,#d5e3e1);border-radius:10px;padding:12px;margin-bottom:14px;background:rgba(13,115,115,.05)"><label>Cargar CV (PDF, DOCX o TXT)</label><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><input type="file" id="cvFileInput" accept=".pdf,.docx,.txt" style="flex:1;min-width:200px"><button class="btn primary" id="cvFileBtn" type="button">⬆ Cargar y completar campos</button></div><p style="color:var(--muted);font-size:12px;margin:6px 0 0">El texto se extrae localmente en su navegador (no se envía a ningún servidor). Revise los campos completados automáticamente antes de generar el diagnóstico — la detección es orientativa, no perfecta.</p></div><div class="inline"><div class="field"><label>Nombre</label><input id="name" placeholder="Nombre del candidato"></div><div class="field"><label>Puesto objetivo</label><input id="target" list="targetOptions" placeholder="Ej. Asesor de ventas — escriba para ver sugerencias" autocomplete="off"><datalist id="targetOptions"></datalist></div></div><div class="inline"><div class="field"><label>Zona</label><input id="zone" placeholder="Ej. Limón, GAM, Puntarenas"></div><div class="field"><label>Disponibilidad</label><select id="availability"><option>Inmediata</option><option>15 días</option><option>30 días</option><option>Parcial / fines de semana</option></select></div></div><div class="field"><label>Experiencia laboral</label><textarea id="experience" style="min-height:190px" placeholder="Puestos, funciones, logros, años de experiencia..."></textarea></div><div class="field"><label>Educación y cursos</label><textarea id="education" placeholder="Cursos INA, Excel, inglés, manipulación, seguridad, etc."></textarea></div><div class="field"><label>Habilidades</label><textarea id="skills" placeholder="Comunicación, ventas, Excel, inventario, caja, CRM, etc."></textarea></div><div class="field"><label>Texto del CV o resumen completo</label><textarea id="cvtext" style="min-height:220px" placeholder="Pegue el texto del CV o resumen del perfil..."></textarea></div><button class="btn primary" onclick="analyze()" style="width:100%;justify-content:center;margin-top:4px">Generar diagnóstico</button></div><div class="card"><small>Resultado IA explicable</small><h3>Nivel de empleabilidad</h3><div class="score-wrap"><div class="score" id="scoreCircle"><div class="score-inner"><b id="scoreValue">0</b><span>sobre 100</span></div></div></div><div class="chips" id="profileChips"><span class="chip">Sin diagnóstico</span></div>
 <div class="trust-panel">
   <div class="trust-card"><b id="trustLevel">Confianza: sin análisis</b><p id="trustReason">La confianza aparecerá al generar el diagnóstico.</p></div>
   <div class="trust-card"><b>Uso permitido</b><p>Orientación preliminar asistida. No decide contratación, admisión ni elegibilidad.</p></div>
@@ -801,6 +804,168 @@ function toggleDemoMenu(e){e&&e.stopPropagation();const m=$('demoMenu');m.style.
 // Fix: only close demo menu when clicking OUTSIDE of it
 document.addEventListener('click',e=>{const m=$('demoMenu');if(m&&!e.target.closest('#demoDropdown'))m.style.display='none';});
 document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>document.querySelector(b.dataset.go).scrollIntoView({behavior:'smooth'}));$('analyzeBtn').onclick=analyze;$('copyReport').onclick=async()=>{try{await navigator.clipboard.writeText($('report').textContent);toast('Informe copiado')}catch(e){toast('No se pudo copiar automáticamente')}};
+
+// ============================================================
+// CARGA DE CV (PDF / DOCX / TXT) — autocompletar Perfil base
+// Todo el procesamiento ocurre en el navegador; el archivo nunca
+// se sube a ningún servidor.
+// ============================================================
+function waitPDFJS(timeout=8000){
+  return new Promise((resolve,reject)=>{
+    if(window.pdfjsLib) return resolve(window.pdfjsLib);
+    const start=Date.now();
+    const iv=setInterval(()=>{
+      if(window.pdfjsLib){ clearInterval(iv); resolve(window.pdfjsLib); }
+      else if(Date.now()-start>timeout){ clearInterval(iv); reject(new Error('pdf.js no cargó. Recargue la página o use un archivo TXT.')); }
+    },100);
+  });
+}
+
+async function readPDF(file){
+  const pdfjsLib=await waitPDFJS();
+  const buf=await file.arrayBuffer();
+  let doc;
+  try{
+    doc=await pdfjsLib.getDocument({data:new Uint8Array(buf),verbosity:0}).promise;
+  }catch(e){
+    const msg=(e&&e.message?e.message:'').toLowerCase();
+    if(msg.includes('password')||msg.includes('encrypt')) throw new Error(`El PDF "${file.name}" está protegido por contraseña.`);
+    throw new Error(`No se pudo abrir el PDF "${file.name}". Puede estar dañado.`);
+  }
+  let text='';
+  for(let n=1;n<=doc.numPages;n++){
+    try{
+      const page=await doc.getPage(n);
+      const content=await page.getTextContent();
+      // Reconstruye saltos de línea usando la posición vertical de cada
+      // fragmento de texto — sin esto, pdf.js entrega todo el texto de la
+      // página en una sola línea, lo que rompe la detección de encabezados
+      // de sección (Experiencia/Educación/Habilidades) más adelante.
+      let line='', lastY=null;
+      for(const item of content.items){
+        const str=item.str||'';
+        const y=(item.transform&&item.transform.length>5)?item.transform[5]:null;
+        if(lastY!==null && y!==null && Math.abs(y-lastY)>3){
+          text+=line.replace(/\s+/g,' ').trim()+'\n';
+          line='';
+        }
+        line+=str+' ';
+        if(item.hasEOL){ text+=line.replace(/\s+/g,' ').trim()+'\n'; line=''; lastY=null; continue; }
+        lastY=y;
+      }
+      if(line.trim()) text+=line.replace(/\s+/g,' ').trim()+'\n';
+      text+='\n';
+    }catch(e){ console.warn('[Lab IA] Página '+n+':',e&&e.message); }
+  }
+  text=text.trim();
+  if(text.length<20) throw new Error(`El PDF "${file.name}" no contiene texto extraíble (¿es un escaneo/imagen?). Pegue el texto manualmente.`);
+  return text;
+}
+
+async function readDOCX(file){
+  if(!window.mammoth) throw new Error('La librería DOCX no cargó. Verifique su conexión.');
+  const buf=await file.arrayBuffer();
+  let result;
+  try{ result=await mammoth.extractRawText({arrayBuffer:buf}); }
+  catch(e){ throw new Error(`No se pudo leer el DOCX "${file.name}". Puede estar dañado.`); }
+  if(!result||!result.value||result.value.trim().length<20) throw new Error(`El DOCX "${file.name}" no contiene texto suficiente.`);
+  return result.value;
+}
+
+const CR_ZONAS=['GAM','San José','Alajuela','Cartago','Heredia','Guanacaste','Puntarenas','Limón','Desamparados','Escazú','San Carlos','Pérez Zeledón','Liberia','Grecia','Pococí','Cañas','Nicoya','Turrialba','Golfito','Sarapiquí'];
+
+function stripAccents(s){ return (s||'').normalize('NFD').replace(/[̀-ͯ]/g,''); }
+
+// Los encabezados de sección de un CV casi siempre inician su propia línea
+// (p. ej. "Educación:" o "Referencias: disponibles a solicitud."). Exigir
+// que el encabezado sea la primera palabra de la línea evita confundirlo
+// con la misma palabra dentro de una oración (p. ej. "Bachillerato en
+// Educación Diversificada", donde "Educación" no abre la línea).
+function extractSection(text, headerAlt, allHeadersAlt){
+  const headerRe = new RegExp('^\\s*(?:'+headerAlt+')\\b\\s*:?', 'im');
+  const m = headerRe.exec(text);
+  if(!m) return '';
+  const from = m.index + m[0].length;
+  const allHeadersRe = new RegExp('^\\s*(?:'+allHeadersAlt+')\\b\\s*:?', 'gim');
+  allHeadersRe.lastIndex = from;
+  const next = allHeadersRe.exec(text);
+  const to = next ? next.index : text.length;
+  return text.slice(from, to).replace(/^[\s:•\-]+/,'').trim();
+}
+
+function autofillFromCV(rawText){
+  const text = rawText.replace(/\r/g,'').trim();
+  const filled = [];
+
+  $('cvtext').value = text;
+  filled.push('Texto del CV');
+
+  // Nombre: primera línea no vacía, si parece un nombre (2-5 palabras, sin @ ni dígitos)
+  const firstLine = text.split('\n').map(l=>l.trim()).find(l=>l.length>0) || '';
+  if(firstLine && !/[@\d]/.test(firstLine) && firstLine.split(/\s+/).length<=5 && firstLine.length<=60 && !$('name').value){
+    $('name').value = firstLine;
+    filled.push('Nombre');
+  }
+
+  // Zona: busca provincia/cantón conocido en el texto
+  const flatText = stripAccents(text).toLowerCase();
+  const zonaMatch = CR_ZONAS.find(z => flatText.includes(stripAccents(z).toLowerCase()));
+  if(zonaMatch){ $('zone').value = zonaMatch; filled.push('Zona'); }
+
+  // Puesto objetivo: solo si hay una línea explícita "Objetivo:" o "Puesto deseado:"
+  const targetMatch = text.match(/(?:objetivo(?:\s+profesional|\s+laboral)?|puesto\s+deseado)\s*:?\s*(.+)/i);
+  if(targetMatch && targetMatch[1].trim().length>2 && targetMatch[1].trim().length<80){
+    $('target').value = targetMatch[1].trim();
+    filled.push('Puesto objetivo');
+  }
+
+  // Disponibilidad: heurística simple por palabras clave
+  const availSel=$('availability');
+  const availMap=[[/inmediat/i,'Inmediata'],[/15\s*d[ií]as/i,'15 días'],[/30\s*d[ií]as/i,'30 días'],[/(medio\s*tiempo|parcial|fines\s*de\s*semana)/i,'Parcial / fines de semana']];
+  const availHit=availMap.find(([re])=>re.test(text));
+  if(availHit){ for(let i=0;i<availSel.options.length;i++){ if(availSel.options[i].text===availHit[1]){ availSel.selectedIndex=i; filled.push('Disponibilidad'); break; } } }
+
+  // Secciones: experiencia / educación / habilidades, delimitadas por encabezados
+  // comunes de CV en español (cada uno anclado a su propia línea — ver extractSection).
+  const ALL_HEADERS = 'experiencia(?:\\s+laboral|\\s+profesional)?|formaci[oó]n\\s+acad[eé]mica|educaci[oó]n|estudios|habilidades|competencias|conocimientos|idiomas|referencias|cursos(?:\\s+y\\s+certificaciones)?';
+
+  const expSection = extractSection(text, 'experiencia(?:\\s+laboral|\\s+profesional)?', ALL_HEADERS);
+  if(expSection){ $('experience').value=expSection; filled.push('Experiencia laboral'); }
+
+  const eduSection = extractSection(text, 'formaci[oó]n\\s+acad[eé]mica|educaci[oó]n|estudios', ALL_HEADERS);
+  if(eduSection){ $('education').value=eduSection; filled.push('Educación y cursos'); }
+
+  const skillSection = extractSection(text, 'habilidades|competencias|conocimientos', ALL_HEADERS);
+  if(skillSection){ $('skills').value=skillSection; filled.push('Habilidades'); }
+
+  return filled;
+}
+
+async function handleCVUpload(fileList){
+  const files=Array.from(fileList||[]);
+  if(!files.length) return;
+  const file=files[0];
+  const ext=(file.name.split('.').pop()||'').toLowerCase();
+  try{
+    toast('Leyendo "'+file.name+'"…');
+    let text='';
+    if(ext==='pdf') text=await readPDF(file);
+    else if(ext==='docx') text=await readDOCX(file);
+    else if(ext==='txt') text=await file.text();
+    else { toast('⚠ Formato ".'+ext+'" no admitido. Use PDF, DOCX o TXT.'); return; }
+
+    const filled = autofillFromCV(text);
+    document.querySelector('#diagnostico').scrollIntoView({behavior:'smooth'});
+    toast('✓ Campos completados desde "'+file.name+'": '+filled.join(', ')+'. Revise antes de generar el diagnóstico.');
+  }catch(e){
+    console.error('[Lab IA] Error al leer CV:', e);
+    toast('⚠ '+(e.message||'No se pudo leer el archivo. Pegue el texto manualmente.'));
+  }
+}
+
+$('cvFileBtn').onclick=()=>handleCVUpload($('cvFileInput').files);
+$('cvFileInput').addEventListener('change',()=>{ if($('cvFileInput').files.length) handleCVUpload($('cvFileInput').files); });
+
 // Theme with persistence
 (function(){const r=document.documentElement;const saved=localStorage.getItem('ane_lab_theme');if(saved)r.dataset.theme=saved;$('themeBtn').onclick=()=>{r.dataset.theme=r.dataset.theme==='light'?'dark':'light';localStorage.setItem('ane_lab_theme',r.dataset.theme);toast(r.dataset.theme==='light'?'Tema claro activo':'Tema oscuro activo');};})();
 // Debounce helper — only calls fn after user stops typing for `ms` ms
