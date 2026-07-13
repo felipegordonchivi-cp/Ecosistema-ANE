@@ -216,6 +216,17 @@ function detectSkills(t){
   return ESCO_CR_500.filter(s=>s.aliases.some(a=>{
     const n=norm(a);
     if(!n) return false;
+    // Alias de una sola palabra: exigir coincidencia de palabra completa
+    // (no substring) y longitud mínima de 2. Sin esto, alias cortos como
+    // "cad" (de AutoCAD) coincidían dentro de "cadena de suministro", y
+    // "a+" (que al normalizar pierde el símbolo y queda como "a") coincidía
+    // con cualquier texto en español — contaminando el 100% de los
+    // diagnósticos con "certificación CompTIA A+" sin importar el perfil.
+    if(!n.includes(' ')){
+      if(n.length<2) return false;
+      const esc=n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+      return new RegExp('(^|[^a-z0-9ñ])'+esc+'([^a-z0-9ñ]|$)').test(t);
+    }
     if(t.includes(n)) return true;
     const tokens=n.split(/\s+/).filter(w=>w.length>3);
     if(tokens.length<2) return false;
@@ -413,6 +424,16 @@ function familyConfidence(score){
 }
 
 function academicText(r){return norm([r.competencia,r.familia,r.brecha,r.curso_programa,r.institucion,r.tipo_institucion,r.fuente_regulatoria,r.nivel_formacion,r.modalidad,r.provincia_sede,r.estado_verificacion,r.observaciones,r.keywords].join(' '))}
+// Texto reducido para PUNTUAR recomendaciones (a diferencia de academicText,
+// que también alimenta el buscador libre por texto y sí necesita incluir
+// institución/nivel/modalidad). Palabras genéricas de nivel/institución como
+// "técnico" (de "Técnico medio" o "MEP Educación Técnica") aparecen en
+// decenas de programas de rubros totalmente distintos — si se usan para
+// puntuar, un puesto objetivo como "Técnico agrícola" terminaba recomendando
+// Ciberseguridad o Inteligencia Artificial solo por compartir la palabra
+// "técnico" con su nivel de formación. Aquí solo entra contenido real de la
+// competencia.
+function academicScoreText(r){return norm([r.competencia,r.familia,r.brecha,r.curso_programa,r.observaciones,r.keywords].join(' '))}
 // Prioriza opciones cortas para cerrar brechas rápido (semanas/meses): cursos,
 // técnicos y certificaciones —pagos o gratuitos— sobre carreras universitarias
 // completas. Las universidades ya promocionan sus carreras por su cuenta; el
@@ -425,12 +446,32 @@ function academicLevelBoost(r){
   if(isFullDegree && !isShortPath) return -12;
   return 0;
 }
+// Antes se sumaban +3 puntos por cada palabra suelta de >4 letras compartida
+// entre el diagnóstico y el texto del programa. Eso hacía que palabras
+// genéricas que aparecen en decenas de rubros distintos — "técnico" (de
+// "Técnico agrícola"), "trabajo" (de "trabajo en equipo", una brecha
+// transversal que se sugiere a todos los perfiles), "continuo" (de
+// "aprendizaje continuo") — le dieran puntaje a programas sin ninguna
+// relación real (Ciberseguridad, Docker/DevOps, Prompt Engineering para un
+// perfil agrícola). Se agregó una lista de palabras a excluir, pero el
+// patrón seguía apareciendo con otras palabras genéricas cada vez que se
+// probaba un perfil nuevo — la lista nunca iba a estar completa. En vez de
+// seguir parchando palabra por palabra, se quitó el bono por palabra suelta
+// por completo: solo cuenta la coincidencia de frase completa (+18) y las
+// señales curadas de familia/keywords de abajo, que son mucho más confiables.
 function scoreAcademic(r,terms,main){
-  let t=academicText(r),score=0;
-  terms.map(norm).filter(Boolean).forEach(term=>{if(t.includes(term))score+=18; term.split(' ').forEach(w=>{if(w.length>4 && t.includes(w))score+=3})});
+  let t=academicScoreText(r),score=0;
+  terms.map(norm).filter(Boolean).forEach(term=>{if(t.includes(term))score+=18});
   if(main && norm(r.familia+' '+r.keywords).includes(norm(main.id)))score+=12;
   if(main && norm(r.familia+' '+r.keywords).includes(norm(main.name).split(' ')[0]))score+=8;
-  score+=academicLevelBoost(r);
+  // academicLevelBoost premia rutas cortas (cursos/técnicos) sobre carreras
+  // completas, pero es solo un desempate — sin relevancia temática real
+  // (score sigue en 0 aquí), un curso técnico de Ciberseguridad recibía el
+  // mismo +10 "gratis" para un perfil agrícola que para uno de TI, y con eso
+  // superaba el filtro de "score > 0" y aparecía como recomendación sin
+  // ninguna relación con el oficio. El bono de ruta corta ahora solo se
+  // aplica si ya hay al menos una señal temática genuina.
+  if(score>0) score+=academicLevelBoost(r);
   return score;
 }
 function academicTop(main,gaps,detected,limit=9){
