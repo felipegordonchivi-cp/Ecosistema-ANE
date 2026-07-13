@@ -1,0 +1,233 @@
+id	skill	grupo_anterior	grupo_nuevo
+ESCO-CR-1415	resolución de problemas en condominio	digital_avanzado	administracion
+ESCO-CR-1417	resolución de problemas en soporte técnico	digital_avanzado	tic_soporte
+ESCO-CR-1418	resolución de problemas en automatización	calidad_seguridad	digital_avanzado
+ESCO-CR-1419	resolución de problemas en render	construccion_mantenimiento	ingenieria_construccion
+ESCO-CR-1420	resolución de problemas en plan de trabajo	comunicacion	proyectos
+ESCO-CR-1421	resolución de problemas en jefe	comunicacion	proyectos
+ESCO-CR-1424	resolución de problemas en punto de venta	ventas_servicio	ventas_comercio
+ESCO-CR-1425	resolución de problemas en email marketing	ventas_servicio	marketing_digital
+ESCO-CR-1427	resolución de problemas en agenda	digital_basico	administracion
+ESCO-CR-1428	resolución de problemas en estados financieros	administracion	finanzas
+ESCO-CR-1429	resolución de problemas en crédito	ventas_servicio	finanzas
+ESCO-CR-1431	resolución de problemas en distribucion	transversal	logistica
+ESCO-CR-1432	resolución de problemas en licencia b3	transversal	logistica
+ESCO-CR-1433	resolución de problemas en línea de producción	transversal	manufactura
+ESCO-CR-1434	resolución de problemas en auditoria de calidad	manufactura	calidad_seguridad
+ESCO-CR-1435	resolución de problemas en electricidad	digital_basico	construccion_mantenimiento
+ESCO-CR-1436	resolución de problemas en trabajo en alturas	transversal	construccion_mantenimiento
+ESCO-CR-1437	resolución de problemas en turismo	ventas_servicio	turismo_alimentos
+ESCO-CR-1438	resolución de problemas en cocinero	transversal	turismo_alimentos
+ESCO-CR-1439	resolución de problemas en enfermeria	calidad_seguridad	salud_ciencias
+ESCO-CR-1441	resolución de problemas en bienestar	ventas_servicio	salud_ciencias
+ESCO-CR-1442	resolución de problemas en mediacion pedagogica	comunicacion	rrhh_orientacion
+ESCO-CR-1443	resolución de problemas en capacitacion	administracion	rrhh_orientacion
+ESCO-CR-1444	resolución de problemas en atención en crisis	transversal	salud_ciencias
+ESCO-CR-1445	resolución de problemas en proteccion de datos	finanzas	administracion
+ESCO-CR-1446	resolución de problemas en contratación administrativa	comunicacion	administracion
+ESCO-CR-1447	resolución de problemas en rondas	transversal	calidad_seguridad
+ESCO-CR-1448	resolución de problemas en mantenimiento general	transversal	construccion_mantenimiento
+ESCO-CR-1449	resolución de problemas en cosecha	transversal	agro_ambiente
+ESCO-CR-1450	resolución de problemas en sostenibilidad	transversal	agro_ambiente
+ESCO-CR-1451	resolución de problemas en logística internacional	administracion	logistica
+ESCO-CR-1452	resolución de problemas en administracion de propiedades	ventas_servicio	administracion
+ESCO-CR-1453	resolución de problemas en traducción	ventas_servicio	idiomas
+ESCO-CR-1454	resolución de problemas en analítica	tic_soporte	digital_avanzado
+ESCO-CR-1457	resolución de problemas en datos cientificos	calidad_seguridad	digital_avanzado
+ESCO-CR-1459	resolución de problemas en recreación	transversal	turismo_alimentos
+ESCO-CR-1460	resolución de problemas en estetica	ventas_comercio	ventas_servicio
+ESCO-CR-1461	resolución de problemas en servicios domésticos	transversal	ventas_servicio
+ESCO-CR-1462	resolución de problemas en produccion primaria	calidad_seguridad	agro_ambiente
+ESCO-CR-1464	resolución de problemas en ventas digitales	finanzas	marketing_digital
+ESCO-CR-1465	resolución de problemas en tickets	digital_basico	tic_soporte
+ESCO-CR-1466	resolución de problemas en redes	digital_avanzado	tic_soporte
+ESCO-CR-1467	resolución de problemas en nube	calidad_seguridad	digital_avanzado
+ESCO-CR-1468	resolución de problemas en deploy	calidad_seguridad	tic_soporte
+ESCO-CR-1470	resolución de problemas en inteligencia artificial	tic_soporte	digital_avanzado
+ESCO-CR-1471	resolución de problemas en aprendizaje automatico	tic_soporte	digital_avanzado
+ESCO-CR-1472	resolución de problemas en zapier	digital_basico	digital_avanzado
+ESCO-CR-1475	resolución de problemas en control de acceso	transversal	tic_soporte
+ESCO-CR-1476	resolución de problemas en cableado	construccion_mantenimiento	tic_soporte
+ESCO-CR-1477	resolución de problemas en gas refrigerante	transversal	construccion_mantenimiento
+ESCO-CR-1478	resolución de problemas en electrodo	transversal	construccion_mantenimiento
+ESCO-CR-1479	resolución de problemas en tablero eléctrico	transversal	construccion_mantenimiento
+ESCO-CR-1480	resolución de problemas en automotriz	transversal	construccion_mantenimiento
+ESCO-CR-1481	resolución de problemas en reparacion de motos	transversal	construccion_mantenimiento
+ESCO-CR-1482	resolución de problemas en equipo pesado	transversal	construccion_mantenimiento
+ESCO-CR-1483	resolución de problemas en estiba	transversal	logistica
+ESCO-CR-1484	resolución de problemas en inocuidad	transversal	calidad_seguridad
+ESCO-CR-1485	resolución de problemas en control analitico	transversal	calidad_seguridad
+ESCO-CR-1487	resolución de problemas en cosmetología	comunicacion	ventas_servicio
+ESCO-CR-1488	resolución de problemas en cocina técnica	ventas_servicio	turismo_alimentos
+ESCO-CR-1489	resolución de problemas en bebidas	calidad_seguridad	turismo_alimentos
+ESCO-CR-1490	resolución de problemas en repostería	ventas_comercio	turismo_alimentos
+ESCO-CR-1491	resolución de problemas en prevencion de riesgos	transversal	calidad_seguridad
+ESCO-CR-1493	resolución de problemas en pasarela de pago	ventas_comercio	finanzas
+ESCO-CR-1575	mejora continua de ingeniería	transversal	ingenieria_construccion
+ESCO-CR-1576	mejora continua de ingenieria industrial	calidad_seguridad	manufactura
+ESCO-CR-1577	mejora continua de programación	comunicacion	digital_avanzado
+ESCO-CR-1578	mejora continua de electricidad	digital_basico	construccion_mantenimiento
+ESCO-CR-1580	mejora continua de scrum	digital_avanzado	proyectos
+ESCO-CR-1582	mejora continua de prospección	digital_basico	ventas_comercio
+ESCO-CR-1583	mejora continua de call center	idiomas	ventas_servicio
+ESCO-CR-1584	mejora continua de vendedor de tienda	digital_basico	ventas_comercio
+ESCO-CR-1585	mejora continua de marca	digital_avanzado	marketing_digital
+ESCO-CR-1587	mejora continua de documentos	finanzas	administracion
+ESCO-CR-1588	mejora continua de tributación	calidad_seguridad	finanzas
+ESCO-CR-1589	mejora continua de seguros	comunicacion	finanzas
+ESCO-CR-1590	mejora continua de proveeduria	ventas_comercio	administracion
+ESCO-CR-1591	mejora continua de cadena de suministro	calidad_seguridad	logistica
+ESCO-CR-1592	mejora continua de rutas	calidad_seguridad	logistica
+ESCO-CR-1593	mejora continua de empaque	calidad_seguridad	manufactura
+ESCO-CR-1594	mejora continua de calidad	turismo_alimentos	calidad_seguridad
+ESCO-CR-1595	mejora continua de plomería	calidad_seguridad	construccion_mantenimiento
+ESCO-CR-1596	mejora continua de carpintería	calidad_seguridad	construccion_mantenimiento
+ESCO-CR-1597	mejora continua de guía turístico	idiomas	turismo_alimentos
+ESCO-CR-1598	mejora continua de panaderia	calidad_seguridad	turismo_alimentos
+ESCO-CR-1599	mejora continua de expediente clínico	digital_basico	salud_ciencias
+ESCO-CR-1600	mejora continua de calidad medica	digital_basico	salud_ciencias
+ESCO-CR-1601	mejora continua de dermocosmética	comunicacion	ventas_servicio
+ESCO-CR-1602	mejora continua de educación	digital_basico	rrhh_orientacion
+ESCO-CR-1603	mejora continua de seleccion	digital_basico	rrhh_orientacion
+ESCO-CR-1604	mejora continua de orientacion	comunicacion	rrhh_orientacion
+ESCO-CR-1605	mejora continua de contratos	digital_basico	administracion
+ESCO-CR-1607	mejora continua de rondas	ventas_servicio	calidad_seguridad
+ESCO-CR-1608	mejora continua de mantenimiento general	turismo_alimentos	construccion_mantenimiento
+ESCO-CR-1609	mejora continua de agro	calidad_seguridad	agro_ambiente
+ESCO-CR-1610	mejora continua de energía renovable	calidad_seguridad	construccion_mantenimiento
+ESCO-CR-1611	mejora continua de agente aduanal	idiomas	logistica
+ESCO-CR-1613	mejora continua de francés	digital_basico	idiomas
+ESCO-CR-1615	mejora continua de infraestructura tecnologica	digital_avanzado	tic_soporte
+ESCO-CR-1618	mejora continua de produccion audiovisual	comunicacion	marketing_digital
+ESCO-CR-1619	mejora continua de actividad física	ventas_servicio	salud_ciencias
+ESCO-CR-1620	mejora continua de salon	comunicacion	ventas_servicio
+ESCO-CR-1621	mejora continua de servicios domésticos	salud_ciencias	ventas_servicio
+ESCO-CR-1622	mejora continua de empaque agricola	manufactura	agro_ambiente
+ESCO-CR-1623	mejora continua de retencion	digital_basico	ventas_comercio
+ESCO-CR-1625	mejora continua de troubleshooting	calidad_seguridad	tic_soporte
+ESCO-CR-1626	mejora continua de switching	calidad_seguridad	tic_soporte
+ESCO-CR-1629	mejora continua de testing	digital_avanzado	tic_soporte
+ESCO-CR-1632	mejora continua de zapier	administracion	digital_avanzado
+ESCO-CR-1633	mejora continua de modulo sap	ventas_servicio	digital_avanzado
+ESCO-CR-1634	mejora continua de tablas dinámicas	finanzas	digital_avanzado
+ESCO-CR-1637	mejora continua de gas refrigerante	calidad_seguridad	construccion_mantenimiento
+ESCO-CR-1639	mejora continua de cableado eléctrico	calidad_seguridad	construccion_mantenimiento
+ESCO-CR-1640	mejora continua de automotriz	calidad_seguridad	construccion_mantenimiento
+ESCO-CR-1641	mejora continua de reparación de motos	calidad_seguridad	construccion_mantenimiento
+ESCO-CR-1643	mejora continua de estiba	calidad_seguridad	logistica
+ESCO-CR-1644	mejora continua de manipulacion de alimentos	calidad_seguridad	turismo_alimentos
+ESCO-CR-1646	mejora continua de acompanamiento	comunicacion	transversal
+ESCO-CR-1647	mejora continua de pedicure	salud_ciencias	ventas_servicio
+ESCO-CR-1648	mejora continua de cocina técnica	calidad_seguridad	turismo_alimentos
+ESCO-CR-1649	mejora continua de café	ventas_servicio	turismo_alimentos
+ESCO-CR-1650	mejora continua de repostería	manufactura	turismo_alimentos
+ESCO-CR-1651	mejora continua de prevencion de riesgos	ventas_servicio	calidad_seguridad
+ESCO-CR-1652	mejora continua de customer service	digital_basico	ventas_servicio
+ESCO-CR-1653	mejora continua de e commerce	ventas_servicio	marketing_digital
+ESCO-CR-1654	mejora continua de remoto	comunicacion	transversal
+ESCO-CR-1657	atención especializada en python	transversal	digital_avanzado
+ESCO-CR-1658	atención especializada en energia	transversal	construccion_mantenimiento
+ESCO-CR-1659	atención especializada en dibujo tecnico	transversal	ingenieria_construccion
+ESCO-CR-1660	atención especializada en coordinador de proyectos	transversal	proyectos
+ESCO-CR-1661	atención especializada en líder	transversal	proyectos
+ESCO-CR-1662	atención especializada en negociación	idiomas	ventas_comercio
+ESCO-CR-1663	atención especializada en experiencia del cliente	transversal	ventas_servicio
+ESCO-CR-1664	atención especializada en demostradora	transversal	ventas_comercio
+ESCO-CR-1665	atención especializada en marketing	digital_basico	marketing_digital
+ESCO-CR-1666	atención especializada en diseno	transversal	digital_avanzado
+ESCO-CR-1667	atención especializada en oficina	transversal	administracion
+ESCO-CR-1668	atención especializada en cuentas por pagar	transversal	finanzas
+ESCO-CR-1669	atención especializada en asesor patrimonial	digital_basico	finanzas
+ESCO-CR-1670	atención especializada en ordenes de compra	digital_basico	administracion
+ESCO-CR-1671	atención especializada en logistica	digital_basico	logistica
+ESCO-CR-1672	atención especializada en reparto	ventas_servicio	logistica
+ESCO-CR-1673	atención especializada en maquina	logistica	manufactura
+ESCO-CR-1674	atención especializada en control de calidad	transversal	calidad_seguridad
+ESCO-CR-1675	atención especializada en soldadura	transversal	manufactura
+ESCO-CR-1676	atención especializada en construccion	transversal	construccion_mantenimiento
+ESCO-CR-1677	atención especializada en hotel	calidad_seguridad	turismo_alimentos
+ESCO-CR-1678	atención especializada en chef	ventas_servicio	turismo_alimentos
+ESCO-CR-1679	atención especializada en enfermería	transversal	salud_ciencias
+ESCO-CR-1680	atención especializada en calidad médica	transversal	salud_ciencias
+ESCO-CR-1681	atención especializada en farmacia	digital_basico	salud_ciencias
+ESCO-CR-1682	atención especializada en evaluación de aprendizajes	transversal	rrhh_orientacion
+ESCO-CR-1685	atención especializada en abogado	calidad_seguridad	administracion
+ESCO-CR-1686	atención especializada en gobierno	transversal	administracion
+ESCO-CR-1687	atención especializada en rondas	comunicacion	calidad_seguridad
+ESCO-CR-1688	atención especializada en mantenimiento general	transversal	construccion_mantenimiento
+ESCO-CR-1689	atención especializada en ganaderia	transversal	agro_ambiente
+ESCO-CR-1691	atención especializada en comercio exterior	digital_basico	logistica
+ESCO-CR-1692	atención especializada en bienes raíces	comunicacion	finanzas
+ESCO-CR-1693	atención especializada en portugues	transversal	idiomas
+ESCO-CR-1694	atención especializada en automatizacion	digital_basico	digital_avanzado
+ESCO-CR-1695	atención especializada en infraestructura tecnologica	calidad_seguridad	tic_soporte
+ESCO-CR-1696	atención especializada en instalación	calidad_seguridad	construccion_mantenimiento
+ESCO-CR-1697	atención especializada en datos científicos	transversal	digital_avanzado
+ESCO-CR-1698	atención especializada en video	digital_avanzado	marketing_digital
+ESCO-CR-1699	atención especializada en nutricion	comunicacion	salud_ciencias
+ESCO-CR-1700	atención especializada en estética	turismo_alimentos	ventas_servicio
+ESCO-CR-1702	atención especializada en empaque agrícola	turismo_alimentos	agro_ambiente
+ESCO-CR-1704	atención especializada en ventas digitales	comunicacion	marketing_digital
+ESCO-CR-1705	atención especializada en hardware	transversal	tic_soporte
+ESCO-CR-1706	atención especializada en packet tracer	transversal	tic_soporte
+ESCO-CR-1709	atención especializada en testing	calidad_seguridad	tic_soporte
+ESCO-CR-1710	atención especializada en ia generativa	comunicacion	digital_avanzado
+ESCO-CR-1711	atención especializada en aprendizaje automático	calidad_seguridad	digital_avanzado
+ESCO-CR-1712	atención especializada en zapier	tic_soporte	digital_avanzado
+ESCO-CR-1713	atención especializada en odoo	finanzas	digital_avanzado
+ESCO-CR-1714	atención especializada en powerpoint	comunicacion	digital_basico
+ESCO-CR-1715	atención especializada en control de acceso	calidad_seguridad	tic_soporte
+ESCO-CR-1716	atención especializada en cableado	calidad_seguridad	tic_soporte
+ESCO-CR-1717	atención especializada en gas refrigerante	transversal	construccion_mantenimiento
+ESCO-CR-1718	atención especializada en soldadura	calidad_seguridad	manufactura
+ESCO-CR-1720	atención especializada en automotriz	transversal	construccion_mantenimiento
+ESCO-CR-1721	atención especializada en motos	transversal	construccion_mantenimiento
+ESCO-CR-1722	atención especializada en cargador	calidad_seguridad	logistica
+ESCO-CR-1723	atención especializada en estiba	manufactura	logistica
+ESCO-CR-1724	atención especializada en limpieza y desinfección	manufactura	calidad_seguridad
+ESCO-CR-1725	atención especializada en control analitico	digital_basico	calidad_seguridad
+ESCO-CR-1726	atención especializada en acompanamiento	ventas_servicio	transversal
+ESCO-CR-1727	atención especializada en barbería	ventas_comercio	ventas_servicio
+ESCO-CR-1728	atención especializada en cocina técnica	manufactura	turismo_alimentos
+ESCO-CR-1729	atención especializada en espresso	comunicacion	turismo_alimentos
+ESCO-CR-1730	atención especializada en repostería	calidad_seguridad	turismo_alimentos
+ESCO-CR-1731	atención especializada en prevencion de riesgos	comunicacion	calidad_seguridad
+ESCO-CR-1732	atención especializada en customer service	transversal	ventas_servicio
+ESCO-CR-1733	atención especializada en tienda digital	finanzas	marketing_digital
+ESCO-CR-1734	atención especializada en teletrabajo	idiomas	transversal
+ESCO-CR-1736	planificación de producción	digital_avanzado	manufactura
+ESCO-CR-1738	planificación de automatizacion	construccion_mantenimiento	digital_avanzado
+ESCO-CR-1742	planificación de ventas	ventas_servicio	ventas_comercio
+ESCO-CR-1750	planificación de cotizacion	logistica	ventas_comercio
+ESCO-CR-1751	planificación de logística	transversal	logistica
+ESCO-CR-1752	planificación de chofer	transversal	logistica
+ESCO-CR-1753	planificación de produccion	transversal	manufactura
+ESCO-CR-1755	planificación de reparacion	digital_basico	construccion_mantenimiento
+ESCO-CR-1758	planificación de manipulación de alimentos	transversal	turismo_alimentos
+ESCO-CR-1764	planificación de atencion en crisis	transversal	salud_ciencias
+ESCO-CR-1767	planificación de rondas	transversal	calidad_seguridad
+ESCO-CR-1768	planificación de mantenimiento general	calidad_seguridad	construccion_mantenimiento
+ESCO-CR-1770	planificación de tratamiento de aguas	transversal	agro_ambiente
+ESCO-CR-1772	planificación de inmobiliario	ventas_comercio	finanzas
+ESCO-CR-1779	planificación de nutrición	transversal	salud_ciencias
+ESCO-CR-1781	planificación de servicios domésticos	transversal	ventas_servicio
+ESCO-CR-1782	planificación de planta de alimentos	calidad_seguridad	manufactura
+ESCO-CR-1784	planificación de ventas digitales	ventas_comercio	marketing_digital
+ESCO-CR-1787	planificación de paas	calidad_seguridad	digital_avanzado
+ESCO-CR-1788	planificación de ci cd	calidad_seguridad	digital_avanzado
+ESCO-CR-1793	planificación de módulo sap	digital_basico	digital_avanzado
+ESCO-CR-1795	planificación de control de acceso	transversal	tic_soporte
+ESCO-CR-1796	planificación de cableado	construccion_mantenimiento	tic_soporte
+ESCO-CR-1798	planificación de metalmecánica	transversal	manufactura
+ESCO-CR-1799	planificación de baja tensión	transversal	construccion_mantenimiento
+ESCO-CR-1802	planificación de retroexcavadora	transversal	construccion_mantenimiento
+ESCO-CR-1803	planificación de estiba	transversal	logistica
+ESCO-CR-1804	planificación de manipulación de alimentos	transversal	turismo_alimentos
+ESCO-CR-1805	planificación de control analitico	transversal	calidad_seguridad
+ESCO-CR-1807	planificación de cosmetologia	comunicacion	ventas_servicio
+ESCO-CR-1808	planificación de cocina técnica	ventas_servicio	turismo_alimentos
+ESCO-CR-1809	planificación de servicio de bebidas	calidad_seguridad	turismo_alimentos
+ESCO-CR-1810	planificación de repostería	ventas_comercio	turismo_alimentos
+ESCO-CR-1811	planificación de prevencion de riesgos	transversal	calidad_seguridad
+ESCO-CR-1812	planificación de customer service	idiomas	ventas_servicio
+ESCO-CR-1814	planificación de agenda digital	administracion	digital_basico
