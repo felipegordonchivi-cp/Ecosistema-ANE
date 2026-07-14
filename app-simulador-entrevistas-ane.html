@@ -3015,13 +3015,45 @@ function selectProfile(id){
   document.getElementById('prof-desc-big').textContent = '';
 }
 
+// La pregunta de presentación abre toda entrevista real, así que es parte
+// del flujo: aparece como "Pregunta 0" al inicio de la lista de CADA perfil
+// (editable y activable igual que las demás), con su rúbrica propia de
+// pitch — no como una opción escondida en un desplegable.
+const PITCH_Q_DEFAULT = 'Háblame de ti: ¿quién eres profesionalmente, qué experiencia traes y por qué te interesa este puesto?';
+let pitchQText = PITCH_Q_DEFAULT;
+
+function pitchCardHTML(){
+  const isActive = activeQType==='pitch' && !!activeQ;
+  return `
+    <div class="q-item${isActive?' active-q':''}" id="qi-pitch" style="border:1px solid rgba(59,130,246,.35);background:rgba(59,130,246,.05)">
+      <div class="q-num" style="background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.4)">0</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+          <span style="background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.4);border-radius:20px;padding:2px 10px;font-size:10px;font-weight:800;color:#60a5fa;text-transform:uppercase;letter-spacing:.05em">🎤 Presentación · Apertura</span>
+          <span style="font-size:10px;color:#4a8a8a">Se evalúa con rúbrica de pitch, no con STAR</span>
+        </div>
+        <p id="q-text-pitch" style="font-size:13px;line-height:1.5;margin:0 0 8px;font-weight:500">${escHtml(pitchQText)}</p>
+        <textarea id="q-edit-pitch" style="display:none;width:100%;font-size:13px;line-height:1.5;background:rgba(59,130,246,.08);border:1px solid #3b82f6;border-radius:8px;color:#e0f2f2;padding:8px;resize:vertical;min-height:60px;font-family:inherit;margin-bottom:8px">${escHtml(pitchQText)}</textarea>
+        <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
+          ${[['1','Presente','#3b82f6'],['2','Pasado','#f59e0b'],['3','Futuro / encaje','#10b981'],['⏱','60-90 seg','#8b5cf6']].map(([l,n,c])=>`<span style="display:inline-flex;align-items:center;gap:4px;background:${c}18;border:1px solid ${c}33;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700"><span style="color:${c};font-size:11px;font-weight:900">${l}</span><span style="color:#7a9a9a">${n}</span></span>`).join('')}
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="q-act-btn${isActive?' is-active':''}" id="q-act-btn-pitch" onclick="setActivePitchQ()">
+            ${isActive?'✓ Activa':'▶ Activar'}
+          </button>
+          <button onclick="toggleEditQ('pitch')" id="q-edit-btn-pitch" title="Editar pregunta" style="background:rgba(13,115,115,.15);border:1px solid rgba(13,115,115,.3);color:#7dd3d3;padding:4px 8px;border-radius:6px;font-size:11px">✏️</button>
+        </div>
+      </div>
+    </div>`;
+}
+
 function renderQuestions(){
   const empty = document.getElementById('q-empty');
   const items = document.getElementById('q-items');
   if(!currentProf){ empty.style.display='flex'; items.classList.add('hidden'); return; }
   empty.style.display='none'; items.classList.remove('hidden');
-  items.innerHTML = currentProf.qs.map((q,i)=>`
-    <div class="q-item${activeQ===q?' active-q':''}" id="qi-${i}">
+  items.innerHTML = pitchCardHTML() + currentProf.qs.map((q,i)=>`
+    <div class="q-item${activeQ===q&&activeQType!=='pitch'?' active-q':''}" id="qi-${i}">
       <div class="q-num">${i+1}</div>
       <div style="flex:1">
         <p id="q-text-${i}" style="font-size:13px;line-height:1.5;margin:0 0 8px;font-weight:500">${q}</p>
@@ -3030,8 +3062,8 @@ function renderQuestions(){
           ${[['S','Situación','#3b82f6'],['T','Tarea','#f59e0b'],['A','Acción','#10b981'],['R','Resultado','#8b5cf6']].map(([l,n,c])=>`<span style="display:inline-flex;align-items:center;gap:4px;background:${c}18;border:1px solid ${c}33;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700"><span style="color:${c};font-size:11px;font-weight:900">${l}</span><span style="color:#7a9a9a">${n}</span></span>`).join('')}
         </div>
         <div style="display:flex;gap:6px">
-          <button class="q-act-btn${activeQ===q?' is-active':''}" id="q-act-btn-${i}" onclick="setActiveQEdited(${i})">
-            ${activeQ===q?'✓ Activa':'▶ Activar'}
+          <button class="q-act-btn${activeQ===q&&activeQType!=='pitch'?' is-active':''}" id="q-act-btn-${i}" onclick="setActiveQEdited(${i})">
+            ${activeQ===q&&activeQType!=='pitch'?'✓ Activa':'▶ Activar'}
           </button>
           <button onclick="toggleEditQ(${i})" id="q-edit-btn-${i}" title="Editar pregunta" style="background:rgba(13,115,115,.15);border:1px solid rgba(13,115,115,.3);color:#7dd3d3;padding:4px 8px;border-radius:6px;font-size:11px">✏️</button>
         </div>
@@ -3048,9 +3080,33 @@ function renderQuickQBtns(){
     div.innerHTML = '<span style="font-size:11px;color:#1a4a4a;font-style:italic">Selecciona un perfil para ver las preguntas</span>';
     return;
   }
-  div.innerHTML = currentProf.qs.map((q,i)=>
-    `<button class="qq-btn${activeQ===q?' active':''}" onclick="setActiveQEdited(${i})">Q${i+1}</button>`
+  const pitchActive = activeQType==='pitch' && !!activeQ;
+  div.innerHTML = `<button class="qq-btn${pitchActive?' active':''}" onclick="setActivePitchQ()" title="Pregunta 0 · Presentación (háblame de ti)" style="border-color:rgba(59,130,246,.5);color:#60a5fa${pitchActive?';background:rgba(59,130,246,.3)':''}">🎤 P0</button>`
+    + currentProf.qs.map((q,i)=>
+    `<button class="qq-btn${activeQ===q&&activeQType!=='pitch'?' active':''}" onclick="setActiveQEdited(${i})">Q${i+1}</button>`
   ).join('');
+}
+
+// Activa la Pregunta 0 (presentación) — misma mecánica que setActiveQEdited
+// pero marcando el tipo pitch para que analizadores, guías y PDFs usen la
+// rúbrica Presente-Pasado-Futuro.
+function setActivePitchQ(){
+  const area = document.getElementById('q-edit-pitch');
+  const txt = document.getElementById('q-text-pitch');
+  const edited = (area && area.style.display !== 'none') ? area.value.trim() : (txt ? txt.textContent.trim() : '');
+  pitchQText = edited || PITCH_Q_DEFAULT;
+  activeQ = pitchQText;
+  isFreeQuestion = true;
+  activeQType = 'pitch';
+  if(area && area.style.display !== 'none') toggleEditQ('pitch');
+  renderQuestions();
+  const box = document.getElementById('active-q-box');
+  const noq = document.getElementById('no-q-box');
+  if(box){ box.style.display='block'; }
+  if(noq){ noq.style.display='none'; }
+  document.getElementById('active-q-text').textContent = activeQ;
+  updateEvalCtx();
+  broadcastQuestion();
 }
 
 function toggleEditQ(idx){
@@ -3062,6 +3118,7 @@ function toggleEditQ(idx){
   if(editing){
     // Guardar edición
     txt.textContent = area.value || txt.textContent;
+    if(idx==='pitch') pitchQText = txt.textContent; // persistir para re-renders de la lista
     area.style.display = 'none';
     txt.style.display = '';
     btn.textContent = '✏️';
