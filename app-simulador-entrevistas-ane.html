@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://*.firebaseio.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; connect-src https://api.anthropic.com https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com https://firestore.googleapis.com https://*.workers.dev; frame-ancestors 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://www.gstatic.com https://*.firebaseio.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' blob:; connect-src https://api.anthropic.com https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com https://firestore.googleapis.com https://*.workers.dev https://cdn.jsdelivr.net; frame-ancestors 'self'">
 <title>Simulador de Entrevistas — ANE Costa Rica v7</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -1629,11 +1629,21 @@ function escHtml(s){
             <button id="iv-cam-btn" onclick="toggleIvCam()" class="iv-ctrl-btn inactive">
               <span style="font-size:18px">📹</span>CÁMARA
             </button>
+            <button id="iv-bg-btn" onclick="toggleIvBgPanel()" class="iv-ctrl-btn inactive" title="Fondo virtual de mi cámara">
+              <span style="font-size:18px">🖼</span>FONDO
+            </button>
             <div style="flex:1"></div>
             <div id="iv-speaking-dot" style="display:none;align-items:center;gap:5px;font-size:10px;color:#22c55e;font-weight:700">
               <span style="width:7px;height:7px;border-radius:50%;background:#22c55e;animation:pulse-teal 1s infinite;display:inline-block"></span>HABLANDO
             </div>
             <button id="iv-end-btn" onclick="finalizarEntrevista()" title="Termina la sesión para ambos lados" style="background:rgba(239,68,68,.15);border:2px solid #ef4444;color:#fca5a5;padding:6px 12px;border-radius:10px;font-size:10px;font-weight:800;letter-spacing:.03em;cursor:pointer;white-space:nowrap">⏻ FINALIZAR</button>
+          </div>
+          <!-- Panel de fondo virtual (mi cámara) -->
+          <div id="iv-bg-panel" style="display:none;padding:10px 14px;background:rgba(0,0,0,.5);border-top:1px solid rgba(13,115,115,.2)">
+            <div style="font-size:9px;color:#2a5a5a;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px">🖼 Fondo virtual de mi cámara</div>
+            <div id="iv-bg-options" style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start"></div>
+            <input type="file" id="iv-bg-file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="uploadIvBg(this.files[0]);this.value=''">
+            <p id="iv-bg-status" style="font-size:9px;color:#3a7272;margin-top:6px"></p>
           </div>
         </div>
 
@@ -1952,6 +1962,7 @@ let currentProf = null;
 let activeQ = null;
 let isFreeQuestion = false; // true cuando la pregunta activa no viene del catálogo del perfil (pregunta libre del entrevistador)
 let activeQType = 'star'; // 'star' = conductual por incidente (rúbrica S-T-A-R) · 'pitch' = presentación tipo "háblame de ti" (rúbrica Presente-Pasado-Futuro)
+let activeQIdx = null; // índice de la pregunta activa en el catálogo — el resaltado se marca por posición, no por texto, para que una pregunta editada no pierda su "✓ Activa"
 let evalHistory = (()=>{ try{ return JSON.parse(localStorage.getItem('ane_eval_hist'))||[]; }catch(e){ return []; } })();
 let starScores = {S:0,T:0,A:0,R:0};
 let globalScore = 5;
@@ -3005,6 +3016,7 @@ function selectProfile(id){
   activeQ = null;
   isFreeQuestion = false;
   activeQType = 'star';
+  activeQIdx = null;
   renderProfiles();
   renderQuestions();
   // Update info bar
@@ -3053,17 +3065,17 @@ function renderQuestions(){
   if(!currentProf){ empty.style.display='flex'; items.classList.add('hidden'); return; }
   empty.style.display='none'; items.classList.remove('hidden');
   items.innerHTML = pitchCardHTML() + currentProf.qs.map((q,i)=>`
-    <div class="q-item${activeQ===q&&activeQType!=='pitch'?' active-q':''}" id="qi-${i}">
+    <div class="q-item${activeQIdx===i?' active-q':''}" id="qi-${i}">
       <div class="q-num">${i+1}</div>
       <div style="flex:1">
-        <p id="q-text-${i}" style="font-size:13px;line-height:1.5;margin:0 0 8px;font-weight:500">${q}</p>
-        <textarea id="q-edit-${i}" style="display:none;width:100%;font-size:13px;line-height:1.5;background:rgba(13,115,115,.1);border:1px solid var(--teal);border-radius:8px;color:#e0f2f2;padding:8px;resize:vertical;min-height:60px;font-family:inherit;margin-bottom:8px">${q}</textarea>
+        <p id="q-text-${i}" style="font-size:13px;line-height:1.5;margin:0 0 8px;font-weight:500">${activeQIdx===i&&activeQ!==q?escHtml(activeQ):q}</p>
+        <textarea id="q-edit-${i}" style="display:none;width:100%;font-size:13px;line-height:1.5;background:rgba(13,115,115,.1);border:1px solid var(--teal);border-radius:8px;color:#e0f2f2;padding:8px;resize:vertical;min-height:60px;font-family:inherit;margin-bottom:8px">${activeQIdx===i&&activeQ!==q?escHtml(activeQ):q}</textarea>
         <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
           ${[['S','Situación','#3b82f6'],['T','Tarea','#f59e0b'],['A','Acción','#10b981'],['R','Resultado','#8b5cf6']].map(([l,n,c])=>`<span style="display:inline-flex;align-items:center;gap:4px;background:${c}18;border:1px solid ${c}33;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700"><span style="color:${c};font-size:11px;font-weight:900">${l}</span><span style="color:#7a9a9a">${n}</span></span>`).join('')}
         </div>
         <div style="display:flex;gap:6px">
-          <button class="q-act-btn${activeQ===q&&activeQType!=='pitch'?' is-active':''}" id="q-act-btn-${i}" onclick="setActiveQEdited(${i})">
-            ${activeQ===q&&activeQType!=='pitch'?'✓ Activa':'▶ Activar'}
+          <button class="q-act-btn${activeQIdx===i?' is-active':''}" id="q-act-btn-${i}" onclick="setActiveQEdited(${i})">
+            ${activeQIdx===i?'✓ Activa':'▶ Activar'}
           </button>
           <button onclick="toggleEditQ(${i})" id="q-edit-btn-${i}" title="Editar pregunta" style="background:rgba(13,115,115,.15);border:1px solid rgba(13,115,115,.3);color:#7dd3d3;padding:4px 8px;border-radius:6px;font-size:11px">✏️</button>
         </div>
@@ -3083,7 +3095,7 @@ function renderQuickQBtns(){
   const pitchActive = activeQType==='pitch' && !!activeQ;
   div.innerHTML = `<button class="qq-btn${pitchActive?' active':''}" onclick="setActivePitchQ()" title="Pregunta 0 · Presentación (háblame de ti)" style="border-color:rgba(59,130,246,.5);color:#60a5fa${pitchActive?';background:rgba(59,130,246,.3)':''}">🎤 P0</button>`
     + currentProf.qs.map((q,i)=>
-    `<button class="qq-btn${activeQ===q&&activeQType!=='pitch'?' active':''}" onclick="setActiveQEdited(${i})">Q${i+1}</button>`
+    `<button class="qq-btn${activeQIdx===i?' active':''}" onclick="setActiveQEdited(${i})">Q${i+1}</button>`
   ).join('');
 }
 
@@ -3098,6 +3110,7 @@ function setActivePitchQ(){
   activeQ = pitchQText;
   isFreeQuestion = true;
   activeQType = 'pitch';
+  activeQIdx = null;
   if(area && area.style.display !== 'none') toggleEditQ('pitch');
   renderQuestions();
   const box = document.getElementById('active-q-box');
@@ -3142,6 +3155,7 @@ function setActiveQEdited(idx){
   activeQ = edited || currentProf?.qs[idx] || null;
   isFreeQuestion = false;
   activeQType = 'star';
+  activeQIdx = activeQ ? idx : null;
   // Cerrar editor si estaba abierto
   if(area && area.style.display !== 'none') toggleEditQ(idx);
   renderQuestions();
@@ -3172,6 +3186,7 @@ function activateFreeQuestion(){
   activeQ = text;
   isFreeQuestion = true;
   activeQType = document.getElementById('free-q-type')?.value || 'star';
+  activeQIdx = null;
   renderQuestions();
   const box = document.getElementById('active-q-box');
   const noq = document.getElementById('no-q-box');
@@ -3197,6 +3212,7 @@ function setActiveQ(idx){
   activeQ = currentProf?.qs[idx]||null;
   isFreeQuestion = false;
   activeQType = 'star';
+  activeQIdx = activeQ ? idx : null;
   renderQuestions();
   // Update active Q box
   const box = document.getElementById('active-q-box');
@@ -5513,6 +5529,9 @@ function toggleIvCam(){
   const tracks = ivCamStream.getVideoTracks();
   const enabled = tracks.length ? tracks[0].enabled : false;
   tracks.forEach(function(t){ t.enabled = !enabled; });
+  // Si hay fondo virtual activo, apagar también la pista compuesta que ve
+  // el candidato — si no, el canvas seguiría emitiendo el último frame.
+  if(ivBgStream) ivBgStream.getVideoTracks().forEach(function(t){ t.enabled = !enabled; });
   if(!enabled){
     if(vid){ vid.style.display='block'; } if(ph) ph.style.display='none';
     if(btn){ btn.className='iv-ctrl-btn active'; btn.innerHTML='<span style="font-size:18px">📹</span>CAM ON'; }
@@ -5521,6 +5540,251 @@ function toggleIvCam(){
     if(btn){ btn.className='iv-ctrl-btn inactive'; btn.innerHTML='<span style="font-size:18px">📹</span>CAM OFF'; }
   }
 }
+
+// ════════════════════════════════════════════════
+//  FONDO VIRTUAL DEL ENTREVISTADOR (tipo Teams)
+//  Segmentación de persona con MediaPipe Selfie Segmentation (corre 100%
+//  en el navegador — el video nunca sale a un servidor). El fondo elegido
+//  se compone en un canvas y esa pista reemplaza a la de la cámara cruda
+//  en la conexión WebRTC (replaceTrack), así el candidato ve el fondo.
+//  Banco institucional: archivos en fondos/ del repositorio. Fondo propio:
+//  se guarda como dataURL en localStorage y persiste entre sesiones.
+// ════════════════════════════════════════════════
+const IV_BG_BANK = [
+  {id:'brete-claro', label:'Institucional claro', src:'fondos/fondo-brete-claro.jpg'},
+  {id:'brete-azul',  label:'Institucional azul',  src:'fondos/fondo-brete-azul.jpg'}
+];
+let ivBgChoice = (function(){ try{ return localStorage.getItem('ane_iv_bg')||'none'; }catch(e){ return 'none'; } })();
+let ivBgImage = null;      // HTMLImageElement del fondo activo
+let ivSegmenter = null;    // instancia MediaPipe (se crea una sola vez)
+let ivSegLoading = false;
+let ivSegBusy = false;
+let ivBgVideo = null;      // <video> oculto con la cámara cruda
+let ivBgCanvas = null, ivBgCtx = null;
+let ivBgStream = null;     // stream del canvas (lo que ve el candidato)
+let ivBgRAF = null;
+let ivRawVideoTrack = null;
+
+function _ivBgSetStatus(msg, color){
+  const el = document.getElementById('iv-bg-status');
+  if(el){ el.textContent = msg||''; el.style.color = color||'#3a7272'; }
+}
+
+function toggleIvBgPanel(){
+  const p = document.getElementById('iv-bg-panel');
+  if(!p) return;
+  const open = p.style.display !== 'none';
+  p.style.display = open ? 'none' : 'block';
+  if(!open) renderIvBgOptions();
+}
+
+function renderIvBgOptions(){
+  const c = document.getElementById('iv-bg-options');
+  if(!c) return;
+  const thumb = (selected) => 'width:72px;height:40px;border-radius:8px;cursor:pointer;object-fit:cover;border:2px solid '+(selected?'var(--teal)':'rgba(13,115,115,.25)')+';'+(selected?'box-shadow:0 0 10px rgba(13,115,115,.5);':'');
+  let html = `<div onclick="pickIvBg('none')" title="Sin fondo (cámara normal)" style="${thumb(ivBgChoice==='none')}display:flex;align-items:center;justify-content:center;background:#0a1616;color:#5a9898;font-size:9px;font-weight:800">🚫 Ninguno</div>`;
+  IV_BG_BANK.forEach(b=>{
+    html += `<img src="${b.src}" title="${b.label}" onclick="pickIvBg('bank:${b.id}')" onerror="this.outerHTML='<div title=\\'Suba ${b.src} al repositorio para habilitar este fondo\\' style=\\'width:72px;height:40px;border-radius:8px;border:2px dashed rgba(13,115,115,.3);display:flex;align-items:center;justify-content:center;color:#2a5050;font-size:8px;text-align:center;padding:2px\\'>${b.label}<br>(falta archivo)</div>'" style="${thumb(ivBgChoice==='bank:'+b.id)}">`;
+  });
+  let custom = null;
+  try{ custom = localStorage.getItem('ane_iv_bg_custom'); }catch(e){}
+  if(custom){
+    html += `<div style="position:relative">
+      <img src="${custom}" title="Mi fondo personalizado" onclick="pickIvBg('custom')" style="${thumb(ivBgChoice==='custom')}">
+      <button onclick="event.stopPropagation();try{localStorage.removeItem('ane_iv_bg_custom')}catch(e){};if(ivBgChoice==='custom')pickIvBg('none');renderIvBgOptions()" title="Eliminar fondo personalizado" style="position:absolute;top:-6px;right:-6px;width:16px;height:16px;border-radius:50%;background:#ef4444;border:none;color:#fff;font-size:9px;line-height:1;cursor:pointer;padding:0">✕</button>
+    </div>`;
+  }
+  html += `<div onclick="document.getElementById('iv-bg-file').click()" title="Subir un fondo propio (JPG/PNG)" style="width:72px;height:40px;border-radius:8px;cursor:pointer;border:2px dashed rgba(13,115,115,.4);display:flex;align-items:center;justify-content:center;color:#5a9898;font-size:9px;font-weight:800">➕ Subir</div>`;
+  c.innerHTML = html;
+}
+
+function pickIvBg(choice){
+  ivBgChoice = choice;
+  try{ localStorage.setItem('ane_iv_bg', choice); }catch(e){}
+  renderIvBgOptions();
+  const btn = document.getElementById('iv-bg-btn');
+  if(btn){
+    btn.className = 'iv-ctrl-btn ' + (choice==='none'?'inactive':'active');
+    btn.innerHTML = '<span style="font-size:18px">🖼</span>' + (choice==='none'?'FONDO':'FONDO ON');
+  }
+  if(!ivCamStream){
+    _ivBgSetStatus(choice==='none'?'':'✓ Se aplicará automáticamente al iniciar tu cámara (al admitir al candidato).');
+    return;
+  }
+  applyIvBackground().catch(function(err){
+    console.error('[ANE] Fondo virtual:', err);
+    _ivBgSetStatus('⚠️ No se pudo aplicar el fondo: '+(err&&err.message||err)+'. La cámara sigue normal.', '#eab308');
+  });
+}
+
+function uploadIvBg(file){
+  if(!file) return;
+  if(!/^image\/(jpeg|png|webp)$/.test(file.type)){ _ivBgSetStatus('⚠️ Formato no soportado — use JPG, PNG o WebP.', '#eab308'); return; }
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+  img.onload = function(){
+    URL.revokeObjectURL(url);
+    // Reescalar a máx. 1280px de ancho y guardar como JPEG comprimido para
+    // no llenar localStorage (límite típico ~5MB por origen).
+    const scale = Math.min(1, 1280/img.width);
+    const cv = document.createElement('canvas');
+    cv.width = Math.round(img.width*scale); cv.height = Math.round(img.height*scale);
+    cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+    const dataUrl = cv.toDataURL('image/jpeg', 0.82);
+    try{
+      localStorage.setItem('ane_iv_bg_custom', dataUrl);
+    }catch(e){
+      _ivBgSetStatus('⚠️ La imagen es demasiado grande para guardarla — pruebe con una más liviana.', '#eab308');
+      return;
+    }
+    pickIvBg('custom');
+    _ivBgSetStatus('✓ Fondo personalizado guardado — queda disponible también para futuras entrevistas en este navegador.');
+  };
+  img.onerror = function(){ URL.revokeObjectURL(url); _ivBgSetStatus('⚠️ No se pudo leer la imagen.', '#eab308'); };
+  img.src = url;
+}
+
+function _ivBgLoadScript(src){
+  return new Promise(function(resolve, reject){
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = function(){ reject(new Error('sin conexión al CDN de segmentación')); };
+    document.head.appendChild(s);
+  });
+}
+
+function _ivBgResolveImage(){
+  return new Promise(function(resolve, reject){
+    let src = null;
+    if(ivBgChoice==='custom'){
+      try{ src = localStorage.getItem('ane_iv_bg_custom'); }catch(e){}
+      if(!src) return reject(new Error('no hay fondo personalizado guardado'));
+    } else if(ivBgChoice.indexOf('bank:')===0){
+      const b = IV_BG_BANK.find(x=>'bank:'+x.id===ivBgChoice);
+      if(!b) return reject(new Error('fondo no encontrado'));
+      src = b.src;
+    } else return reject(new Error('sin fondo seleccionado'));
+    const img = new Image();
+    img.onload = function(){ resolve(img); };
+    img.onerror = function(){ reject(new Error('el archivo del fondo no está disponible (¿falta subirlo al repositorio?)')); };
+    img.src = src;
+  });
+}
+
+function _ivBgOnResults(results){
+  if(!ivBgCtx || !ivBgImage) return;
+  const w = ivBgCanvas.width, h = ivBgCanvas.height;
+  ivBgCtx.save();
+  ivBgCtx.clearRect(0,0,w,h);
+  // 1) máscara de la persona
+  ivBgCtx.drawImage(results.segmentationMask, 0, 0, w, h);
+  // 2) recortar la persona del frame real
+  ivBgCtx.globalCompositeOperation = 'source-in';
+  ivBgCtx.drawImage(results.image, 0, 0, w, h);
+  // 3) fondo elegido detrás, en modo cover (sin deformar)
+  ivBgCtx.globalCompositeOperation = 'destination-over';
+  const iw = ivBgImage.width, ih = ivBgImage.height;
+  const s = Math.max(w/iw, h/ih);
+  ivBgCtx.drawImage(ivBgImage, (w-iw*s)/2, (h-ih*s)/2, iw*s, ih*s);
+  ivBgCtx.restore();
+}
+
+async function applyIvBackground(){
+  if(ivBgChoice==='none'){ stopIvBgPipeline(); return; }
+  if(!ivCamStream || !ivCamStream.getVideoTracks().length){
+    _ivBgSetStatus('⚠️ Sin cámara activa todavía — el fondo se aplicará al iniciarla.');
+    return;
+  }
+  _ivBgSetStatus('⏳ Preparando fondo…');
+  ivBgImage = await _ivBgResolveImage();
+  if(!ivRawVideoTrack || ivRawVideoTrack.readyState!=='live') ivRawVideoTrack = ivCamStream.getVideoTracks()[0];
+
+  // Cargar MediaPipe una sola vez (lazy — solo si se usa la función)
+  if(!window.SelfieSegmentation){
+    if(ivSegLoading) return; // ya viene en camino
+    ivSegLoading = true;
+    try{
+      await _ivBgLoadScript('https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js');
+    } finally { ivSegLoading = false; }
+  }
+  if(!ivSegmenter){
+    ivSegmenter = new SelfieSegmentation({locateFile:function(f){ return 'https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/'+f; }});
+    ivSegmenter.setOptions({modelSelection:1});
+    ivSegmenter.onResults(_ivBgOnResults);
+  }
+
+  // Video oculto alimentado con la cámara cruda (fuente del segmentador)
+  if(!ivBgVideo){
+    ivBgVideo = document.createElement('video');
+    ivBgVideo.muted = true; ivBgVideo.playsInline = true;
+    ivBgVideo.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none';
+    document.body.appendChild(ivBgVideo);
+  }
+  ivBgVideo.srcObject = new MediaStream([ivRawVideoTrack]);
+  await ivBgVideo.play();
+
+  const st = ivRawVideoTrack.getSettings ? ivRawVideoTrack.getSettings() : {};
+  if(!ivBgCanvas){ ivBgCanvas = document.createElement('canvas'); ivBgCtx = ivBgCanvas.getContext('2d'); }
+  ivBgCanvas.width = st.width || 1280; ivBgCanvas.height = st.height || 720;
+
+  if(!ivBgStream){
+    ivBgStream = ivBgCanvas.captureStream(24);
+  }
+  const outTrack = ivBgStream.getVideoTracks()[0];
+
+  // Reemplazar la pista que ve el candidato (WebRTC) y el preview local
+  const pc = window._ivPC;
+  if(pc){
+    const sender = pc.getSenders().find(function(s){ return s.track && s.track.kind==='video'; });
+    if(sender) await sender.replaceTrack(outTrack);
+  }
+  const prev = document.getElementById('iv-local-video');
+  if(prev && prev.srcObject !== ivBgStream) prev.srcObject = ivBgStream;
+
+  // Bucle de segmentación (se detiene solo si stopIvBgPipeline pone RAF=null)
+  if(!ivBgRAF){
+    const loop = async function(){
+      if(!ivBgRAF) return;
+      if(ivBgVideo && ivBgVideo.readyState>=2 && !ivSegBusy && ivBgImage){
+        ivSegBusy = true;
+        try{ await ivSegmenter.send({image:ivBgVideo}); }catch(e){}
+        ivSegBusy = false;
+      }
+      ivBgRAF = requestAnimationFrame(loop);
+    };
+    ivBgRAF = requestAnimationFrame(loop);
+  }
+  _ivBgSetStatus('✓ Fondo virtual activo — el candidato ve tu cámara con este fondo. Procesado 100% en tu navegador.');
+}
+
+function stopIvBgPipeline(){
+  if(ivBgRAF){ cancelAnimationFrame(ivBgRAF); ivBgRAF = null; }
+  const pc = window._ivPC;
+  if(pc && ivRawVideoTrack && ivRawVideoTrack.readyState==='live'){
+    const sender = pc.getSenders().find(function(s){ return s.track && s.track.kind==='video'; });
+    if(sender) sender.replaceTrack(ivRawVideoTrack).catch(function(){});
+  }
+  const prev = document.getElementById('iv-local-video');
+  if(prev && ivCamStream) prev.srcObject = ivCamStream;
+  _ivBgSetStatus('');
+}
+
+// Llamado al iniciar la cámara del entrevistador: si dejó un fondo elegido
+// en una sesión anterior, se re-aplica sin que tenga que configurarlo de nuevo.
+window._applyIvBgIfSaved = function(){
+  const btn = document.getElementById('iv-bg-btn');
+  if(btn && ivBgChoice!=='none'){
+    btn.className = 'iv-ctrl-btn active';
+    btn.innerHTML = '<span style="font-size:18px">🖼</span>FONDO ON';
+  }
+  if(ivBgChoice!=='none'){
+    applyIvBackground().catch(function(err){
+      console.error('[ANE] Fondo virtual al iniciar cámara:', err);
+      _ivBgSetStatus('⚠️ No se pudo aplicar el fondo guardado: '+(err&&err.message||err)+'. La cámara sigue normal.', '#eab308');
+    });
+  }
+};
 
 // ── CHAT EN TIEMPO REAL ─────────────────────────
 function sendIvChat(){
@@ -5634,6 +5898,9 @@ function admitirCandidato(){
       if(mb){ mb.className='iv-ctrl-btn active'; mb.innerHTML='<span style="font-size:18px">🎙</span>MIC ON'; }
       // Iniciar WebRTC con el stream ya listo
       window._initWebRTCInterviewer(salaId, stream);
+      // Fondo virtual: guardar la pista cruda y re-aplicar el fondo elegido
+      ivRawVideoTrack = stream.getVideoTracks()[0] || null;
+      if(typeof window._applyIvBgIfSaved === 'function') window._applyIvBgIfSaved();
     }).catch(function(err){
       var errName = err && err.name || 'Error';
       console.error('[ANE] No se pudo activar cámara+mic del entrevistador:', errName, err && err.message);
