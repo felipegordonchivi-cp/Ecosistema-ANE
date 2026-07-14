@@ -1654,6 +1654,14 @@ function escHtml(s){
           <div id="quick-q-btns" style="display:flex;flex-wrap:wrap;gap:5px">
             <span style="font-size:11px;color:#1a4a4a;font-style:italic">Selecciona un perfil para ver las preguntas</span>
           </div>
+          <details id="free-q-wrap" style="margin-top:8px">
+            <summary style="cursor:pointer;color:#3a7272;font-size:10px;font-weight:700;list-style:none">➕ Pregunta libre (fuera del catálogo, sin competencia fija) ▾</summary>
+            <div style="display:flex;gap:6px;margin-top:6px">
+              <textarea id="free-q-input" placeholder="Escribe una pregunta propia para esta entrevista…" style="flex:1;min-height:44px;font-size:11px;line-height:1.4;background:rgba(13,115,115,.08);border:1px solid rgba(13,115,115,.3);border-radius:8px;padding:6px 8px;color:#e0f2f2;resize:vertical" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();activateFreeQuestion();}"></textarea>
+              <button onclick="activateFreeQuestion()" style="background:rgba(13,115,115,.25);border:1px solid var(--teal);color:#7dd3d3;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;align-self:flex-start">▶ Activar</button>
+            </div>
+            <p style="font-size:9px;color:#2a5050;margin-top:4px">Se evalúa igual con STAR, pero se etiqueta como "Abierta / a criterio del entrevistador" en vez de forzarle una competencia del catálogo.</p>
+          </details>
         </div>
 
         <!-- ── 4. GRABACIÓN ── -->
@@ -1837,6 +1845,17 @@ function escHtml(s){
           </div>
         </div>
 
+        <!-- ── FILA 3: Criterio Profesional (opinión de experto, distinta al STAR) ── -->
+        <div class="eval2-card" style="border:1px solid rgba(139,92,246,.35)">
+          <h4 style="color:#c4b5fd">🎓 Criterio Profesional (opinión de experto)</h4>
+          <p style="font-size:11px;color:#4a8a8a;margin:-4px 0 10px;line-height:1.6">Análisis <b>separado del STAR</b>: juicio holístico de la respuesta completa (comunicación, madurez, criterio, señales de alerta, alineación con el puesto) — como lo haría un evaluador senior. Requiere IA (no tiene versión local) y es una <b>opinión asistida, no un puntaje objetivo</b> — no reemplaza el juicio del entrevistador.</p>
+          <button id="expert-btn" onclick="analyzeExpertOpinion()" style="width:100%;background:linear-gradient(135deg,#7c3aed,#a78bfa);border:none;color:#fff;padding:10px;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer">🎓 Analizar como experto senior (IA)</button>
+          <div id="expert-loading" style="display:none;text-align:center;padding:20px;color:#c4b5fd">
+            <div style="font-size:24px;margin-bottom:8px;animation:blink 1s infinite">⏳</div>Consultando criterio experto…
+          </div>
+          <div id="expert-result" style="background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.25);border-radius:10px;padding:14px;font-size:12px;color:#e5ddfb;line-height:1.8;white-space:pre-wrap;max-height:320px;overflow-y:auto;display:none;border-left:3px solid #7c3aed;margin-top:10px"></div>
+        </div>
+
       </div>
 
       <!-- ── SIDEBAR DERECHO ── -->
@@ -1923,6 +1942,7 @@ function escHtml(s){
 // ============================================================
 let currentProf = null;
 let activeQ = null;
+let isFreeQuestion = false; // true cuando la pregunta activa no viene del catálogo del perfil (pregunta libre del entrevistador)
 let evalHistory = (()=>{ try{ return JSON.parse(localStorage.getItem('ane_eval_hist'))||[]; }catch(e){ return []; } })();
 let starScores = {S:0,T:0,A:0,R:0};
 let globalScore = 5;
@@ -2944,6 +2964,7 @@ function renderProfiles(){
 function selectProfile(id){
   currentProf = PROFILES.find(p=>p.id===id);
   activeQ = null;
+  isFreeQuestion = false;
   renderProfiles();
   renderQuestions();
   // Update info bar
@@ -3022,6 +3043,7 @@ function setActiveQEdited(idx){
   const txt = document.getElementById('q-text-'+idx);
   const edited = (area && area.style.display !== 'none') ? area.value.trim() : (txt ? txt.textContent.trim() : null);
   activeQ = edited || currentProf?.qs[idx] || null;
+  isFreeQuestion = false;
   // Cerrar editor si estaba abierto
   if(area && area.style.display !== 'none') toggleEditQ(idx);
   renderQuestions();
@@ -3036,6 +3058,28 @@ function setActiveQEdited(idx){
   updateEvalCtx();
   if(activeQ) broadcastQuestion();
   else broadcastClear();
+}
+
+// Pregunta libre: el entrevistador escribe una pregunta fuera del catálogo
+// del perfil (no ligada a una competencia del ciclo fijo de 10). Se marca
+// con isFreeQuestion para que getCompetency() la etiquete como "Abierta"
+// en vez de forzarle una competencia que no le corresponde.
+function activateFreeQuestion(){
+  const ta = document.getElementById('free-q-input');
+  const text = ta?.value?.trim();
+  if(!text){ ta?.focus(); return; }
+  activeQ = text;
+  isFreeQuestion = true;
+  renderQuestions();
+  const box = document.getElementById('active-q-box');
+  const noq = document.getElementById('no-q-box');
+  box.style.display='block'; noq.style.display='none';
+  document.getElementById('active-q-text').textContent = activeQ;
+  updateEvalCtx();
+  broadcastQuestion();
+  const wrap = document.getElementById('free-q-wrap');
+  if(wrap) wrap.open = false;
+  if(ta) ta.value = '';
 }
 
 function setActiveQ(idx){
@@ -3201,6 +3245,8 @@ function clearResponse(){
   const ar = document.getElementById('ai-result');
   if(ar){ ar.textContent=''; ar.style.display='none'; }
   document.getElementById('ai-hint').style.display='block';
+  const er = document.getElementById('expert-result');
+  if(er){ er.textContent=''; er.style.display='none'; }
 }
 
 // ============================================================
@@ -3340,7 +3386,9 @@ function updateEvalCtx(){
 }
 
 function getCompetency(){
-  if(!currentProf||!activeQ) return 'Competencia general';
+  if(!activeQ) return 'Competencia general';
+  if(isFreeQuestion) return 'Abierta / a criterio del entrevistador';
+  if(!currentProf) return 'Competencia general';
   const idx = currentProf.qs.indexOf(activeQ);
   const COMPS = ['Presentación','Gestión bajo presión','Resolución de problemas','Ética','Adaptación','Organización','Mejora continua','Autogestión','Trabajo en equipo','Liderazgo'];
   return COMPS[idx%COMPS.length]||'Competencia general';
@@ -3499,10 +3547,10 @@ RESPUESTA DEL CANDIDATO: ${resp}
 
 Proporciona:
 1. DESGLOSE STAR: Analiza cada componente (S-T-A-R) indicando qué elementos identificas y su calidad
-2. PUNTAJE SUGERIDO por componente (1-5): S:X T:X A:X R:X
+2. PUNTAJE SUGERIDO por componente (1-5): S:X T:X A:X R:X — para el componente Resultado (R), un logro cualitativo bien narrado y atribuible a la acción del candidato (ej. "el cliente quedó satisfecho y volvió a contratarnos") vale exactamente lo mismo que un resultado con cifras (ej. "aumenté las ventas un 20%"). NO le des más puntaje a una respuesta solo por tener números — evalúa si el resultado queda claro y demostrado, no si está cuantificado.
 3. PUNTAJE GLOBAL (1-10): X/10
 4. FORTALEZAS (2-3 puntos concretos)
-5. ÁREAS DE MEJORA (2-3 puntos accionables) — sé preciso: si el candidato SÍ mencionó su rol/responsabilidad, resultado o acciones (aunque sea brevemente), no afirmes que "no lo indicó"; en ese caso sugiere precisarlo o ampliarlo, no que está ausente.
+5. ÁREAS DE MEJORA (2-3 puntos accionables) — sé preciso: si el candidato SÍ mencionó su rol/responsabilidad, resultado o acciones (aunque sea brevemente), no afirmes que "no lo indicó"; en ese caso sugiere precisarlo o ampliarlo, no que está ausente. No pidas "cifras o porcentajes" como si fueran obligatorios para un buen Resultado — solo sugiere agregarlos si el resultado narrado sigue siendo ambiguo o poco creíble sin ellos.
 6. RECOMENDACIÓN: Muy Recomendado / Recomendado / Condicionado / Con Reservas / No Recomendado
 7. PREGUNTAS DE SEGUIMIENTO (2 preguntas para profundizar)
 8. CÓMO LLEGAR A UN 10/10: Para cada componente STAR que no obtuvo 5/5, explica brevemente por qué no alcanzó el máximo y luego da un ejemplo concreto de cómo el candidato podría haber redactado esa parte de la respuesta para lograr 10/10 — usando datos de SU propia respuesta (no un ejemplo genérico). Formato:
@@ -3586,6 +3634,110 @@ Sé específico, constructivo y objetivo. Considera el contexto del mercado labo
     return null;
   } finally {
     if(btn){ btn.disabled=false; btn.textContent='🔍 Re-analizar'; }
+    if(loading) loading.style.display='none';
+  }
+}
+
+// ============================================================
+// CRITERIO PROFESIONAL (opinión de experto) — análisis DISTINTO al STAR.
+// No reevalúa S-T-A-R ni toca los puntajes: da un juicio holístico de la
+// respuesta completa (comunicación, madurez, criterio, alineación al
+// puesto, señales de alerta), como lo haría un evaluador humano senior.
+// Requiere IA (Gemini) — no existe versión local, porque este tipo de
+// juicio cualitativo no es algo que una heurística de palabras clave
+// pueda simular con credibilidad.
+// ============================================================
+function _showExpertResult(msg){
+  const r = document.getElementById('expert-result');
+  if(r){ r.textContent=msg; r.style.display='block'; r.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+  else console.error('[ANE] expert-result element not found');
+}
+
+async function analyzeExpertOpinion(){
+  const apiKey = getApiKey();
+  const proxyUrl = getProxyUrl();
+  const resp = document.getElementById('cand-resp')?.value?.trim()||'';
+
+  if(!resp||resp.length<10){
+    _showExpertResult('⚠️ No hay respuesta del candidato. Escribe o graba una respuesta primero.');
+    return null;
+  }
+  if(!apiKey && !proxyUrl){
+    _showExpertResult('🔑 Este análisis requiere IA — configura tu API Key de Google Gemini o un proxy institucional (botón 🔑 en la tarjeta de arriba). Obtén tu clave GRATIS en: aistudio.google.com');
+    return null;
+  }
+
+  const btn = document.getElementById('expert-btn');
+  const loading = document.getElementById('expert-loading');
+  const result = document.getElementById('expert-result');
+  if(btn) btn.disabled=true;
+  if(loading) loading.style.display='block';
+  if(result) result.style.display='none';
+
+  const profName = currentProf?.name||'Perfil no especificado';
+  const question = activeQ||'Pregunta no especificada';
+
+  try {
+    const promptText = `Actuás como un consultor senior de selección de talento con 15 años de experiencia evaluando entrevistas conductuales para organizaciones exigentes (el nivel de rigor de una firma de executive search o de un profesor de entrevistas de Harvard Business School). NO uses la metodología STAR aquí — eso ya se evalúa aparte. Tu trabajo es dar un juicio profesional holístico sobre la respuesta completa, como lo haría un evaluador humano experimentado que mira más allá de la estructura.
+
+PERFIL DEL PUESTO: ${profName}
+PREGUNTA: ${question}
+RESPUESTA COMPLETA DEL CANDIDATO: ${resp}
+
+Da tu opinión experta cubriendo:
+1. IMPRESIÓN GENERAL (2-3 oraciones): ¿qué transmite esta respuesta sobre el candidato como profesional, más allá de si siguió una estructura?
+2. CRITERIO Y MADUREZ PROFESIONAL: manejo del juicio, autoconciencia, responsabilidad sobre sus propias acciones (vs. atribuir todo a otros o al azar), forma de manejar el error o el conflicto si aparece en la respuesta.
+3. COMUNICACIÓN: claridad, organización de ideas, capacidad de síntesis — independientemente de si mencionó o no cada componente STAR.
+4. SEÑALES DE ALERTA (si las hay): defensividad, atribución de culpa a terceros, inconsistencias, respuestas evasivas, señales de deshonestidad o de sobre-venta de logros. Si no hay ninguna, decilo explícitamente — no inventes una alerta para llenar la sección.
+5. ALINEACIÓN CON EL PUESTO: qué tan bien esta forma de pensar y actuar encaja con las exigencias reales del perfil "${profName}".
+6. VEREDICTO DEL EVALUADOR (1 párrafo): tu opinión profesional directa, en primera persona, como la escribirías en tus notas privadas de evaluador — no como un reporte formal.
+
+Sé directo, específico y basate solo en lo que la respuesta realmente muestra — no rellenes con generalidades ni le "endulces" el veredicto por cortesía. Considerá el contexto del mercado laboral costarricense. Esto es una OPINIÓN PROFESIONAL CUALITATIVA — no calcules ni menciones un puntaje del 1 al 10 ni puntajes S-T-A-R, eso corresponde al análisis STAR aparte.`;
+
+    console.log('[ANE] Llamando Gemini (criterio profesional)', proxyUrl ? 'vía proxy institucional' : 'directo');
+    const abortCtrl = new AbortController();
+    const fetchTimeout = setTimeout(()=>abortCtrl.abort(), 20000);
+    const targetUrl = proxyUrl || `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+    const response = await fetch(targetUrl,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({contents:[{parts:[{text:promptText}]}]}),
+      signal: abortCtrl.signal
+    });
+    clearTimeout(fetchTimeout);
+
+    let data;
+    try { data = await response.json(); } catch(je){ data = {}; }
+
+    if(!response.ok){
+      const errMsg = data.error?.message || `Error HTTP ${response.status}`;
+      console.error('[ANE] Gemini error (criterio profesional):', errMsg);
+      _showExpertResult('❌ Error de API Gemini ('+response.status+'): '+errMsg);
+      return null;
+    }
+    const blockReason = data.promptFeedback?.blockReason;
+    if(blockReason){
+      _showExpertResult('⚠️ Gemini bloqueó el contenido: '+blockReason+'. Intenta reformular la respuesta del candidato.');
+      return null;
+    }
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if(!text){
+      const finishReason = data.candidates?.[0]?.finishReason || 'desconocido';
+      _showExpertResult('⚠️ Gemini no generó texto (razón: '+finishReason+'). Revisá el contenido de la respuesta.');
+      return null;
+    }
+    _showExpertResult(text);
+    return text;
+  } catch(err) {
+    console.error('[ANE] analyzeExpertOpinion catch:', err.name, err.message);
+    if(err.name==='AbortError'){
+      _showExpertResult('⏱ Tiempo de espera agotado (20s). Verificá tu conexión a internet o que la API key sea válida.');
+    } else {
+      _showExpertResult('❌ No se pudo obtener el análisis de criterio profesional: '+err.message+'. Este análisis requiere conexión a Gemini — no tiene versión local.');
+    }
+    return null;
+  } finally {
+    if(btn){ btn.disabled=false; btn.textContent='🎓 Re-analizar como experto senior (IA)'; }
     if(loading) loading.style.display='none';
   }
 }
@@ -3768,6 +3920,7 @@ function saveEval(){
     transcript:document.getElementById('cand-resp')?.value||'',
     notes:document.getElementById('eval-notes')?.value||'',
     ai:document.getElementById('ai-result')?.textContent||'',
+    expertOpinion:document.getElementById('expert-result')?.textContent||'',
   };
   evalHistory.unshift(entry);
   try{ localStorage.setItem('ane_eval_hist', JSON.stringify(evalHistory.slice(0,100))); }catch(e){}
@@ -3784,6 +3937,8 @@ function resetEval(){
   updateGlobalScore(5);
   document.getElementById('ai-result').textContent=''; document.getElementById('ai-result').style.display='none';
   document.getElementById('ai-hint').style.display='block';
+  const expertEl = document.getElementById('expert-result');
+  if(expertEl){ expertEl.textContent=''; expertEl.style.display='none'; }
   renderStarGrid(); updateStarDisplay();
 }
 
@@ -4035,6 +4190,13 @@ function buildPDFHTML(e){
     <div style="background:#f8fffe;border-left:3px solid #0d7373;border-radius:0 8px 8px 0;padding:12px;font-size:11px;line-height:1.8;color:#041616;white-space:pre-wrap">${escHtml(e.ai.substring(0,1500))}</div>
   </div>`:''}
 
+  <!-- EXPERT OPINION (distinto al STAR) -->
+  ${e.expertOpinion?`<div style="padding:16px 24px;background:#fff;border-bottom:1px solid #e0f0f0">
+    <div style="font-size:12px;font-weight:700;color:#041616;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">🎓 Criterio Profesional (opinión de experto, asistida por IA)</div>
+    <div style="background:#faf8ff;border-left:3px solid #7c3aed;border-radius:0 8px 8px 0;padding:12px;font-size:11px;line-height:1.8;color:#041616;white-space:pre-wrap">${escHtml(e.expertOpinion.substring(0,1500))}</div>
+    <div style="font-size:9px;color:#7c3aed;margin-top:6px;font-style:italic">⚠️ Opinión cualitativa asistida por IA — no es un puntaje objetivo ni sustituye el criterio del entrevistador.</div>
+  </div>`:''}
+
   <!-- NOTES -->
   ${e.notes?`<div style="padding:16px 24px;background:#fff;border-bottom:1px solid #e0f0f0">
     <div style="font-size:12px;font-weight:700;color:#041616;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">📝 Notas del Entrevistador</div>
@@ -4160,7 +4322,9 @@ function buildPDFAllHTML(entries, scopeLabel){
     ${e.transcript?`<div style="font-size:10px;color:#0d7373;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🎤 Transcripción</div>
     <div style="background:#f8fffe;border:1px solid #d0eaea;border-radius:6px;padding:8px 10px;font-size:11px;line-height:1.6;color:#041616;font-style:italic;margin-bottom:8px">"${escHtml(e.transcript)}"</div>`:''}
     ${e.ai?`<div style="font-size:10px;color:#0d7373;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🔍 Análisis STAR</div>
-    <div style="background:#f8fffe;border-left:3px solid #0d7373;border-radius:0 6px 6px 0;padding:8px 10px;font-size:10px;line-height:1.6;color:#041616;white-space:pre-wrap">${escHtml(e.ai.substring(0,1200))}${e.ai.length>1200?'…':''}</div>`:''}
+    <div style="background:#f8fffe;border-left:3px solid #0d7373;border-radius:0 6px 6px 0;padding:8px 10px;font-size:10px;line-height:1.6;color:#041616;white-space:pre-wrap;margin-bottom:8px">${escHtml(e.ai.substring(0,1200))}${e.ai.length>1200?'…':''}</div>`:''}
+    ${e.expertOpinion?`<div style="font-size:10px;color:#7c3aed;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🎓 Criterio Profesional (opinión de experto, IA)</div>
+    <div style="background:#faf8ff;border-left:3px solid #7c3aed;border-radius:0 6px 6px 0;padding:8px 10px;font-size:10px;line-height:1.6;color:#041616;white-space:pre-wrap">${escHtml(e.expertOpinion.substring(0,1200))}${e.expertOpinion.length>1200?'…':''}</div>`:''}
     ${e.notes?`<div style="font-size:10px;color:#0d7373;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin:8px 0 4px">📝 Notas del entrevistador</div>
     <div style="font-size:11px;line-height:1.6;color:#041616">${escHtml(e.notes)}</div>`:''}
   </div>`).join('')}
