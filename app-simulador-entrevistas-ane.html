@@ -28,7 +28,12 @@ textarea{resize:vertical}
 ::-webkit-scrollbar-thumb{background:var(--td);border-radius:4px}
 
 /* VIEWS */
-#v-home,#v-app,#v-candidato{min-height:100vh;display:none;flex-direction:column}
+#v-home,#v-candidato{min-height:100vh;display:none;flex-direction:column}
+/* La vista de trabajo queda FIJA al viewport y cada panel scrollea por
+   dentro. Con min-height el contenido alto hacía crecer la página entera
+   (sobre todo embebida en el iframe del Ecosistema) y la última tarjeta del
+   evaluador —Criterio Profesional— quedaba cortada bajo el borde. */
+#v-app{height:100vh;height:100dvh;display:none;flex-direction:column;overflow:hidden}
 #v-home.active,#v-app.active,#v-candidato.active{display:flex}
 
 /* HOME */
@@ -44,8 +49,8 @@ textarea{resize:vertical}
 .tab-btn:hover:not(.active){border-color:var(--tl);color:var(--tl)}
 
 /* PANELS */
-#panels{flex:1;display:flex;overflow:hidden}
-.panel{display:none;flex:1;overflow:hidden}
+#panels{flex:1;display:flex;overflow:hidden;min-height:0}
+.panel{display:none;flex:1;overflow:hidden;min-height:0;min-width:0}
 .panel.active{display:flex}
 
 /* SIDEBAR */
@@ -53,6 +58,15 @@ textarea{resize:vertical}
 .prof-btn{width:100%;background:var(--s2);border:1px solid var(--db);border-radius:8px;padding:8px 10px;text-align:left;color:#9dc8c8;margin-bottom:4px;display:flex;align-items:center;gap:8px;transition:all .2s;font-size:12px}
 .prof-btn.sel{background:rgba(13,115,115,.3);border-color:var(--teal);color:var(--tl)}
 .prof-btn:hover{border-color:var(--tl)}
+/* Categorías plegables (acordeón) del panel de perfiles */
+.sector-group{margin-bottom:6px;border:1px solid rgba(13,115,115,.22);border-radius:10px;overflow:hidden;background:rgba(8,32,32,.4)}
+.sector-group-hdr{width:100%;display:flex;align-items:center;gap:8px;padding:9px 10px;background:linear-gradient(90deg,rgba(13,115,115,.16),transparent);border:none;color:#9dd8d8;cursor:pointer;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;text-align:left;transition:all .15s;font-family:inherit}
+.sector-group-hdr:hover{background:rgba(13,115,115,.25);color:#c9ffff}
+.sector-group.open .sector-group-hdr{color:#c9ffff;border-bottom:1px solid rgba(13,115,115,.2)}
+.sector-group .sg-count{margin-left:auto;background:rgba(13,115,115,.3);border:1px solid rgba(13,115,115,.45);border-radius:999px;padding:1px 8px;font-size:10px;color:#7dd3d3;font-weight:700}
+.sector-group .sg-chev{font-size:10px;color:#5a9898;transition:transform .2s}
+.sector-group.open .sg-chev{transform:rotate(180deg)}
+.sector-group-body{padding:6px}
 .q-item{background:var(--s1);border:1px solid var(--db);border-radius:8px;padding:9px 12px;margin-bottom:6px;display:flex;align-items:flex-start;gap:10px;transition:all .2s}
 .q-item.active-q{background:rgba(13,115,115,.2);border-color:var(--teal)}
 .q-num{background:var(--td);color:#7dd3d3;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px}
@@ -105,7 +119,7 @@ textarea{resize:vertical}
 .global-score{width:90px;height:90px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;font-weight:800;flex-shrink:0;border:3px solid;transition:all .3s}
 
 /* ── PANEL 2 PREMIUM ───────────────────────────────────── */
-.eval2-wrap{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.eval2-wrap{flex:1;overflow-y:auto;padding:14px 16px 32px;display:flex;flex-direction:column;gap:12px;min-height:0}
 .eval2-header{background:linear-gradient(135deg,rgba(13,115,115,.18),rgba(13,45,45,.4));border:1px solid rgba(125,211,211,.2);border-radius:14px;padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .eval2-header .q-pill{background:rgba(13,115,115,.25);border:1px solid rgba(125,211,211,.3);border-radius:10px;padding:8px 14px;flex:1;min-width:200px;font-size:13px;line-height:1.5;color:#c9ffff;font-weight:500}
 .eval2-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -1990,14 +2004,14 @@ function escHtml(s){
 // OCCUPATION DATABASE — 100 OCCUPATIONS, 8 SECTORS
 // ============================================================
 const SECTORS = [
-  {id:'all',label:'Todas',color:''},
-  {id:'admin',label:'Administrativo',color:'s-admin'},
-  {id:'tech',label:'Tecnología',color:'s-tech'},
-  {id:'salud',label:'Salud',color:'s-salud'},
-  {id:'industria',label:'Industria',color:'s-industria'},
-  {id:'serv',label:'Servicios',color:'s-serv'},
-  {id:'educacion',label:'Educación',color:'s-educacion'},
-  {id:'ane',label:'ANE / MTSS',color:'s-ane'},
+  {id:'all',label:'Todas',color:'',icon:'🗂'},
+  {id:'admin',label:'Administrativo',color:'s-admin',icon:'📋'},
+  {id:'tech',label:'Tecnología',color:'s-tech',icon:'💻'},
+  {id:'salud',label:'Salud',color:'s-salud',icon:'🏥'},
+  {id:'industria',label:'Industria',color:'s-industria',icon:'🏭'},
+  {id:'serv',label:'Servicios',color:'s-serv',icon:'🛎'},
+  {id:'educacion',label:'Educación',color:'s-educacion',icon:'🎓'},
+  {id:'ane',label:'ANE / MTSS',color:'s-ane',icon:'🏛'},
 ];
 
 function Q10(qs){return qs;}
@@ -2975,7 +2989,7 @@ function renderSectorFilters(){
   const c = document.getElementById('sector-filters');
   if(!c) return;
   c.innerHTML = SECTORS.map(s=>`
-    <button onclick="setSector('${s.id}')" id="sf-${s.id}" style="padding:3px 10px;border-radius:10px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid;transition:all .15s;${s.id===selectedSector?'background:var(--teal);border-color:var(--teal);color:#fff':'background:var(--s2);border-color:var(--db);color:#7dd3d3'}">${s.label}</button>
+    <button onclick="setSector('${s.id}')" id="sf-${s.id}" style="padding:3px 10px;border-radius:10px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid;transition:all .15s;${s.id===selectedSector?'background:var(--teal);border-color:var(--teal);color:#fff':'background:var(--s2);border-color:var(--db);color:#7dd3d3'}">${s.icon||''} ${s.label}</button>
   `).join('');
 }
 function setSector(id){
@@ -2990,6 +3004,17 @@ function setSector(id){
 function filterProfiles(){
   renderProfiles();
 }
+// Categorías como secciones plegables (acordeón): cada sector es una
+// cabecera con ícono, contador y chevron, y sus ocupaciones quedan
+// contenidas dentro. Así la lista no es un muro de 30+ botones: se abre
+// solo la categoría que interesa. Al buscar o al filtrar por un sector,
+// los grupos visibles se muestran abiertos automáticamente.
+let expandedSectors = null; // null = aún sin interacción → abrir el sector del perfil actual (o el primero)
+function toggleSectorGroup(id){
+  if(!(expandedSectors instanceof Set)) expandedSectors = new Set(expandedSectors||[]);
+  if(expandedSectors.has(id)) expandedSectors.delete(id); else expandedSectors.add(id);
+  renderProfiles();
+}
 function renderProfiles(){
   const c = document.getElementById('prof-list');
   const q = document.getElementById('search-prof')?.value.toLowerCase()||'';
@@ -2997,7 +3022,7 @@ function renderProfiles(){
   let profs = PROFILES;
   if(selectedSector!=='all') profs = profs.filter(p=>p.sector===selectedSector);
   if(q) profs = profs.filter(p=>p.name.toLowerCase().includes(q)||p.desc.toLowerCase().includes(q));
-  
+
   if(profs.length===0){
     c.innerHTML = '<div style="text-align:center;color:#3a7272;padding:20px;font-size:12px">Sin resultados</div>';
     return;
@@ -3005,15 +3030,28 @@ function renderProfiles(){
   // Group by sector
   const groups = {};
   profs.forEach(p=>{ (groups[p.sector]||(groups[p.sector]=[])).push(p); });
-  
+
+  if(!(expandedSectors instanceof Set)){
+    expandedSectors = new Set([currentProf?.sector || Object.keys(groups)[0]]);
+  }
+  const forceOpen = !!q || selectedSector!=='all';
+
   c.innerHTML = Object.entries(groups).map(([sec,ps])=>{
     const s = SECTORS.find(x=>x.id===sec);
-    return `<div style="margin-bottom:8px">
-      <div style="font-size:10px;color:#4a8a8a;text-transform:uppercase;letter-spacing:1px;padding:4px 0;margin-bottom:4px;border-bottom:1px solid rgba(13,115,115,.2)">${s?.label||sec}</div>
-      ${ps.map(p=>`<button class="prof-btn${currentProf?.id===p.id?' sel':''}" onclick="selectProfile('${p.id}')">
-        <span style="font-size:16px">${p.icon}</span>
-        <span style="font-size:12px;font-weight:600;color:inherit">${p.name}</span>
-      </button>`).join('')}
+    const open = forceOpen || expandedSectors.has(sec);
+    return `<div class="sector-group${open?' open':''}">
+      <button class="sector-group-hdr" onclick="toggleSectorGroup('${sec}')" aria-expanded="${open}">
+        <span style="font-size:14px">${s?.icon||'📁'}</span>
+        <span>${s?.label||sec}</span>
+        <span class="sg-count">${ps.length}</span>
+        <span class="sg-chev">▾</span>
+      </button>
+      <div class="sector-group-body" ${open?'':'style="display:none"'}>
+        ${ps.map(p=>`<button class="prof-btn${currentProf?.id===p.id?' sel':''}" onclick="selectProfile('${p.id}')">
+          <span style="font-size:16px">${p.icon}</span>
+          <span style="font-size:12px;font-weight:600;color:inherit">${p.name}</span>
+        </button>`).join('')}
+      </div>
     </div>`;
   }).join('');
 }
