@@ -3109,11 +3109,13 @@ function renderQuickQBtns(){
 // pero marcando el tipo pitch para que analizadores, guías y PDFs usen la
 // rúbrica Presente-Pasado-Futuro.
 function setActivePitchQ(){
+  const _prevQ = activeQ;
   const area = document.getElementById('q-edit-pitch');
   const txt = document.getElementById('q-text-pitch');
   const edited = (area && area.style.display !== 'none') ? area.value.trim() : (txt ? txt.textContent.trim() : '');
   pitchQText = edited || PITCH_Q_DEFAULT;
   activeQ = pitchQText;
+  _clearScoresOnQuestionChange(_prevQ);
   isFreeQuestion = true;
   activeQType = 'pitch';
   activeQIdx = null;
@@ -3153,12 +3155,31 @@ function toggleEditQ(idx){
   }
 }
 
+// Al pasar a una pregunta DISTINTA se limpian los recuadros S-T-A-R y el
+// puntaje global vuelve al neutro. Sin esto, los valores de la pregunta
+// anterior quedaban pegados: en el flujo manual se guardaban tal cual, y en
+// el automático el guard de "solo rellenar si está en 0" nunca los dejaba
+// actualizarse — el informe consolidado mostraba el mismo desglose en todas
+// las preguntas. La respuesta y las notas no se tocan (podrían no estar
+// guardadas todavía).
+function _clearScoresOnQuestionChange(prevQ){
+  if(!activeQ || prevQ === activeQ) return;
+  starScores = {S:0,T:0,A:0,R:0};
+  globalScore = 5;
+  const gs = document.getElementById('global-score');
+  if(gs) gs.value = 5;
+  updateGlobalScore(5);
+  renderStarGrid(); updateStarDisplay();
+}
+
 function setActiveQEdited(idx){
+  const _prevQ = activeQ;
   // Usar texto editado si existe, si no el original
   const area = document.getElementById('q-edit-'+idx);
   const txt = document.getElementById('q-text-'+idx);
   const edited = (area && area.style.display !== 'none') ? area.value.trim() : (txt ? txt.textContent.trim() : null);
   activeQ = edited || currentProf?.qs[idx] || null;
+  _clearScoresOnQuestionChange(_prevQ);
   isFreeQuestion = false;
   activeQType = 'star';
   activeQIdx = activeQ ? idx : null;
@@ -3189,7 +3210,9 @@ function activateFreeQuestion(){
   const ta = document.getElementById('free-q-input');
   const text = ta?.value?.trim();
   if(!text){ ta?.focus(); return; }
+  const _prevQ = activeQ;
   activeQ = text;
+  _clearScoresOnQuestionChange(_prevQ);
   isFreeQuestion = true;
   activeQType = document.getElementById('free-q-type')?.value || 'star';
   activeQIdx = null;
@@ -3215,7 +3238,9 @@ function activatePitchPreset(){
 }
 
 function setActiveQ(idx){
+  const _prevQ = activeQ;
   activeQ = currentProf?.qs[idx]||null;
+  _clearScoresOnQuestionChange(_prevQ);
   isFreeQuestion = false;
   activeQType = 'star';
   activeQIdx = activeQ ? idx : null;
@@ -3762,21 +3787,7 @@ Sé específico, constructivo y objetivo. Considera el contexto del mercado labo
     }
 
     _showAIResult(text);
-
-    // Auto-update scores from AI response — en pitch los recuadros S-T-A-R
-    // no aplican, solo se toma el puntaje global.
-    const scoresMatch = activeQType==='pitch' ? null : text.match(/S[:\s]+(\d)\s+T[:\s]+(\d)\s+A[:\s]+(\d)\s+R[:\s]+(\d)/i);
-    if(scoresMatch){
-      ['S','T','A','R'].forEach((k,i)=>{
-        const v=parseInt(scoresMatch[i+1]);
-        if(v>=1&&v<=5&&starScores[k]===0) setStarScore(k,v);
-      });
-    }
-    const globalMatch = text.match(/(\d+)\s*\/\s*10/);
-    if(globalMatch){
-      const v=parseInt(globalMatch[1]);
-      if(v>=1&&v<=10){ document.getElementById('global-score').value=v; updateGlobalScore(v); }
-    }
+    _applyParsedScores(text);
 
     return text;
   } catch(err) {
@@ -3787,6 +3798,9 @@ Sé específico, constructivo y objetivo. Considera el contexto del mercado labo
     } else {
       _showAIResult('Análisis local de respaldo:\n\n'+localFallback);
     }
+    // El respaldo local también trae puntajes — antes se mostraba el texto
+    // pero los recuadros quedaban sin actualizar.
+    _applyParsedScores(localFallback);
     return null;
   } finally {
     if(btn){ btn.disabled=false; btn.textContent='🔍 Re-analizar'; }
@@ -4101,6 +4115,31 @@ function analyzePitchLocally(text){
     +'y gratuito, pero no sustituye el juicio profesional del entrevistador.';
 }
 
+// Aplica al panel los puntajes que sugiere un texto de análisis (Gemini o
+// heurística local). SIEMPRE sobrescribe los recuadros: el análisis recién
+// corrido corresponde a la respuesta actual. Antes solo se rellenaban los
+// recuadros que estaban en 0 — tras la primera pregunta ya ninguno lo
+// estaba, así que las preguntas siguientes conservaban el desglose S-T-A-R
+// de la primera (el texto del análisis decía una cosa y los recuadros/el
+// informe consolidado otra). El evaluador puede ajustar manualmente
+// DESPUÉS del análisis y ese ajuste es el que se guarda.
+// En pitch los recuadros S-T-A-R no aplican; solo se toma el puntaje global.
+function _applyParsedScores(text){
+  if(!text) return;
+  const scoresMatch = activeQType==='pitch' ? null : text.match(/S[:\s]+(\d)\s+T[:\s]+(\d)\s+A[:\s]+(\d)\s+R[:\s]+(\d)/i);
+  if(scoresMatch){
+    ['S','T','A','R'].forEach((k,i)=>{
+      const v=parseInt(scoresMatch[i+1]);
+      if(v>=1&&v<=5) setStarScore(k,v);
+    });
+  }
+  const globalMatch = text.match(/(\d+)\s*\/\s*10/);
+  if(globalMatch){
+    const v=parseInt(globalMatch[1]);
+    if(v>=1&&v<=10){ const gs=document.getElementById('global-score'); if(gs) gs.value=v; updateGlobalScore(v); }
+  }
+}
+
 // Análisis 100% local, sin pasar primero por un intento (fallido) a Gemini —
 // para cuando no hay clave, no hay cuota, o simplemente no se quiere usar IA externa.
 function analyzeLocalOnly(){
@@ -4109,32 +4148,9 @@ function analyzeLocalOnly(){
     _showAIResult('⚠️ No hay respuesta del candidato. Escribe o graba una respuesta primero.');
     return;
   }
-  if(activeQType==='pitch'){
-    const result = analyzePitchLocally(resp);
-    _showAIResult(result);
-    // En pitch no se auto-rellenan los recuadros S-T-A-R (no aplican);
-    // solo el puntaje global.
-    const globalMatch = result.match(/(\d+)\s*\/\s*10/);
-    if(globalMatch){
-      const v=parseInt(globalMatch[1]);
-      if(v>=1&&v<=10){ const gs=document.getElementById('global-score'); if(gs) gs.value=v; updateGlobalScore(v); }
-    }
-    return;
-  }
-  const result = analyzeStarLocally(resp);
+  const result = activeQType==='pitch' ? analyzePitchLocally(resp) : analyzeStarLocally(resp);
   _showAIResult(result);
-  const scoresMatch = result.match(/S[:\s]+(\d)\s+T[:\s]+(\d)\s+A[:\s]+(\d)\s+R[:\s]+(\d)/i);
-  if(scoresMatch){
-    ['S','T','A','R'].forEach((k,i)=>{
-      const v=parseInt(scoresMatch[i+1]);
-      if(v>=1&&v<=5&&starScores[k]===0) setStarScore(k,v);
-    });
-  }
-  const globalMatch = result.match(/(\d+)\s*\/\s*10/);
-  if(globalMatch){
-    const v=parseInt(globalMatch[1]);
-    if(v>=1&&v<=10){ const gs=document.getElementById('global-score'); if(gs) gs.value=v; updateGlobalScore(v); }
-  }
+  _applyParsedScores(result);
 }
 
 async function analyzeAndSave(){
