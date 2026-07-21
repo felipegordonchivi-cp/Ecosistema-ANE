@@ -619,6 +619,12 @@ function escHtml(s){
       window._fbFinalizar = function(sid){
         return window._fbSetReliable ? window._fbSetReliable('salas/'+sid+'/finalizada', true) : window._fbSet('salas/'+sid+'/finalizada', true);
       };
+      // Renegociación iniciada por el entrevistador: cuando activa su cámara
+      // tarde (p.ej. estaba ocupada por Teams al admitir), la nueva pista
+      // necesita una reoferta que el candidato responde en webrtc-reanswer.
+      window._fbSendReoffer = function(sid, offer){
+        return db.ref('salas/'+sid+'/webrtc-reoffer').set(offer);
+      };
 
       // ── Firebase connection monitor ──
       window._fbConnected = false;
@@ -1332,7 +1338,7 @@ function escHtml(s){
           <div><b style="color:#7dd3d3">Modo videollamada:</b> Teams, Meet o Zoom compartiendo Vista Candidato.</div>
           <div><b style="color:#fbbf24">Modo sala virtual:</b> Requiere Firebase configurado institucionalmente.</div>
         </div>
-        <div style="margin-top:10px;font-size:11px;color:#eab308;background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.3);border-radius:8px;padding:8px 10px">⚠️ Un mismo dispositivo solo puede usar la cámara en una aplicación a la vez. Si ya estás en una llamada de Teams/Zoom/Meet con el candidato, pausa la cámara ahí antes de "Admitir candidato" en la Sala Virtual — si no, esta app no podrá activarla y verás un aviso de "cámara en uso".</div>
+        <div style="margin-top:10px;font-size:11px;color:#eab308;background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.3);border-radius:8px;padding:8px 10px">⚠️ Un mismo dispositivo solo puede usar la cámara en una aplicación a la vez. Si ya estás en una llamada de Teams/Zoom/Meet con el candidato, pausa la cámara ahí antes de "Admitir candidato" en la Sala Virtual. Si aun así falla, no hay que reiniciar la sala: libera la cámara en la otra app y toca el botón <b>CÁMARA</b> del panel del entrevistador para activarla y reconectarla a la llamada.</div>
       </div>
       <div style="background:rgba(13,115,115,.08);border:1px solid rgba(13,115,115,.25);border-radius:12px;padding:16px;margin-bottom:14px">
         <div style="font-size:11px;font-weight:800;color:#7dd3d3;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Cómo funciona la sala virtual</div>
@@ -5490,18 +5496,52 @@ let ivMicMuted  = false;
 // (funciona si el navegador lo permite; si no, el mensaje ya deja claro
 // que puede cerrarla manualmente). De este lado sí liberamos cámara/mic
 // y cerramos la conexión WebRTC del entrevistador.
+// window.confirm() está bloqueado en navegadores integrados (Teams, Office,
+// apps móviles): devuelve false sin mostrar ningún diálogo, y el botón
+// FINALIZAR parecía muerto por más que se tocara. La confirmación ahora es
+// de dos toques sobre el propio botón, que funciona en cualquier entorno.
+let _finalizarArmTimer = null;
 function finalizarEntrevista(){
   const salaId = window._activeSalaId || document.getElementById('_sala-id-store')?.value;
-  if(!confirm('¿Finalizar la entrevista? Esto cierra la sala para el candidato también.')) return;
+  const btn = document.getElementById('iv-end-btn');
+  if(!_finalizarArmTimer){
+    if(btn){
+      btn.innerHTML = '⚠️ ¿SEGURO? TOCA DE NUEVO';
+      btn.style.background = 'rgba(239,68,68,.5)';
+      btn.style.color = '#fff';
+    }
+    showToast('Toca FINALIZAR otra vez para cerrar la sala (también se cierra para el candidato)', '#ef4444');
+    _finalizarArmTimer = setTimeout(function(){
+      _finalizarArmTimer = null;
+      if(btn && !btn.disabled){
+        btn.innerHTML = '⏻ FINALIZAR';
+        btn.style.background = 'rgba(239,68,68,.15)';
+        btn.style.color = '#fca5a5';
+      }
+    }, 6000);
+    return;
+  }
+  clearTimeout(_finalizarArmTimer); _finalizarArmTimer = null;
   if(salaId && typeof window._fbFinalizar === 'function') window._fbFinalizar(salaId);
   try{
+    if(ivBgRAF){ cancelAnimationFrame(ivBgRAF); ivBgRAF = null; }
+    if(ivBgStream){ ivBgStream.getTracks().forEach(function(t){ t.stop(); }); ivBgStream = null; }
     [ivCamStream, ivMicStream].forEach(function(s){ if(s) s.getTracks().forEach(function(t){ t.stop(); }); });
+    ivCamStream = null; ivMicStream = null;
     if(window._ivPC) window._ivPC.close();
   }catch(e){}
   const vid = document.getElementById('iv-local-video');
   const ph = document.getElementById('iv-local-ph');
   if(vid){ vid.srcObject=null; vid.style.display='none'; }
   if(ph) ph.style.display='flex';
+  if(btn){
+    btn.disabled = true;
+    btn.innerHTML = '✓ FINALIZADA';
+    btn.style.background = 'rgba(90,90,90,.2)';
+    btn.style.border = '2px solid #555';
+    btn.style.color = '#888';
+    btn.style.cursor = 'default';
+  }
   showToast('Entrevista finalizada — sala cerrada para el candidato', '#ef4444');
 }
 
@@ -5524,7 +5564,10 @@ function toggleIvCam(){
   const btn = document.getElementById('iv-cam-btn');
   const vid = document.getElementById('iv-local-video');
   const ph  = document.getElementById('iv-local-ph');
-  if(!ivCamStream){ showToast('La cámara se activa automáticamente al admitir al candidato','#0d7373'); return; }
+  // Sin stream: la activación automática al admitir falló (típicamente
+  // porque Teams/Zoom tenía la cámara) o aún no ha ocurrido. En vez de un
+  // aviso sin salida, este botón ahora intenta activarla de verdad.
+  if(!ivCamStream){ reintentarCamaraEntrevistador(); return; }
   // Toggle visibilidad del video (la pista sigue activa para WebRTC)
   const tracks = ivCamStream.getVideoTracks();
   const enabled = tracks.length ? tracks[0].enabled : false;
@@ -5539,6 +5582,69 @@ function toggleIvCam(){
     if(vid){ vid.style.display='none'; } if(ph) ph.style.display='';
     if(btn){ btn.className='iv-ctrl-btn inactive'; btn.innerHTML='<span style="font-size:18px">📹</span>CAM OFF'; }
   }
+}
+
+// Reactiva la cámara del entrevistador después de que la activación
+// automática (al admitir al candidato) falló — el caso típico es venir de
+// una llamada de Teams/Zoom que aún retiene la cámara. Además de mostrarla
+// en el PIP local, conecta las pistas nuevas a la llamada WebRTC en curso y
+// renegocia (reoffer → reanswer) para que el candidato reciba el video.
+let ivCamRetryBusy = false;
+function reintentarCamaraEntrevistador(){
+  if(ivCamRetryBusy) return;
+  ivCamRetryBusy = true;
+  const btn = document.getElementById('iv-cam-btn');
+  if(btn) btn.innerHTML = '<span style="font-size:18px">⏳</span>ACTIVANDO…';
+  // Si ya hay un stream de solo-audio (fallback al admitir), pedir solo
+  // video para no abrir un segundo micrófono; si no hay nada, pedir ambos.
+  const wantAudio = !ivMicStream;
+  const constraints = { video:{ facingMode:'user', width:{ideal:1280}, height:{ideal:720} } };
+  if(wantAudio) constraints.audio = true;
+  navigator.mediaDevices.getUserMedia(constraints).then(function(stream){
+    ivCamStream = stream;
+    ivRawVideoTrack = stream.getVideoTracks()[0] || null;
+    const vid = document.getElementById('iv-local-video');
+    const ph  = document.getElementById('iv-local-ph');
+    if(vid){ vid.srcObject = stream; vid.style.display = 'block'; }
+    if(ph) ph.style.display = 'none';
+    if(btn){ btn.className='iv-ctrl-btn active'; btn.innerHTML='<span style="font-size:18px">📹</span>CAM ON'; }
+    if(wantAudio){
+      ivMicOn = true; ivMicMuted = false;
+      const mb = document.getElementById('iv-mic-btn');
+      if(mb){ mb.className='iv-ctrl-btn active'; mb.innerHTML='<span style="font-size:18px">🎙</span>MIC ON'; }
+    }
+    const pc  = window._ivPC;
+    const sid = window._activeSalaId || document.getElementById('_sala-id-store')?.value;
+    if(pc){
+      stream.getTracks().forEach(function(t){
+        const sender = pc.getSenders().find(function(s){ return s.track && s.track.kind === t.kind; });
+        if(sender) sender.replaceTrack(t).catch(function(){});
+        else pc.addTrack(t, stream);
+      });
+      // Renegociar solo si la negociación inicial ya terminó (estado
+      // estable). Si el candidato aún no envía su oferta, las pistas recién
+      // añadidas se incluyen solas en el answer normal — mandar una
+      // reoferta aquí chocaría con esa oferta inicial (glare).
+      if(sid && pc.signalingState === 'stable' && pc.remoteDescription && typeof window._fbSendReoffer === 'function'){
+        pc.createOffer().then(function(o){ return pc.setLocalDescription(o); }).then(function(){
+          return window._fbSendReoffer(sid, pc.localDescription.toJSON());
+        }).catch(function(e){ console.warn('[ANE] Reoferta tras reactivar cámara:', e); });
+      }
+    }
+    if(typeof window._applyIvBgIfSaved === 'function') window._applyIvBgIfSaved();
+    showToast('✅ Cámara activada', '#16a34a');
+  }).catch(function(err){
+    const errName = err && err.name || 'Error';
+    console.error('[ANE] Reintento de cámara del entrevistador:', errName, err && err.message);
+    if(btn){ btn.className='iv-ctrl-btn inactive'; btn.innerHTML='<span style="font-size:18px">📹</span>CÁMARA'; }
+    if(errName==='NotReadableError'){
+      showToast('⚠️ La cámara sigue en uso por otra app (Teams/Zoom/Meet). Apágala ahí y toca CÁMARA de nuevo.', '#eab308');
+    } else if(errName==='NotAllowedError'){
+      showToast('⚠️ Permiso de cámara denegado — haz clic en el ícono de cámara en la barra del navegador, permite el acceso y toca CÁMARA de nuevo.', '#eab308');
+    } else {
+      showToast('⚠️ No se pudo activar la cámara: '+errName+'. Toca CÁMARA para reintentar.', '#eab308');
+    }
+  }).finally(function(){ ivCamRetryBusy = false; });
 }
 
 // ════════════════════════════════════════════════
@@ -5879,12 +5985,14 @@ function admitirCandidato(){
   if(bc) bc.postMessage({type:'admit'});
   // Cerrar modal — el entrevistador ya está en v-app
   closeSalaModal();
-  // Iniciar AV del entrevistador + WebRTC simultáneamente (como Teams)
+  // Iniciar AV del entrevistador + WebRTC simultáneamente (como Teams).
+  // Si el entrevistador ya activó su cámara antes de admitir (con el botón
+  // CÁMARA), se reutiliza ese stream en vez de abrir la cámara otra vez.
   if(typeof window._initWebRTCInterviewer === 'function' && salaId){
-    navigator.mediaDevices.getUserMedia({
+    (ivCamStream ? Promise.resolve(ivCamStream) : navigator.mediaDevices.getUserMedia({
       video: { facingMode:'user', width:{ideal:1280}, height:{ideal:720} },
       audio: true
-    }).then(function(stream){
+    })).then(function(stream){
       // Mostrar cámara local del entrevistador en PIP
       ivCamStream = stream;
       var vid = document.getElementById('iv-local-video');
@@ -5905,9 +6013,9 @@ function admitirCandidato(){
       var errName = err && err.name || 'Error';
       console.error('[ANE] No se pudo activar cámara+mic del entrevistador:', errName, err && err.message);
       if(errName==='NotReadableError'){
-        showToast('⚠️ La cámara ya está en uso (probablemente por Teams/Zoom/Meet). Pausa la cámara ahí y reintenta, o continúa solo con audio.', '#eab308');
+        showToast('⚠️ La cámara ya está en uso (probablemente por Teams/Zoom/Meet). Apágala ahí y luego toca el botón CÁMARA aquí para activarla — no hace falta reiniciar la sala.', '#eab308');
       } else if(typeof showToast === 'function'){
-        showToast('⚠️ No se pudo activar tu cámara: '+errName+'. La entrevista continúa solo con audio si está disponible.', '#eab308');
+        showToast('⚠️ No se pudo activar tu cámara: '+errName+'. La entrevista continúa solo con audio; toca el botón CÁMARA para reintentar.', '#eab308');
       }
       // Si no hay cámara, intentar solo audio
       navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(function(aStream){
