@@ -1835,17 +1835,18 @@ function escHtml(s){
               <p style="color:#e0a800;font-size:11px;margin-top:6px;line-height:1.5">⚠️ IA externa opcional. No ingrese datos sensibles sin autorización institucional. El uso de API externa debe estar validado por la institución.</p>
             </div>
 
-            <button onclick="analyzeLocalOnly()" style="width:100%;margin-bottom:8px;background:linear-gradient(135deg,var(--teal),var(--tl));border:none;color:#fff;padding:13px;border-radius:10px;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 3px 12px rgba(13,115,115,.4);display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;line-height:1.3">🧮 Analizar respuesta (local — sin IA, sin clave, gratis)<span style="background:rgba(255,255,255,.25);border-radius:999px;padding:1px 8px;font-size:9px;font-weight:800;letter-spacing:.04em">RECOMENDADO</span></button>
-            <p style="color:#4a8a8a;font-size:10px;margin:0 0 10px;line-height:1.5">✅ Instantáneo, funciona sin conexión ni clave, y no envía la respuesta del candidato a servicios externos.</p>
+            <button id="analyze-main-btn" onclick="analyzeSmart()" style="width:100%;margin-bottom:8px;background:linear-gradient(135deg,var(--teal),var(--tl));border:none;color:#fff;padding:13px;border-radius:10px;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 3px 12px rgba(13,115,115,.4);display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;line-height:1.3">🔍 Analizar respuesta</button>
+            <p id="analyze-main-hint" style="color:#4a8a8a;font-size:10px;margin:0 0 10px;line-height:1.5"></p>
 
             <details style="margin-bottom:10px">
-              <summary style="cursor:pointer;color:#3a7272;font-size:11px;font-weight:700;list-style:none">🔍 Análisis con IA externa (Gemini) — opcional, requiere clave API ▾</summary>
+              <summary style="cursor:pointer;color:#3a7272;font-size:11px;font-weight:700;list-style:none">⚙️ Elegir motor manualmente (IA Gemini o heurística local) ▾</summary>
               <div style="display:flex;gap:6px;margin-top:8px">
                 <button id="ai-btn" onclick="analyzeWithAI()" style="flex:1;background:rgba(13,115,115,.08);border:1px dashed rgba(13,115,115,.4);color:#5a9898;padding:8px;border-radius:9px;font-size:11px;font-weight:700;cursor:pointer">🔍 Analizar con IA</button>
-                <button onclick="analyzeAndSave()" style="background:rgba(13,115,115,.1);border:1px solid rgba(13,115,115,.25);color:#5a9898;padding:8px 10px;border-radius:9px;font-size:12px;cursor:pointer" title="Analizar con IA y guardar">💾</button>
+                <button onclick="analyzeLocalOnly()" style="flex:1;background:rgba(13,115,115,.08);border:1px dashed rgba(13,115,115,.4);color:#5a9898;padding:8px;border-radius:9px;font-size:11px;font-weight:700;cursor:pointer">🧮 Analizar local</button>
+                <button onclick="analyzeAndSave()" style="background:rgba(13,115,115,.1);border:1px solid rgba(13,115,115,.25);color:#5a9898;padding:8px 10px;border-radius:9px;font-size:12px;cursor:pointer" title="Analizar y guardar">💾</button>
                 <button onclick="toggleApiKeyUI()" style="background:rgba(13,115,115,.08);border:1px solid rgba(13,115,115,.25);color:#5a9898;padding:8px 10px;border-radius:9px;font-size:12px;cursor:pointer" title="API Key">🔑</button>
               </div>
-              <p style="color:#4a8a8a;font-size:10px;margin-top:6px;line-height:1.5">⚠️ Envía la respuesta del candidato a un servicio externo (Google Gemini). Úsela solo si su institución lo autorizó.</p>
+              <p style="color:#4a8a8a;font-size:10px;margin-top:6px;line-height:1.5">⚠️ El análisis con IA envía la respuesta del candidato a un servicio externo (Google Gemini). Úselo solo si su institución lo autorizó. El local es instantáneo, sin conexión y no envía nada.</p>
             </details>
 
             <div id="ai-loading" style="display:none;text-align:center;padding:20px;color:var(--tl)">
@@ -3586,9 +3587,11 @@ function saveProxyUrl(){
   }
   localStorage.setItem('ane_gemini_proxy_url', val);
   if(st) st.textContent = val ? '✅ Proxy guardado — la API Key de arriba no se usa' : 'Sin proxy configurado';
+  updateAnalysisButtons();
 }
 function clearProxyUrl(){
   localStorage.removeItem('ane_gemini_proxy_url');
+  updateAnalysisButtons();
   const inp = document.getElementById('proxy-url-input');
   const st = document.getElementById('proxy-url-status');
   if(inp) inp.value = '';
@@ -3614,15 +3617,42 @@ function saveApiKey(){
   }
   localStorage.setItem('ane_gemini_key', val);
   if(st) st.textContent = '✅ Clave guardada correctamente';
+  updateAnalysisButtons();
 }
 function clearApiKey(){
   localStorage.removeItem('ane_gemini_key');
+  updateAnalysisButtons();
   const inp = document.getElementById('api-key-input');
   const st = document.getElementById('api-key-status');
   if(inp) inp.value = '';
   if(st) st.textContent = 'Clave eliminada';
 }
 function getApiKey(){ return localStorage.getItem('ane_gemini_key')||''; }
+function hasIAConfigured(){ return !!(getApiKey() || getProxyUrl()); }
+
+// El botón principal usa el mejor motor disponible: IA (criterio profesional
+// estándar) cuando hay clave o proxy EN ESTE NAVEGADOR, heurística local si
+// no. El rótulo dice siempre cuál va a usar, para que no vuelva a pasar que
+// el evaluador cree que corre con IA y el informe salga con la heurística
+// (la clave vive en localStorage: configurarla en Chrome no la pone en
+// Edge ni en el navegador integrado de Teams).
+function analyzeSmart(){
+  if(hasIAConfigured()) analyzeWithAI();
+  else analyzeLocalOnly();
+}
+function updateAnalysisButtons(){
+  const b = document.getElementById('analyze-main-btn');
+  const h = document.getElementById('analyze-main-hint');
+  if(!b) return;
+  if(hasIAConfigured()){
+    b.innerHTML = '🔍 Analizar respuesta <span style="background:rgba(255,255,255,.25);border-radius:999px;padding:1px 8px;font-size:9px;font-weight:800;letter-spacing:.04em">IA GEMINI ✓</span>';
+    if(h) h.textContent = '✅ Clave/proxy de Gemini configurados en este navegador — el análisis y el Criterio Profesional usarán IA.';
+  } else {
+    b.innerHTML = '🧮 Analizar respuesta <span style="background:rgba(255,255,255,.25);border-radius:999px;padding:1px 8px;font-size:9px;font-weight:800;letter-spacing:.04em">HEURÍSTICA LOCAL</span>';
+    if(h) h.textContent = '⚠️ Sin clave de Gemini en ESTE navegador — se usará la heurística local (sin IA). Para el análisis IA y el Criterio Profesional, configura la clave con el botón 🔑 (se guarda por navegador/dispositivo).';
+  }
+}
+document.addEventListener('DOMContentLoaded', updateAnalysisButtons);
 
 // ============================================================
 // CAPTURA DE AUDIO DEL CANDIDATO (para feedback de tono de voz)
@@ -3679,7 +3709,12 @@ async function analyzeWithAI(){
     return null;
   }
   if(!apiKey && !proxyUrl){
-    _showAIResult('🔑 Para usar el análisis IA configura tu API Key de Google Gemini o un proxy institucional (botón 🔑 arriba). Obtén tu clave GRATIS en: aistudio.google.com');
+    // Sin clave en ESTE navegador: en vez de dejar al evaluador sin nada,
+    // se corre la heurística local con un aviso claro del porqué — la clave
+    // vive en localStorage y no viaja entre navegadores/dispositivos.
+    const local = activeQType==='pitch' ? analyzePitchLocally(resp) : analyzeStarLocally(resp);
+    _showAIResult('🔑 No hay API Key de Gemini ni proxy configurados EN ESTE NAVEGADOR (la clave se guarda por navegador/dispositivo — botón 🔑; obtén una gratis en aistudio.google.com). Se aplicó la heurística local:\n\n'+local);
+    _applyParsedScores(local);
     return null;
   }
 
@@ -3920,21 +3955,67 @@ Sé directo, específico y basate solo en lo que la respuesta realmente muestra 
 // extensión, lenguaje de equipo vs. individual) para dar un reporte con
 // la misma estructura que el análisis por IA.
 // ============================================================
+// Detección por raíces verbales (regex) + normalización de acentos, no por
+// frases literales exactas: "se ha logrado finalizar", "cumplimos",
+// "me correspondía" o "quedó satisfecho" cuentan igual que "logré" o
+// "mi responsabilidad". Con literales exactos, respuestas reales con tarea
+// y resultado narrados quedaban en 1/5 solo por usar otra conjugación.
+// Los regex se escriben SIN acentos: el texto se normaliza antes de comparar
+// (\b y \w de JS no entienden tildes/ñ — por eso se quitan primero).
 const STAR_KW = {
-  S:['cuando','situación','contexto','empresa','equipo','departamento','período','durante','proyecto','cliente','caso','problema','desafío','reto','en aquel momento','en esa época','la empresa','el área','el mercado','antecedente'],
-  T:['mi responsabilidad','mi tarea','debía','me encargué','mi rol','mi objetivo','tenía que','estaba a cargo','meta','se me asignó','mi función','el objetivo era','debía lograr','me pidieron','me correspondía',
-     'era el encargado','era la encargada','fui el encargado','fui la encargada','fui responsable','soy responsable','como encargado','como encargada','como responsable',
-     'como líder','como coordinador','como coordinadora','como supervisor','como supervisora','como gestor','como gestora',
-     'a mi cargo','bajo mi responsabilidad','mi papel era','mi papel fue','mi puesto era','mi puesto consistía','mi trabajo consistía','mi labor era',
-     'me tocaba','desempeñé el rol','desempeñaba el rol','fungí como','en mi puesto de','en mi rol de','yo lideraba','yo dirigía',
-     'encargado de','encargada de','responsable de','a cargo de','mi función era'],
-  A:['decidí','implementé','propuse','realicé','hice','tomé','llamé','coordiné','desarrollé','apliqué','gestioné','organicé','inmediatamente','primero','luego','después','entonces','elaboré','diseñé','negocié','contacté','revisé','analicé','presenté','capacité','lideré','dirigí','ejecuté'],
-  R:['resultado','logré','mejoré','reduje','aumenté','conseguí','finalmente','impacto','logramos','ahorramos','aprendí','éxito','se logró','como resultado','gracias a esto','esto permitió','se incrementó','se disminuyó']
+  S:['cuando','situación','contexto','empresa','equipo','departamento','período','durante','proyecto','cliente','caso','problema','desafío','reto','en aquel momento','en esa época','la empresa','el área','el mercado','antecedente','sucursal','institución','en ese momento'],
+  T:[
+    /\bmi (responsabilidad|tarea|rol|objetivo|meta|funcion|labor|puesto|cargo|trabajo|papel|deber)\b/g,
+    /\bme (tocaba|toco|correspondia|corresponde|encargue|encargaba|encargaron|pidieron|pidio|asignaron|asigno|solicitaron|solicito|delegaron|nombraron)\b/g,
+    /\bse me (asigno|pidio|encargo|solicito|encomendo|delego)\b/g,
+    /\b(era|fui|soy) (el |la |una? )?(encargad[oa]|responsable|asistente|auxiliar|coordinadora?|supervisora?|lider|gestora?|jefa?e?)\b/g,
+    /\bcomo (encargad[oa]|responsable|lider|coordinadora?|supervisora?|gestora?|asistente|auxiliar)\b/g,
+    /\b(estaba|estuve) a cargo\b/g, /\ba mi cargo\b/g, /\ba cargo de\b/g, /\bbajo mi responsabilidad\b/g,
+    /\bten(ia|iamos) que\b/g, /\bdeb(ia|ian|iamos)\b/g,
+    /\bel objetivo era\b/g, /\bmeta\b/g,
+    /\bmi (papel|puesto|trabajo|labor|funcion) (era|fue|consistia|consiste)\b/g,
+    /\bfungia? como\b/g, /\bdesempen\w+/g,
+    /\byo (lideraba|dirigia|manejaba|llevaba|atendia|administraba|gestionaba|coordinaba)\b/g,
+    /\ben mi (puesto|rol|posicion|area) de\b/g,
+    /\bencargad[oa]s? de\b/g, /\bresponsable de\b/g, /\ben mi caso\b/g
+  ],
+  A:['decidí','propuse','hice','tomé','llamé','desarrollé','apliqué','inmediatamente','primero','luego','después','entonces','elaboré','diseñé','negocié','contacté','revisé','analicé','presenté','capacité','lideré','dirigí','ejecuté',
+     /\bcoordin\w+/g, /\brealiz\w+/g, /\borganiz\w+/g, /\bgestion\w+/g, /\bimplement\w+/g, /\bverifiqu\w+/g, /\bverific\w+/g, /\btramit\w+/g, /\bagend\w+/g],
+  R:['impacto','finalmente','aprendí','éxito','gracias a esto','esto permitió',
+     /\bresult\w+/g, /\blogr\w+/g, /\bfinaliz\w+/g, /\bconclui\w*/g, /\bconcluy\w+/g, /\bculmin\w+/g,
+     /\bcomplet(e|o|amos|aron|ado|ada)\b/g, /\bexitos\w+/g, /\bcumpl\w+/g,
+     /\bresolv\w+/g, /\bresuelt\w+/g, /\bsolucion\w+/g, /\baprob\w+/g,
+     /\breduj\w+/g, /\breducc\w+/g, /\baument\w+/g, /\bincrement\w+/g, /\bdisminu\w+/g,
+     /\bahorr\w+/g, /\bconsegu\w+/g, /\bmejor(e|o|amos|aron|ando|ado|ada)\b/g,
+     /\ba tiempo\b/g, /\bsatisfech\w+/g, /\bagradec\w+/g,
+     /\bquedo (conforme|satisfecho|satisfecha|contento|contenta|bien)\b/g]
 };
 const STAR_FILLERS = ['o sea','este,','eh,','tipo,','digamos','como que','bueno,','pues,','entonces,','viste,'];
 
+// Quita tildes y diacríticos (ñ → n) para que la comparación no dependa de
+// la ortografía de la transcripción de voz (que suele omitir o variar tildes).
+function _deacc(x){ return x.normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
 function _starCountMatches(t, phrases){
-  return phrases.reduce((acc,w)=>acc + (t.split(w).length-1), 0);
+  const tn = _deacc(t);
+  return phrases.reduce((acc,w)=>{
+    if(w instanceof RegExp){ const m = tn.match(w); return acc + (m ? m.length : 0); }
+    return acc + (tn.split(_deacc(w)).length-1);
+  }, 0);
+}
+// Ocurrencias totales Y tipos DISTINTOS de señal. El puntaje por componente
+// se basa en los tipos distintos: repetir diez veces la misma palabra no
+// vuelve mejor una respuesta (las transcripciones de voz repiten mucho),
+// pero cubrir señales diferentes sí indica un relato más completo.
+function _starMatchStats(t, phrases){
+  const tn = _deacc(t);
+  let occ = 0, distinct = 0;
+  phrases.forEach(function(w){
+    let c = 0;
+    if(w instanceof RegExp){ const m = tn.match(w); c = m ? m.length : 0; }
+    else c = tn.split(_deacc(w)).length-1;
+    if(c>0){ distinct++; occ += c; }
+  });
+  return { occ, distinct };
 }
 function _starQuantifiableResults(text){
   const pct = text.match(/\d+([.,]\d+)?\s?%/g) || [];
@@ -3949,28 +4030,47 @@ function analyzeStarLocally(text){
   const sentences = text.split(/[.!?]+/).map(x=>x.trim()).filter(Boolean);
   const avgSentLen = sentences.length ? Math.round(wc/sentences.length) : wc;
 
-  const hits={};
-  ['S','T','A','R'].forEach(k=>{ hits[k] = _starCountMatches(t, STAR_KW[k]); });
+  const stats={};
+  ['S','T','A','R'].forEach(k=>{ stats[k] = _starMatchStats(t, STAR_KW[k]); });
   const quant = _starQuantifiableResults(text);
-  const qualHits = hits.R; // señales de logro narrativo (p.ej. "logramos", "impacto", "éxito") antes del bono numérico
+  const qualHits = stats.R.occ; // señales de logro narrativo (p.ej. "logramos", "impacto", "éxito") antes del bono numérico
   // Un resultado cuenta como demostrado tanto si trae cifras como si el logro
   // queda claro en el relato (2+ señales narrativas) — ninguna de las dos vale
   // más que la otra, ambas se suman al puntaje de R.
   const hasResultSignal = quant.total>0 || qualHits>=2;
-  if(quant.total>0) hits.R += Math.min(3, quant.total);
+  if(quant.total>0){ stats.R.distinct += 1; stats.R.occ += Math.min(3, quant.total); }
 
   const fillerCount = _starCountMatches(t, STAR_FILLERS);
   const ownershipYo = (t.match(/\byo\b/g)||[]).length;
   const ownershipNosotros = (t.match(/\bnosotros\b|\bnos\b/g)||[]).length;
 
-  // Umbral deliberadamente permisivo: una respuesta natural suele mencionar
-  // cada componente UNA vez, no repetidamente — exigir varias coincidencias
-  // para dar puntaje alto generaba falsos "no lo mencionó" (p.ej. en Tarea/rol).
-  const score = k => Math.min(5, Math.max(1, hits[k]>=4?5:hits[k]>=2?4:hits[k]>=1?3:1));
+  // Puntaje por componente basado en tipos DISTINTOS de señal (la repetición
+  // de la misma palabra no suma). Una sola mención clara ya vale 3 —
+  // "presente pero mejorable" — porque una respuesta natural suele tocar
+  // cada componente una vez; la insistencia (3+ ocurrencias del mismo tipo)
+  // sube a 4, y cubrir varios tipos distintos es lo que da 4-5.
+  const score = k => {
+    const d = stats[k].distinct, o = stats[k].occ;
+    if(d>=3) return 5;
+    if(d===2) return o>=4 ? 5 : 4;
+    if(d===1) return o>=3 ? 4 : 3;
+    return 1;
+  };
   const s = { S:score('S'), T:score('T'), A:score('A'), R:score('R') };
   const total = s.S+s.T+s.A+s.R;
   const pct = Math.round((total/20)*100);
-  const global10 = Math.max(1, Math.min(10, Math.round(pct/10)));
+  // Global: no es un promedio plano — en la metodología STAR un componente
+  // débil rompe la cadena (sin Tarea clara no se sabe qué evaluaba la
+  // Acción; sin Resultado no se sabe si funcionó). El eslabón más débil y
+  // las señales de comunicación arrastran el global, como lo haría un
+  // evaluador profesional.
+  const minC = Math.min(s.S, s.T, s.A, s.R);
+  let g = total/2;
+  if(minC<=2) g -= 2; else if(minC===3) g -= 1;
+  if(!hasResultSignal) g -= 1;
+  if(fillerCount>=4) g -= 1;
+  if(wc<40) g -= 2;
+  const global10 = Math.max(1, Math.min(10, Math.round(g)));
   const recomendacion =
     global10>=9 ? 'Muy Recomendado' :
     global10>=7 ? 'Recomendado' :
@@ -4154,13 +4254,33 @@ function analyzeLocalOnly(){
 }
 
 async function analyzeAndSave(){
-  await analyzeWithAI();
+  if(hasIAConfigured()){
+    // Con IA disponible se genera el paquete completo estándar: análisis
+    // STAR + Criterio Profesional (opinión de experto), para que el informe
+    // salga con ambas secciones sin pasos manuales extra.
+    await analyzeWithAI();
+    await analyzeExpertOpinion();
+  } else {
+    analyzeLocalOnly();
+  }
   saveEval();
 }
 
 // ============================================================
 // SAVE / RESET
 // ============================================================
+// Los paneles de resultado a veces contienen un aviso u error (falta de
+// clave, timeout, bloqueo) en vez de un análisis — eso no debe quedar en el
+// historial ni imprimirse en el informe como si fuera la evaluación.
+function _cleanAnalysisText(txt){
+  const t = (txt||'').trim();
+  if(!t) return '';
+  if(/^(❌|⏱)/.test(t)) return '';
+  if(/^🔑/.test(t) && t.indexOf('ANÁLISIS') === -1) return '';
+  if(/^⚠️/.test(t) && t.length < 300 && t.indexOf('DESGLOSE') === -1) return '';
+  return t;
+}
+
 function saveEval(){
   const entry = {
     id:Date.now(),
@@ -4178,8 +4298,8 @@ function saveEval(){
     globalScore,
     transcript:document.getElementById('cand-resp')?.value||'',
     notes:document.getElementById('eval-notes')?.value||'',
-    ai:document.getElementById('ai-result')?.textContent||'',
-    expertOpinion:document.getElementById('expert-result')?.textContent||'',
+    ai:_cleanAnalysisText(document.getElementById('ai-result')?.textContent),
+    expertOpinion:_cleanAnalysisText(document.getElementById('expert-result')?.textContent),
   };
   evalHistory.unshift(entry);
   try{ localStorage.setItem('ane_eval_hist', JSON.stringify(evalHistory.slice(0,100))); }catch(e){}
@@ -4299,7 +4419,8 @@ function generatePDF(){
     globalScore,
     transcript:document.getElementById('cand-resp')?.value||'',
     notes:document.getElementById('eval-notes')?.value||'',
-    ai:document.getElementById('ai-result')?.textContent||'',
+    ai:_cleanAnalysisText(document.getElementById('ai-result')?.textContent),
+    expertOpinion:_cleanAnalysisText(document.getElementById('expert-result')?.textContent),
   };
   generatePDFForEntry(entry);
 }
