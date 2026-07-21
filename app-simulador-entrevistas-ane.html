@@ -619,6 +619,12 @@ function escHtml(s){
       window._fbFinalizar = function(sid){
         return window._fbSetReliable ? window._fbSetReliable('salas/'+sid+'/finalizada', true) : window._fbSet('salas/'+sid+'/finalizada', true);
       };
+      // Renegociación iniciada por el entrevistador: cuando activa su cámara
+      // tarde (p.ej. estaba ocupada por Teams al admitir), la nueva pista
+      // necesita una reoferta que el candidato responde en webrtc-reanswer.
+      window._fbSendReoffer = function(sid, offer){
+        return db.ref('salas/'+sid+'/webrtc-reoffer').set(offer);
+      };
 
       // ── Firebase connection monitor ──
       window._fbConnected = false;
@@ -1332,7 +1338,7 @@ function escHtml(s){
           <div><b style="color:#7dd3d3">Modo videollamada:</b> Teams, Meet o Zoom compartiendo Vista Candidato.</div>
           <div><b style="color:#fbbf24">Modo sala virtual:</b> Requiere Firebase configurado institucionalmente.</div>
         </div>
-        <div style="margin-top:10px;font-size:11px;color:#eab308;background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.3);border-radius:8px;padding:8px 10px">⚠️ Un mismo dispositivo solo puede usar la cámara en una aplicación a la vez. Si ya estás en una llamada de Teams/Zoom/Meet con el candidato, pausa la cámara ahí antes de "Admitir candidato" en la Sala Virtual — si no, esta app no podrá activarla y verás un aviso de "cámara en uso".</div>
+        <div style="margin-top:10px;font-size:11px;color:#eab308;background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.3);border-radius:8px;padding:8px 10px">⚠️ Un mismo dispositivo solo puede usar la cámara en una aplicación a la vez. Si ya estás en una llamada de Teams/Zoom/Meet con el candidato, pausa la cámara ahí antes de "Admitir candidato" en la Sala Virtual. Si aun así falla, no hay que reiniciar la sala: libera la cámara en la otra app y toca el botón <b>CÁMARA</b> del panel del entrevistador para activarla y reconectarla a la llamada.</div>
       </div>
       <div style="background:rgba(13,115,115,.08);border:1px solid rgba(13,115,115,.25);border-radius:12px;padding:16px;margin-bottom:14px">
         <div style="font-size:11px;font-weight:800;color:#7dd3d3;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Cómo funciona la sala virtual</div>
@@ -1829,17 +1835,18 @@ function escHtml(s){
               <p style="color:#e0a800;font-size:11px;margin-top:6px;line-height:1.5">⚠️ IA externa opcional. No ingrese datos sensibles sin autorización institucional. El uso de API externa debe estar validado por la institución.</p>
             </div>
 
-            <button onclick="analyzeLocalOnly()" style="width:100%;margin-bottom:8px;background:linear-gradient(135deg,var(--teal),var(--tl));border:none;color:#fff;padding:13px;border-radius:10px;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 3px 12px rgba(13,115,115,.4);display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;line-height:1.3">🧮 Analizar respuesta (local — sin IA, sin clave, gratis)<span style="background:rgba(255,255,255,.25);border-radius:999px;padding:1px 8px;font-size:9px;font-weight:800;letter-spacing:.04em">RECOMENDADO</span></button>
-            <p style="color:#4a8a8a;font-size:10px;margin:0 0 10px;line-height:1.5">✅ Instantáneo, funciona sin conexión ni clave, y no envía la respuesta del candidato a servicios externos.</p>
+            <button id="analyze-main-btn" onclick="analyzeSmart()" style="width:100%;margin-bottom:8px;background:linear-gradient(135deg,var(--teal),var(--tl));border:none;color:#fff;padding:13px;border-radius:10px;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 3px 12px rgba(13,115,115,.4);display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;line-height:1.3">🔍 Analizar respuesta</button>
+            <p id="analyze-main-hint" style="color:#4a8a8a;font-size:10px;margin:0 0 10px;line-height:1.5"></p>
 
             <details style="margin-bottom:10px">
-              <summary style="cursor:pointer;color:#3a7272;font-size:11px;font-weight:700;list-style:none">🔍 Análisis con IA externa (Gemini) — opcional, requiere clave API ▾</summary>
+              <summary style="cursor:pointer;color:#3a7272;font-size:11px;font-weight:700;list-style:none">⚙️ Elegir motor manualmente (IA Gemini o heurística local) ▾</summary>
               <div style="display:flex;gap:6px;margin-top:8px">
                 <button id="ai-btn" onclick="analyzeWithAI()" style="flex:1;background:rgba(13,115,115,.08);border:1px dashed rgba(13,115,115,.4);color:#5a9898;padding:8px;border-radius:9px;font-size:11px;font-weight:700;cursor:pointer">🔍 Analizar con IA</button>
-                <button onclick="analyzeAndSave()" style="background:rgba(13,115,115,.1);border:1px solid rgba(13,115,115,.25);color:#5a9898;padding:8px 10px;border-radius:9px;font-size:12px;cursor:pointer" title="Analizar con IA y guardar">💾</button>
+                <button onclick="analyzeLocalOnly()" style="flex:1;background:rgba(13,115,115,.08);border:1px dashed rgba(13,115,115,.4);color:#5a9898;padding:8px;border-radius:9px;font-size:11px;font-weight:700;cursor:pointer">🧮 Analizar local</button>
+                <button onclick="analyzeAndSave()" style="background:rgba(13,115,115,.1);border:1px solid rgba(13,115,115,.25);color:#5a9898;padding:8px 10px;border-radius:9px;font-size:12px;cursor:pointer" title="Analizar y guardar">💾</button>
                 <button onclick="toggleApiKeyUI()" style="background:rgba(13,115,115,.08);border:1px solid rgba(13,115,115,.25);color:#5a9898;padding:8px 10px;border-radius:9px;font-size:12px;cursor:pointer" title="API Key">🔑</button>
               </div>
-              <p style="color:#4a8a8a;font-size:10px;margin-top:6px;line-height:1.5">⚠️ Envía la respuesta del candidato a un servicio externo (Google Gemini). Úsela solo si su institución lo autorizó.</p>
+              <p style="color:#4a8a8a;font-size:10px;margin-top:6px;line-height:1.5">⚠️ El análisis con IA envía la respuesta del candidato a un servicio externo (Google Gemini). Úselo solo si su institución lo autorizó. El local es instantáneo, sin conexión y no envía nada.</p>
             </details>
 
             <div id="ai-loading" style="display:none;text-align:center;padding:20px;color:var(--tl)">
@@ -3103,11 +3110,13 @@ function renderQuickQBtns(){
 // pero marcando el tipo pitch para que analizadores, guías y PDFs usen la
 // rúbrica Presente-Pasado-Futuro.
 function setActivePitchQ(){
+  const _prevQ = activeQ;
   const area = document.getElementById('q-edit-pitch');
   const txt = document.getElementById('q-text-pitch');
   const edited = (area && area.style.display !== 'none') ? area.value.trim() : (txt ? txt.textContent.trim() : '');
   pitchQText = edited || PITCH_Q_DEFAULT;
   activeQ = pitchQText;
+  _clearScoresOnQuestionChange(_prevQ);
   isFreeQuestion = true;
   activeQType = 'pitch';
   activeQIdx = null;
@@ -3147,12 +3156,31 @@ function toggleEditQ(idx){
   }
 }
 
+// Al pasar a una pregunta DISTINTA se limpian los recuadros S-T-A-R y el
+// puntaje global vuelve al neutro. Sin esto, los valores de la pregunta
+// anterior quedaban pegados: en el flujo manual se guardaban tal cual, y en
+// el automático el guard de "solo rellenar si está en 0" nunca los dejaba
+// actualizarse — el informe consolidado mostraba el mismo desglose en todas
+// las preguntas. La respuesta y las notas no se tocan (podrían no estar
+// guardadas todavía).
+function _clearScoresOnQuestionChange(prevQ){
+  if(!activeQ || prevQ === activeQ) return;
+  starScores = {S:0,T:0,A:0,R:0};
+  globalScore = 5;
+  const gs = document.getElementById('global-score');
+  if(gs) gs.value = 5;
+  updateGlobalScore(5);
+  renderStarGrid(); updateStarDisplay();
+}
+
 function setActiveQEdited(idx){
+  const _prevQ = activeQ;
   // Usar texto editado si existe, si no el original
   const area = document.getElementById('q-edit-'+idx);
   const txt = document.getElementById('q-text-'+idx);
   const edited = (area && area.style.display !== 'none') ? area.value.trim() : (txt ? txt.textContent.trim() : null);
   activeQ = edited || currentProf?.qs[idx] || null;
+  _clearScoresOnQuestionChange(_prevQ);
   isFreeQuestion = false;
   activeQType = 'star';
   activeQIdx = activeQ ? idx : null;
@@ -3183,7 +3211,9 @@ function activateFreeQuestion(){
   const ta = document.getElementById('free-q-input');
   const text = ta?.value?.trim();
   if(!text){ ta?.focus(); return; }
+  const _prevQ = activeQ;
   activeQ = text;
+  _clearScoresOnQuestionChange(_prevQ);
   isFreeQuestion = true;
   activeQType = document.getElementById('free-q-type')?.value || 'star';
   activeQIdx = null;
@@ -3209,7 +3239,9 @@ function activatePitchPreset(){
 }
 
 function setActiveQ(idx){
+  const _prevQ = activeQ;
   activeQ = currentProf?.qs[idx]||null;
+  _clearScoresOnQuestionChange(_prevQ);
   isFreeQuestion = false;
   activeQType = 'star';
   activeQIdx = activeQ ? idx : null;
@@ -3555,9 +3587,11 @@ function saveProxyUrl(){
   }
   localStorage.setItem('ane_gemini_proxy_url', val);
   if(st) st.textContent = val ? '✅ Proxy guardado — la API Key de arriba no se usa' : 'Sin proxy configurado';
+  updateAnalysisButtons();
 }
 function clearProxyUrl(){
   localStorage.removeItem('ane_gemini_proxy_url');
+  updateAnalysisButtons();
   const inp = document.getElementById('proxy-url-input');
   const st = document.getElementById('proxy-url-status');
   if(inp) inp.value = '';
@@ -3583,15 +3617,42 @@ function saveApiKey(){
   }
   localStorage.setItem('ane_gemini_key', val);
   if(st) st.textContent = '✅ Clave guardada correctamente';
+  updateAnalysisButtons();
 }
 function clearApiKey(){
   localStorage.removeItem('ane_gemini_key');
+  updateAnalysisButtons();
   const inp = document.getElementById('api-key-input');
   const st = document.getElementById('api-key-status');
   if(inp) inp.value = '';
   if(st) st.textContent = 'Clave eliminada';
 }
 function getApiKey(){ return localStorage.getItem('ane_gemini_key')||''; }
+function hasIAConfigured(){ return !!(getApiKey() || getProxyUrl()); }
+
+// El botón principal usa el mejor motor disponible: IA (criterio profesional
+// estándar) cuando hay clave o proxy EN ESTE NAVEGADOR, heurística local si
+// no. El rótulo dice siempre cuál va a usar, para que no vuelva a pasar que
+// el evaluador cree que corre con IA y el informe salga con la heurística
+// (la clave vive en localStorage: configurarla en Chrome no la pone en
+// Edge ni en el navegador integrado de Teams).
+function analyzeSmart(){
+  if(hasIAConfigured()) analyzeWithAI();
+  else analyzeLocalOnly();
+}
+function updateAnalysisButtons(){
+  const b = document.getElementById('analyze-main-btn');
+  const h = document.getElementById('analyze-main-hint');
+  if(!b) return;
+  if(hasIAConfigured()){
+    b.innerHTML = '🔍 Analizar respuesta <span style="background:rgba(255,255,255,.25);border-radius:999px;padding:1px 8px;font-size:9px;font-weight:800;letter-spacing:.04em">IA GEMINI ✓</span>';
+    if(h) h.textContent = '✅ Clave/proxy de Gemini configurados en este navegador — el análisis y el Criterio Profesional usarán IA.';
+  } else {
+    b.innerHTML = '🧮 Analizar respuesta <span style="background:rgba(255,255,255,.25);border-radius:999px;padding:1px 8px;font-size:9px;font-weight:800;letter-spacing:.04em">HEURÍSTICA LOCAL</span>';
+    if(h) h.textContent = '⚠️ Sin clave de Gemini en ESTE navegador — se usará la heurística local (sin IA). Para el análisis IA y el Criterio Profesional, configura la clave con el botón 🔑 (se guarda por navegador/dispositivo).';
+  }
+}
+document.addEventListener('DOMContentLoaded', updateAnalysisButtons);
 
 // ============================================================
 // CAPTURA DE AUDIO DEL CANDIDATO (para feedback de tono de voz)
@@ -3648,7 +3709,12 @@ async function analyzeWithAI(){
     return null;
   }
   if(!apiKey && !proxyUrl){
-    _showAIResult('🔑 Para usar el análisis IA configura tu API Key de Google Gemini o un proxy institucional (botón 🔑 arriba). Obtén tu clave GRATIS en: aistudio.google.com');
+    // Sin clave en ESTE navegador: en vez de dejar al evaluador sin nada,
+    // se corre la heurística local con un aviso claro del porqué — la clave
+    // vive en localStorage y no viaja entre navegadores/dispositivos.
+    const local = activeQType==='pitch' ? analyzePitchLocally(resp) : analyzeStarLocally(resp);
+    _showAIResult('🔑 No hay API Key de Gemini ni proxy configurados EN ESTE NAVEGADOR (la clave se guarda por navegador/dispositivo — botón 🔑; obtén una gratis en aistudio.google.com). Se aplicó la heurística local:\n\n'+local);
+    _applyParsedScores(local);
     return null;
   }
 
@@ -3756,21 +3822,7 @@ Sé específico, constructivo y objetivo. Considera el contexto del mercado labo
     }
 
     _showAIResult(text);
-
-    // Auto-update scores from AI response — en pitch los recuadros S-T-A-R
-    // no aplican, solo se toma el puntaje global.
-    const scoresMatch = activeQType==='pitch' ? null : text.match(/S[:\s]+(\d)\s+T[:\s]+(\d)\s+A[:\s]+(\d)\s+R[:\s]+(\d)/i);
-    if(scoresMatch){
-      ['S','T','A','R'].forEach((k,i)=>{
-        const v=parseInt(scoresMatch[i+1]);
-        if(v>=1&&v<=5&&starScores[k]===0) setStarScore(k,v);
-      });
-    }
-    const globalMatch = text.match(/(\d+)\s*\/\s*10/);
-    if(globalMatch){
-      const v=parseInt(globalMatch[1]);
-      if(v>=1&&v<=10){ document.getElementById('global-score').value=v; updateGlobalScore(v); }
-    }
+    _applyParsedScores(text);
 
     return text;
   } catch(err) {
@@ -3781,6 +3833,9 @@ Sé específico, constructivo y objetivo. Considera el contexto del mercado labo
     } else {
       _showAIResult('Análisis local de respaldo:\n\n'+localFallback);
     }
+    // El respaldo local también trae puntajes — antes se mostraba el texto
+    // pero los recuadros quedaban sin actualizar.
+    _applyParsedScores(localFallback);
     return null;
   } finally {
     if(btn){ btn.disabled=false; btn.textContent='🔍 Re-analizar'; }
@@ -3900,21 +3955,67 @@ Sé directo, específico y basate solo en lo que la respuesta realmente muestra 
 // extensión, lenguaje de equipo vs. individual) para dar un reporte con
 // la misma estructura que el análisis por IA.
 // ============================================================
+// Detección por raíces verbales (regex) + normalización de acentos, no por
+// frases literales exactas: "se ha logrado finalizar", "cumplimos",
+// "me correspondía" o "quedó satisfecho" cuentan igual que "logré" o
+// "mi responsabilidad". Con literales exactos, respuestas reales con tarea
+// y resultado narrados quedaban en 1/5 solo por usar otra conjugación.
+// Los regex se escriben SIN acentos: el texto se normaliza antes de comparar
+// (\b y \w de JS no entienden tildes/ñ — por eso se quitan primero).
 const STAR_KW = {
-  S:['cuando','situación','contexto','empresa','equipo','departamento','período','durante','proyecto','cliente','caso','problema','desafío','reto','en aquel momento','en esa época','la empresa','el área','el mercado','antecedente'],
-  T:['mi responsabilidad','mi tarea','debía','me encargué','mi rol','mi objetivo','tenía que','estaba a cargo','meta','se me asignó','mi función','el objetivo era','debía lograr','me pidieron','me correspondía',
-     'era el encargado','era la encargada','fui el encargado','fui la encargada','fui responsable','soy responsable','como encargado','como encargada','como responsable',
-     'como líder','como coordinador','como coordinadora','como supervisor','como supervisora','como gestor','como gestora',
-     'a mi cargo','bajo mi responsabilidad','mi papel era','mi papel fue','mi puesto era','mi puesto consistía','mi trabajo consistía','mi labor era',
-     'me tocaba','desempeñé el rol','desempeñaba el rol','fungí como','en mi puesto de','en mi rol de','yo lideraba','yo dirigía',
-     'encargado de','encargada de','responsable de','a cargo de','mi función era'],
-  A:['decidí','implementé','propuse','realicé','hice','tomé','llamé','coordiné','desarrollé','apliqué','gestioné','organicé','inmediatamente','primero','luego','después','entonces','elaboré','diseñé','negocié','contacté','revisé','analicé','presenté','capacité','lideré','dirigí','ejecuté'],
-  R:['resultado','logré','mejoré','reduje','aumenté','conseguí','finalmente','impacto','logramos','ahorramos','aprendí','éxito','se logró','como resultado','gracias a esto','esto permitió','se incrementó','se disminuyó']
+  S:['cuando','situación','contexto','empresa','equipo','departamento','período','durante','proyecto','cliente','caso','problema','desafío','reto','en aquel momento','en esa época','la empresa','el área','el mercado','antecedente','sucursal','institución','en ese momento'],
+  T:[
+    /\bmi (responsabilidad|tarea|rol|objetivo|meta|funcion|labor|puesto|cargo|trabajo|papel|deber)\b/g,
+    /\bme (tocaba|toco|correspondia|corresponde|encargue|encargaba|encargaron|pidieron|pidio|asignaron|asigno|solicitaron|solicito|delegaron|nombraron)\b/g,
+    /\bse me (asigno|pidio|encargo|solicito|encomendo|delego)\b/g,
+    /\b(era|fui|soy) (el |la |una? )?(encargad[oa]|responsable|asistente|auxiliar|coordinadora?|supervisora?|lider|gestora?|jefa?e?)\b/g,
+    /\bcomo (encargad[oa]|responsable|lider|coordinadora?|supervisora?|gestora?|asistente|auxiliar)\b/g,
+    /\b(estaba|estuve) a cargo\b/g, /\ba mi cargo\b/g, /\ba cargo de\b/g, /\bbajo mi responsabilidad\b/g,
+    /\bten(ia|iamos) que\b/g, /\bdeb(ia|ian|iamos)\b/g,
+    /\bel objetivo era\b/g, /\bmeta\b/g,
+    /\bmi (papel|puesto|trabajo|labor|funcion) (era|fue|consistia|consiste)\b/g,
+    /\bfungia? como\b/g, /\bdesempen\w+/g,
+    /\byo (lideraba|dirigia|manejaba|llevaba|atendia|administraba|gestionaba|coordinaba)\b/g,
+    /\ben mi (puesto|rol|posicion|area) de\b/g,
+    /\bencargad[oa]s? de\b/g, /\bresponsable de\b/g, /\ben mi caso\b/g
+  ],
+  A:['decidí','propuse','hice','tomé','llamé','desarrollé','apliqué','inmediatamente','primero','luego','después','entonces','elaboré','diseñé','negocié','contacté','revisé','analicé','presenté','capacité','lideré','dirigí','ejecuté',
+     /\bcoordin\w+/g, /\brealiz\w+/g, /\borganiz\w+/g, /\bgestion\w+/g, /\bimplement\w+/g, /\bverifiqu\w+/g, /\bverific\w+/g, /\btramit\w+/g, /\bagend\w+/g],
+  R:['impacto','finalmente','aprendí','éxito','gracias a esto','esto permitió',
+     /\bresult\w+/g, /\blogr\w+/g, /\bfinaliz\w+/g, /\bconclui\w*/g, /\bconcluy\w+/g, /\bculmin\w+/g,
+     /\bcomplet(e|o|amos|aron|ado|ada)\b/g, /\bexitos\w+/g, /\bcumpl\w+/g,
+     /\bresolv\w+/g, /\bresuelt\w+/g, /\bsolucion\w+/g, /\baprob\w+/g,
+     /\breduj\w+/g, /\breducc\w+/g, /\baument\w+/g, /\bincrement\w+/g, /\bdisminu\w+/g,
+     /\bahorr\w+/g, /\bconsegu\w+/g, /\bmejor(e|o|amos|aron|ando|ado|ada)\b/g,
+     /\ba tiempo\b/g, /\bsatisfech\w+/g, /\bagradec\w+/g,
+     /\bquedo (conforme|satisfecho|satisfecha|contento|contenta|bien)\b/g]
 };
 const STAR_FILLERS = ['o sea','este,','eh,','tipo,','digamos','como que','bueno,','pues,','entonces,','viste,'];
 
+// Quita tildes y diacríticos (ñ → n) para que la comparación no dependa de
+// la ortografía de la transcripción de voz (que suele omitir o variar tildes).
+function _deacc(x){ return x.normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
 function _starCountMatches(t, phrases){
-  return phrases.reduce((acc,w)=>acc + (t.split(w).length-1), 0);
+  const tn = _deacc(t);
+  return phrases.reduce((acc,w)=>{
+    if(w instanceof RegExp){ const m = tn.match(w); return acc + (m ? m.length : 0); }
+    return acc + (tn.split(_deacc(w)).length-1);
+  }, 0);
+}
+// Ocurrencias totales Y tipos DISTINTOS de señal. El puntaje por componente
+// se basa en los tipos distintos: repetir diez veces la misma palabra no
+// vuelve mejor una respuesta (las transcripciones de voz repiten mucho),
+// pero cubrir señales diferentes sí indica un relato más completo.
+function _starMatchStats(t, phrases){
+  const tn = _deacc(t);
+  let occ = 0, distinct = 0;
+  phrases.forEach(function(w){
+    let c = 0;
+    if(w instanceof RegExp){ const m = tn.match(w); c = m ? m.length : 0; }
+    else c = tn.split(_deacc(w)).length-1;
+    if(c>0){ distinct++; occ += c; }
+  });
+  return { occ, distinct };
 }
 function _starQuantifiableResults(text){
   const pct = text.match(/\d+([.,]\d+)?\s?%/g) || [];
@@ -3929,28 +4030,47 @@ function analyzeStarLocally(text){
   const sentences = text.split(/[.!?]+/).map(x=>x.trim()).filter(Boolean);
   const avgSentLen = sentences.length ? Math.round(wc/sentences.length) : wc;
 
-  const hits={};
-  ['S','T','A','R'].forEach(k=>{ hits[k] = _starCountMatches(t, STAR_KW[k]); });
+  const stats={};
+  ['S','T','A','R'].forEach(k=>{ stats[k] = _starMatchStats(t, STAR_KW[k]); });
   const quant = _starQuantifiableResults(text);
-  const qualHits = hits.R; // señales de logro narrativo (p.ej. "logramos", "impacto", "éxito") antes del bono numérico
+  const qualHits = stats.R.occ; // señales de logro narrativo (p.ej. "logramos", "impacto", "éxito") antes del bono numérico
   // Un resultado cuenta como demostrado tanto si trae cifras como si el logro
   // queda claro en el relato (2+ señales narrativas) — ninguna de las dos vale
   // más que la otra, ambas se suman al puntaje de R.
   const hasResultSignal = quant.total>0 || qualHits>=2;
-  if(quant.total>0) hits.R += Math.min(3, quant.total);
+  if(quant.total>0){ stats.R.distinct += 1; stats.R.occ += Math.min(3, quant.total); }
 
   const fillerCount = _starCountMatches(t, STAR_FILLERS);
   const ownershipYo = (t.match(/\byo\b/g)||[]).length;
   const ownershipNosotros = (t.match(/\bnosotros\b|\bnos\b/g)||[]).length;
 
-  // Umbral deliberadamente permisivo: una respuesta natural suele mencionar
-  // cada componente UNA vez, no repetidamente — exigir varias coincidencias
-  // para dar puntaje alto generaba falsos "no lo mencionó" (p.ej. en Tarea/rol).
-  const score = k => Math.min(5, Math.max(1, hits[k]>=4?5:hits[k]>=2?4:hits[k]>=1?3:1));
+  // Puntaje por componente basado en tipos DISTINTOS de señal (la repetición
+  // de la misma palabra no suma). Una sola mención clara ya vale 3 —
+  // "presente pero mejorable" — porque una respuesta natural suele tocar
+  // cada componente una vez; la insistencia (3+ ocurrencias del mismo tipo)
+  // sube a 4, y cubrir varios tipos distintos es lo que da 4-5.
+  const score = k => {
+    const d = stats[k].distinct, o = stats[k].occ;
+    if(d>=3) return 5;
+    if(d===2) return o>=4 ? 5 : 4;
+    if(d===1) return o>=3 ? 4 : 3;
+    return 1;
+  };
   const s = { S:score('S'), T:score('T'), A:score('A'), R:score('R') };
   const total = s.S+s.T+s.A+s.R;
   const pct = Math.round((total/20)*100);
-  const global10 = Math.max(1, Math.min(10, Math.round(pct/10)));
+  // Global: no es un promedio plano — en la metodología STAR un componente
+  // débil rompe la cadena (sin Tarea clara no se sabe qué evaluaba la
+  // Acción; sin Resultado no se sabe si funcionó). El eslabón más débil y
+  // las señales de comunicación arrastran el global, como lo haría un
+  // evaluador profesional.
+  const minC = Math.min(s.S, s.T, s.A, s.R);
+  let g = total/2;
+  if(minC<=2) g -= 2; else if(minC===3) g -= 1;
+  if(!hasResultSignal) g -= 1;
+  if(fillerCount>=4) g -= 1;
+  if(wc<40) g -= 2;
+  const global10 = Math.max(1, Math.min(10, Math.round(g)));
   const recomendacion =
     global10>=9 ? 'Muy Recomendado' :
     global10>=7 ? 'Recomendado' :
@@ -4095,6 +4215,31 @@ function analyzePitchLocally(text){
     +'y gratuito, pero no sustituye el juicio profesional del entrevistador.';
 }
 
+// Aplica al panel los puntajes que sugiere un texto de análisis (Gemini o
+// heurística local). SIEMPRE sobrescribe los recuadros: el análisis recién
+// corrido corresponde a la respuesta actual. Antes solo se rellenaban los
+// recuadros que estaban en 0 — tras la primera pregunta ya ninguno lo
+// estaba, así que las preguntas siguientes conservaban el desglose S-T-A-R
+// de la primera (el texto del análisis decía una cosa y los recuadros/el
+// informe consolidado otra). El evaluador puede ajustar manualmente
+// DESPUÉS del análisis y ese ajuste es el que se guarda.
+// En pitch los recuadros S-T-A-R no aplican; solo se toma el puntaje global.
+function _applyParsedScores(text){
+  if(!text) return;
+  const scoresMatch = activeQType==='pitch' ? null : text.match(/S[:\s]+(\d)\s+T[:\s]+(\d)\s+A[:\s]+(\d)\s+R[:\s]+(\d)/i);
+  if(scoresMatch){
+    ['S','T','A','R'].forEach((k,i)=>{
+      const v=parseInt(scoresMatch[i+1]);
+      if(v>=1&&v<=5) setStarScore(k,v);
+    });
+  }
+  const globalMatch = text.match(/(\d+)\s*\/\s*10/);
+  if(globalMatch){
+    const v=parseInt(globalMatch[1]);
+    if(v>=1&&v<=10){ const gs=document.getElementById('global-score'); if(gs) gs.value=v; updateGlobalScore(v); }
+  }
+}
+
 // Análisis 100% local, sin pasar primero por un intento (fallido) a Gemini —
 // para cuando no hay clave, no hay cuota, o simplemente no se quiere usar IA externa.
 function analyzeLocalOnly(){
@@ -4103,42 +4248,39 @@ function analyzeLocalOnly(){
     _showAIResult('⚠️ No hay respuesta del candidato. Escribe o graba una respuesta primero.');
     return;
   }
-  if(activeQType==='pitch'){
-    const result = analyzePitchLocally(resp);
-    _showAIResult(result);
-    // En pitch no se auto-rellenan los recuadros S-T-A-R (no aplican);
-    // solo el puntaje global.
-    const globalMatch = result.match(/(\d+)\s*\/\s*10/);
-    if(globalMatch){
-      const v=parseInt(globalMatch[1]);
-      if(v>=1&&v<=10){ const gs=document.getElementById('global-score'); if(gs) gs.value=v; updateGlobalScore(v); }
-    }
-    return;
-  }
-  const result = analyzeStarLocally(resp);
+  const result = activeQType==='pitch' ? analyzePitchLocally(resp) : analyzeStarLocally(resp);
   _showAIResult(result);
-  const scoresMatch = result.match(/S[:\s]+(\d)\s+T[:\s]+(\d)\s+A[:\s]+(\d)\s+R[:\s]+(\d)/i);
-  if(scoresMatch){
-    ['S','T','A','R'].forEach((k,i)=>{
-      const v=parseInt(scoresMatch[i+1]);
-      if(v>=1&&v<=5&&starScores[k]===0) setStarScore(k,v);
-    });
-  }
-  const globalMatch = result.match(/(\d+)\s*\/\s*10/);
-  if(globalMatch){
-    const v=parseInt(globalMatch[1]);
-    if(v>=1&&v<=10){ const gs=document.getElementById('global-score'); if(gs) gs.value=v; updateGlobalScore(v); }
-  }
+  _applyParsedScores(result);
 }
 
 async function analyzeAndSave(){
-  await analyzeWithAI();
+  if(hasIAConfigured()){
+    // Con IA disponible se genera el paquete completo estándar: análisis
+    // STAR + Criterio Profesional (opinión de experto), para que el informe
+    // salga con ambas secciones sin pasos manuales extra.
+    await analyzeWithAI();
+    await analyzeExpertOpinion();
+  } else {
+    analyzeLocalOnly();
+  }
   saveEval();
 }
 
 // ============================================================
 // SAVE / RESET
 // ============================================================
+// Los paneles de resultado a veces contienen un aviso u error (falta de
+// clave, timeout, bloqueo) en vez de un análisis — eso no debe quedar en el
+// historial ni imprimirse en el informe como si fuera la evaluación.
+function _cleanAnalysisText(txt){
+  const t = (txt||'').trim();
+  if(!t) return '';
+  if(/^(❌|⏱)/.test(t)) return '';
+  if(/^🔑/.test(t) && t.indexOf('ANÁLISIS') === -1) return '';
+  if(/^⚠️/.test(t) && t.length < 300 && t.indexOf('DESGLOSE') === -1) return '';
+  return t;
+}
+
 function saveEval(){
   const entry = {
     id:Date.now(),
@@ -4156,8 +4298,8 @@ function saveEval(){
     globalScore,
     transcript:document.getElementById('cand-resp')?.value||'',
     notes:document.getElementById('eval-notes')?.value||'',
-    ai:document.getElementById('ai-result')?.textContent||'',
-    expertOpinion:document.getElementById('expert-result')?.textContent||'',
+    ai:_cleanAnalysisText(document.getElementById('ai-result')?.textContent),
+    expertOpinion:_cleanAnalysisText(document.getElementById('expert-result')?.textContent),
   };
   evalHistory.unshift(entry);
   try{ localStorage.setItem('ane_eval_hist', JSON.stringify(evalHistory.slice(0,100))); }catch(e){}
@@ -4277,7 +4419,8 @@ function generatePDF(){
     globalScore,
     transcript:document.getElementById('cand-resp')?.value||'',
     notes:document.getElementById('eval-notes')?.value||'',
-    ai:document.getElementById('ai-result')?.textContent||'',
+    ai:_cleanAnalysisText(document.getElementById('ai-result')?.textContent),
+    expertOpinion:_cleanAnalysisText(document.getElementById('expert-result')?.textContent),
   };
   generatePDFForEntry(entry);
 }
@@ -5490,18 +5633,52 @@ let ivMicMuted  = false;
 // (funciona si el navegador lo permite; si no, el mensaje ya deja claro
 // que puede cerrarla manualmente). De este lado sí liberamos cámara/mic
 // y cerramos la conexión WebRTC del entrevistador.
+// window.confirm() está bloqueado en navegadores integrados (Teams, Office,
+// apps móviles): devuelve false sin mostrar ningún diálogo, y el botón
+// FINALIZAR parecía muerto por más que se tocara. La confirmación ahora es
+// de dos toques sobre el propio botón, que funciona en cualquier entorno.
+let _finalizarArmTimer = null;
 function finalizarEntrevista(){
   const salaId = window._activeSalaId || document.getElementById('_sala-id-store')?.value;
-  if(!confirm('¿Finalizar la entrevista? Esto cierra la sala para el candidato también.')) return;
+  const btn = document.getElementById('iv-end-btn');
+  if(!_finalizarArmTimer){
+    if(btn){
+      btn.innerHTML = '⚠️ ¿SEGURO? TOCA DE NUEVO';
+      btn.style.background = 'rgba(239,68,68,.5)';
+      btn.style.color = '#fff';
+    }
+    showToast('Toca FINALIZAR otra vez para cerrar la sala (también se cierra para el candidato)', '#ef4444');
+    _finalizarArmTimer = setTimeout(function(){
+      _finalizarArmTimer = null;
+      if(btn && !btn.disabled){
+        btn.innerHTML = '⏻ FINALIZAR';
+        btn.style.background = 'rgba(239,68,68,.15)';
+        btn.style.color = '#fca5a5';
+      }
+    }, 6000);
+    return;
+  }
+  clearTimeout(_finalizarArmTimer); _finalizarArmTimer = null;
   if(salaId && typeof window._fbFinalizar === 'function') window._fbFinalizar(salaId);
   try{
+    if(ivBgRAF){ cancelAnimationFrame(ivBgRAF); ivBgRAF = null; }
+    if(ivBgStream){ ivBgStream.getTracks().forEach(function(t){ t.stop(); }); ivBgStream = null; }
     [ivCamStream, ivMicStream].forEach(function(s){ if(s) s.getTracks().forEach(function(t){ t.stop(); }); });
+    ivCamStream = null; ivMicStream = null;
     if(window._ivPC) window._ivPC.close();
   }catch(e){}
   const vid = document.getElementById('iv-local-video');
   const ph = document.getElementById('iv-local-ph');
   if(vid){ vid.srcObject=null; vid.style.display='none'; }
   if(ph) ph.style.display='flex';
+  if(btn){
+    btn.disabled = true;
+    btn.innerHTML = '✓ FINALIZADA';
+    btn.style.background = 'rgba(90,90,90,.2)';
+    btn.style.border = '2px solid #555';
+    btn.style.color = '#888';
+    btn.style.cursor = 'default';
+  }
   showToast('Entrevista finalizada — sala cerrada para el candidato', '#ef4444');
 }
 
@@ -5524,7 +5701,10 @@ function toggleIvCam(){
   const btn = document.getElementById('iv-cam-btn');
   const vid = document.getElementById('iv-local-video');
   const ph  = document.getElementById('iv-local-ph');
-  if(!ivCamStream){ showToast('La cámara se activa automáticamente al admitir al candidato','#0d7373'); return; }
+  // Sin stream: la activación automática al admitir falló (típicamente
+  // porque Teams/Zoom tenía la cámara) o aún no ha ocurrido. En vez de un
+  // aviso sin salida, este botón ahora intenta activarla de verdad.
+  if(!ivCamStream){ reintentarCamaraEntrevistador(); return; }
   // Toggle visibilidad del video (la pista sigue activa para WebRTC)
   const tracks = ivCamStream.getVideoTracks();
   const enabled = tracks.length ? tracks[0].enabled : false;
@@ -5539,6 +5719,69 @@ function toggleIvCam(){
     if(vid){ vid.style.display='none'; } if(ph) ph.style.display='';
     if(btn){ btn.className='iv-ctrl-btn inactive'; btn.innerHTML='<span style="font-size:18px">📹</span>CAM OFF'; }
   }
+}
+
+// Reactiva la cámara del entrevistador después de que la activación
+// automática (al admitir al candidato) falló — el caso típico es venir de
+// una llamada de Teams/Zoom que aún retiene la cámara. Además de mostrarla
+// en el PIP local, conecta las pistas nuevas a la llamada WebRTC en curso y
+// renegocia (reoffer → reanswer) para que el candidato reciba el video.
+let ivCamRetryBusy = false;
+function reintentarCamaraEntrevistador(){
+  if(ivCamRetryBusy) return;
+  ivCamRetryBusy = true;
+  const btn = document.getElementById('iv-cam-btn');
+  if(btn) btn.innerHTML = '<span style="font-size:18px">⏳</span>ACTIVANDO…';
+  // Si ya hay un stream de solo-audio (fallback al admitir), pedir solo
+  // video para no abrir un segundo micrófono; si no hay nada, pedir ambos.
+  const wantAudio = !ivMicStream;
+  const constraints = { video:{ facingMode:'user', width:{ideal:1280}, height:{ideal:720} } };
+  if(wantAudio) constraints.audio = true;
+  navigator.mediaDevices.getUserMedia(constraints).then(function(stream){
+    ivCamStream = stream;
+    ivRawVideoTrack = stream.getVideoTracks()[0] || null;
+    const vid = document.getElementById('iv-local-video');
+    const ph  = document.getElementById('iv-local-ph');
+    if(vid){ vid.srcObject = stream; vid.style.display = 'block'; }
+    if(ph) ph.style.display = 'none';
+    if(btn){ btn.className='iv-ctrl-btn active'; btn.innerHTML='<span style="font-size:18px">📹</span>CAM ON'; }
+    if(wantAudio){
+      ivMicOn = true; ivMicMuted = false;
+      const mb = document.getElementById('iv-mic-btn');
+      if(mb){ mb.className='iv-ctrl-btn active'; mb.innerHTML='<span style="font-size:18px">🎙</span>MIC ON'; }
+    }
+    const pc  = window._ivPC;
+    const sid = window._activeSalaId || document.getElementById('_sala-id-store')?.value;
+    if(pc){
+      stream.getTracks().forEach(function(t){
+        const sender = pc.getSenders().find(function(s){ return s.track && s.track.kind === t.kind; });
+        if(sender) sender.replaceTrack(t).catch(function(){});
+        else pc.addTrack(t, stream);
+      });
+      // Renegociar solo si la negociación inicial ya terminó (estado
+      // estable). Si el candidato aún no envía su oferta, las pistas recién
+      // añadidas se incluyen solas en el answer normal — mandar una
+      // reoferta aquí chocaría con esa oferta inicial (glare).
+      if(sid && pc.signalingState === 'stable' && pc.remoteDescription && typeof window._fbSendReoffer === 'function'){
+        pc.createOffer().then(function(o){ return pc.setLocalDescription(o); }).then(function(){
+          return window._fbSendReoffer(sid, pc.localDescription.toJSON());
+        }).catch(function(e){ console.warn('[ANE] Reoferta tras reactivar cámara:', e); });
+      }
+    }
+    if(typeof window._applyIvBgIfSaved === 'function') window._applyIvBgIfSaved();
+    showToast('✅ Cámara activada', '#16a34a');
+  }).catch(function(err){
+    const errName = err && err.name || 'Error';
+    console.error('[ANE] Reintento de cámara del entrevistador:', errName, err && err.message);
+    if(btn){ btn.className='iv-ctrl-btn inactive'; btn.innerHTML='<span style="font-size:18px">📹</span>CÁMARA'; }
+    if(errName==='NotReadableError'){
+      showToast('⚠️ La cámara sigue en uso por otra app (Teams/Zoom/Meet). Apágala ahí y toca CÁMARA de nuevo.', '#eab308');
+    } else if(errName==='NotAllowedError'){
+      showToast('⚠️ Permiso de cámara denegado — haz clic en el ícono de cámara en la barra del navegador, permite el acceso y toca CÁMARA de nuevo.', '#eab308');
+    } else {
+      showToast('⚠️ No se pudo activar la cámara: '+errName+'. Toca CÁMARA para reintentar.', '#eab308');
+    }
+  }).finally(function(){ ivCamRetryBusy = false; });
 }
 
 // ════════════════════════════════════════════════
@@ -5879,12 +6122,14 @@ function admitirCandidato(){
   if(bc) bc.postMessage({type:'admit'});
   // Cerrar modal — el entrevistador ya está en v-app
   closeSalaModal();
-  // Iniciar AV del entrevistador + WebRTC simultáneamente (como Teams)
+  // Iniciar AV del entrevistador + WebRTC simultáneamente (como Teams).
+  // Si el entrevistador ya activó su cámara antes de admitir (con el botón
+  // CÁMARA), se reutiliza ese stream en vez de abrir la cámara otra vez.
   if(typeof window._initWebRTCInterviewer === 'function' && salaId){
-    navigator.mediaDevices.getUserMedia({
+    (ivCamStream ? Promise.resolve(ivCamStream) : navigator.mediaDevices.getUserMedia({
       video: { facingMode:'user', width:{ideal:1280}, height:{ideal:720} },
       audio: true
-    }).then(function(stream){
+    })).then(function(stream){
       // Mostrar cámara local del entrevistador en PIP
       ivCamStream = stream;
       var vid = document.getElementById('iv-local-video');
@@ -5905,9 +6150,9 @@ function admitirCandidato(){
       var errName = err && err.name || 'Error';
       console.error('[ANE] No se pudo activar cámara+mic del entrevistador:', errName, err && err.message);
       if(errName==='NotReadableError'){
-        showToast('⚠️ La cámara ya está en uso (probablemente por Teams/Zoom/Meet). Pausa la cámara ahí y reintenta, o continúa solo con audio.', '#eab308');
+        showToast('⚠️ La cámara ya está en uso (probablemente por Teams/Zoom/Meet). Apágala ahí y luego toca el botón CÁMARA aquí para activarla — no hace falta reiniciar la sala.', '#eab308');
       } else if(typeof showToast === 'function'){
-        showToast('⚠️ No se pudo activar tu cámara: '+errName+'. La entrevista continúa solo con audio si está disponible.', '#eab308');
+        showToast('⚠️ No se pudo activar tu cámara: '+errName+'. La entrevista continúa solo con audio; toca el botón CÁMARA para reintentar.', '#eab308');
       }
       // Si no hay cámara, intentar solo audio
       navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(function(aStream){
