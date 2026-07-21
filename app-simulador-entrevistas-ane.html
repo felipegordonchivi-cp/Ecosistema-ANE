@@ -470,7 +470,9 @@ function escHtml(s){
       window._fbSolicitarEntrada = function(nombre){
         var settled = false;
         var sdkDone = false, restDone = false;
-        var payload = { nombre: nombre, ts: Date.now() };
+        // Cota de tamaño: el nombre lo controla el candidato y se escribe a
+        // una base compartida — sin límite se puede inflar/abusar la DB.
+        var payload = { nombre: String(nombre||'').slice(0,80), ts: Date.now() };
         var restUrl = firebaseConfig.databaseURL + '/salas/' + encodeURIComponent(salaId) + '/knock.json';
 
         function showStatus(html){
@@ -1074,7 +1076,7 @@ function escHtml(s){
       <div style="background:var(--s1);border:1px solid var(--db);border-radius:14px;padding:28px;display:flex;flex-direction:column;gap:16px">
         <div style="text-align:left">
           <label style="font-size:12px;color:#7dd3d3;font-weight:700;display:block;margin-bottom:6px">Tu nombre</label>
-          <input id="sala-espera-nombre" type="text" placeholder="Nombre completo del candidato" style="width:100%;box-sizing:border-box;background:var(--s2);border:1px solid var(--db);border-radius:8px;padding:10px 14px;color:#e0f2f2;font-size:14px;outline:none" />
+          <input id="sala-espera-nombre" type="text" maxlength="80" placeholder="Nombre completo del candidato" style="width:100%;box-sizing:border-box;background:var(--s2);border:1px solid var(--db);border-radius:8px;padding:10px 14px;color:#e0f2f2;font-size:14px;outline:none" />
         </div>
         <button id="sala-espera-btn" onclick="solicitarEntrada()" style="background:var(--teal);color:#fff;border:none;border-radius:10px;padding:13px 20px;font-size:14px;font-weight:800;cursor:pointer;transition:opacity .2s">🔔 Solicitar entrada</button>
         <div id="sala-espera-status" style="display:none;text-align:center;font-size:13px;color:#7dd3d3;padding:10px;background:rgba(13,115,115,.1);border:1px solid rgba(13,115,115,.3);border-radius:8px">
@@ -1227,7 +1229,7 @@ function escHtml(s){
           </div>
           <div id="cand-chat-msgs" style="max-height:150px;overflow-y:auto;padding:8px 10px;display:flex;flex-direction:column;gap:6px;font-size:11px"></div>
           <div style="display:flex;gap:6px;padding:6px 8px;border-top:1px solid var(--db)">
-            <input id="cand-chat-input" placeholder="Escribe un mensaje…" style="flex:1;background:rgba(13,115,115,.1);border:1px solid var(--db);border-radius:6px;padding:5px 8px;color:#e0f2f2;font-size:11px" onkeydown="if(event.key==='Enter')sendCandChat()">
+            <input id="cand-chat-input" maxlength="1000" placeholder="Escribe un mensaje…" style="flex:1;background:rgba(13,115,115,.1);border:1px solid var(--db);border-radius:6px;padding:5px 8px;color:#e0f2f2;font-size:11px" onkeydown="if(event.key==='Enter')sendCandChat()">
             <button onclick="sendCandChat()" style="background:var(--teal);border:none;color:#fff;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">➤</button>
           </div>
         </div>
@@ -1560,7 +1562,7 @@ function escHtml(s){
       <button class="tab-btn" id="tab3" onclick="switchPanel(3)">📂 Historial</button>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
-      <input id="cand-name" placeholder="Nombre del candidato…" style="width:180px;font-size:12px">
+      <input id="cand-name" maxlength="80" placeholder="Nombre del candidato…" style="width:180px;font-size:12px">
       <input id="cand-date" type="date" style="font-size:12px;width:140px">
       <button id="btn-aprobar-sala3" onclick="admitirCandidato()" disabled title="Sin solicitudes pendientes" style="background:var(--s2);border:2px solid #3a5a5a;color:#3a6a6a;padding:5px 12px;border-radius:6px;font-size:11px;font-weight:800;cursor:not-allowed;transition:all .3s;white-space:nowrap">✅ Aprobar sala</button>
       <button onclick="showView('home')" style="background:transparent;border:1px solid var(--db);color:#7dd3d3;padding:5px 10px;border-radius:6px;font-size:11px">← Inicio</button>
@@ -1743,7 +1745,7 @@ function escHtml(s){
           </div>
           <div id="iv-chat-msgs" style="flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;min-height:0"></div>
           <div style="display:flex;gap:6px;padding:8px 10px;border-top:1px solid rgba(13,115,115,.15);flex-shrink:0">
-            <input id="iv-chat-input" placeholder="Escribe un mensaje…" style="flex:1;background:rgba(13,115,115,.08);border:1px solid rgba(13,115,115,.3);border-radius:10px;padding:7px 12px;color:#e0f2f2;font-size:12px" onkeydown="if(event.key==='Enter')sendIvChat()">
+            <input id="iv-chat-input" maxlength="1000" placeholder="Escribe un mensaje…" style="flex:1;background:rgba(13,115,115,.08);border:1px solid rgba(13,115,115,.3);border-radius:10px;padding:7px 12px;color:#e0f2f2;font-size:12px" onkeydown="if(event.key==='Enter')sendIvChat()">
             <button onclick="sendIvChat()" style="background:var(--teal);border:none;color:#fff;padding:7px 14px;border-radius:10px;font-size:14px;cursor:pointer;font-weight:800;transition:opacity .2s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">➤</button>
           </div>
         </div>
@@ -1999,6 +2001,10 @@ let selectedSector = 'all';
 function escHtml(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
+// Tope de tamaño para la transcripción que se escribe a la base compartida.
+// Una entrevista real no supera unos miles de caracteres; el límite evita
+// que un cliente malicioso infle la base (costo / denegación de servicio).
+function _capTranscript(s){ return String(s||'').slice(0,20000); }
 
 // ============================================================
 // OCCUPATION DATABASE — 100 OCCUPATIONS, 8 SECTORS
@@ -3674,9 +3680,19 @@ function hasIAConfigured(){ return !!(getApiKey() || getProxyUrl()); }
 // el evaluador cree que corre con IA y el informe salga con la heurística
 // (la clave vive en localStorage: configurarla en Chrome no la pone en
 // Edge ni en el navegador integrado de Teams).
+let _analyzeInFlight = false;
 function analyzeSmart(){
-  if(hasIAConfigured()) analyzeWithAI();
-  else analyzeLocalOnly();
+  // Anti-doble-clic: evita disparar dos análisis (o dos llamadas a Gemini)
+  // en paralelo si el botón se toca repetidamente.
+  if(_analyzeInFlight) return;
+  _analyzeInFlight = true;
+  const mainBtn = document.getElementById('analyze-main-btn');
+  if(mainBtn) mainBtn.disabled = true;
+  Promise.resolve(hasIAConfigured() ? analyzeWithAI() : analyzeLocalOnly())
+    .finally(function(){
+      _analyzeInFlight = false;
+      if(mainBtn) mainBtn.disabled = false;
+    });
 }
 function updateAnalysisButtons(){
   const b = document.getElementById('analyze-main-btn');
@@ -4848,9 +4864,25 @@ function broadcastClear(){
 }
 function pingCandidateView(){ if(bc) bc.postMessage({type:'ping'}); }
 
+// ID de sala con aleatoriedad criptográfica y 10 caracteres. Math.random()
+// no es criptográfico (predecible) y 6 caracteres eran enumerables; con la
+// base de datos endurecida esto vuelve inviable adivinar/barrer salas ajenas.
+function _generarSalaId(){
+  const alfabeto = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sin O/0/I/1/L ambiguos
+  const n = 10;
+  let out = '';
+  if(window.crypto && crypto.getRandomValues){
+    const buf = new Uint8Array(n);
+    crypto.getRandomValues(buf);
+    for(let i=0;i<n;i++) out += alfabeto[buf[i] % alfabeto.length];
+  } else {
+    for(let i=0;i<n;i++) out += alfabeto[Math.floor(Math.random()*alfabeto.length)];
+  }
+  return out;
+}
 function openCandidateView(){
-  // Generar código de sala único
-  const salaId = Math.random().toString(36).slice(2,8).toUpperCase();
+  // Generar código de sala único (criptográfico)
+  const salaId = _generarSalaId();
   window._activeSalaId = salaId;
   const s = document.getElementById('_sala-id-store'); if(s) s.value = salaId;
   try{ localStorage.setItem('ane_sala_id', salaId); }catch(e){}
@@ -5493,13 +5525,16 @@ function _candSRSession(){
     if(it) it.textContent=interim;
     if(sid && typeof window._fbSetReliable==='function'){
       clearTimeout(_candFbTimer);
+      // Tope de tamaño al escribir a la base compartida (una entrevista real
+      // no supera unos miles de caracteres; el límite corta abusos/inflado).
+      const fin = _capTranscript(candFinalTranscript), inte = String(interim||'').slice(0,2000);
       if(candFinalTranscript!==prevFinal){
         // Texto final nuevo: escribir de inmediato
-        window._fbSetReliable('salas/'+sid+'/transcript',{final:candFinalTranscript,interim:interim,ts:Date.now()});
+        window._fbSetReliable('salas/'+sid+'/transcript',{final:fin,interim:inte,ts:Date.now()});
       } else {
         // Solo interim: debounce 500ms para no saturar Firebase
         _candFbTimer=setTimeout(()=>{
-          window._fbSetReliable('salas/'+sid+'/transcript',{final:candFinalTranscript,interim:interim,ts:Date.now()});
+          window._fbSetReliable('salas/'+sid+'/transcript',{final:fin,interim:inte,ts:Date.now()});
         },500);
       }
     }
@@ -5553,7 +5588,7 @@ function stopCandRecording(){
   const params=new URLSearchParams(window.location.search);
   const sid=params.get('sala');
   if(sid && typeof window._fbSetReliable==='function'){
-    window._fbSetReliable('salas/'+sid+'/transcript',{final:candFinalTranscript||'',interim:'',ts:Date.now()});
+    window._fbSetReliable('salas/'+sid+'/transcript',{final:_capTranscript(candFinalTranscript),interim:'',ts:Date.now()});
   }
 }
 function setCandRecStatus(on){
@@ -5642,8 +5677,14 @@ document.addEventListener('visibilitychange', function(){
   }
 });
 
+let _knockLast = 0;
 function solicitarEntrada(){
-  const nombre=(document.getElementById('sala-espera-nombre').value||'').trim();
+  // Anti-flood: como el knock escribe a una base compartida, se limita a un
+  // envío cada 3s para que un clic repetido no inunde la sala.
+  const ahora = Date.now();
+  if(ahora - _knockLast < 3000) return;
+  _knockLast = ahora;
+  const nombre=(document.getElementById('sala-espera-nombre').value||'').trim().slice(0,80);
   if(!nombre){
     document.getElementById('sala-espera-nombre').style.borderColor='#ef4444';
     document.getElementById('sala-espera-nombre').focus();
@@ -6070,7 +6111,7 @@ window._applyIvBgIfSaved = function(){
 // ── CHAT EN TIEMPO REAL ─────────────────────────
 function sendIvChat(){
   const inp=document.getElementById('iv-chat-input');
-  const text=(inp?.value||'').trim(); if(!text) return;
+  const text=(inp?.value||'').trim().slice(0,1000); if(!text) return;
   const salaId=window._activeSalaId || document.getElementById('_sala-id-store')?.value;
   if(!salaId){ showToast('Sin sala activa — abre la vista candidato primero','#ef4444'); return; }
   if(typeof firebase==='undefined'){ showToast('Firebase no disponible','#ef4444'); return; }
@@ -6080,12 +6121,12 @@ function sendIvChat(){
 
 function sendCandChat(){
   const inp=document.getElementById('cand-chat-input');
-  const text=(inp?.value||'').trim(); if(!text) return;
+  const text=(inp?.value||'').trim().slice(0,1000); if(!text) return;
   const params=new URLSearchParams(window.location.search);
   const sid=params.get('sala');
   if(!sid){ showToast('Sin código de sala en URL','#ef4444'); return; }
   if(typeof firebase==='undefined'){ showToast('Firebase no disponible','#ef4444'); return; }
-  const nombre=document.getElementById('sala-espera-nombre')?.value||'Candidato';
+  const nombre=(document.getElementById('sala-espera-nombre')?.value||'Candidato').slice(0,80);
   firebase.database().ref('salas/'+sid+'/chat').push({text, role:'cand', nombre, ts:Date.now()});
   inp.value='';
   document.getElementById('cand-chat-badge').style.display='none';
@@ -6130,7 +6171,12 @@ function activarBtnAprobar(nombre){
     b.style.border = '2px solid #4ade80';
     b.style.color = '#fff';
     b.style.cursor = 'pointer';
-    b.innerHTML = id === 'btn-aprobar-sala3' ? '✅ Aprobar — ' + nombre : '✅ Aprobar sala — ' + nombre;
+    // El nombre lo controla el candidato (llega por el knock de Firebase) —
+    // se ESCAPA antes de inyectarlo como HTML. Sin esto, un knock con nombre
+    // '<img src=x onerror=...>' ejecutaba código en el navegador del asesor
+    // (XSS almacenado) al robar su clave de Gemini o su sesión.
+    const nombreSeguro = escHtml(String(nombre||'Candidato').slice(0,80));
+    b.innerHTML = id === 'btn-aprobar-sala3' ? '✅ Aprobar — ' + nombreSeguro : '✅ Aprobar sala — ' + nombreSeguro;
     b.classList.add('blink');
   });
 }

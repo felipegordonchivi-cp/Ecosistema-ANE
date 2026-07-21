@@ -1,13 +1,65 @@
 {
+  "//": "Reglas endurecidas para el Simulador de Entrevistas ANE. El candidato es anónimo por diseño (no hay login), así que el control no es por usuario sino ESTRUCTURAL: solo se permiten los campos conocidos de una sala, con tipos y tamaños acotados, y se bloquea todo lo demás ($other:false). Publicar en: consola de Firebase -> Realtime Database -> Reglas. RECOMENDADO ADEMÁS: activar App Check (reCAPTCHA) para que solo el dominio oficial pueda leer/escribir.",
   "rules": {
+    ".read": false,
+    ".write": false,
     "salas": {
       "$salaId": {
-        ".read": true,
-        ".write": true,
-        ".validate": "newData.hasChildren() || newData.val() === null"
+        ".read": "$salaId.length >= 6 && $salaId.length <= 24",
+        ".write": "$salaId.length >= 6 && $salaId.length <= 24",
+        ".validate": "newData.hasChildren() || newData.val() === null",
+
+        "estado": { ".validate": "newData.isString() && newData.val().length <= 20" },
+        "finalizada": { ".validate": "newData.isBoolean()" },
+
+        "ping": {
+          ".validate": "newData.hasChild('ts')",
+          "ts": { ".validate": "newData.isNumber()" },
+          "$other": { ".validate": false }
+        },
+
+        "knock": {
+          ".validate": "newData.hasChildren(['nombre','ts'])",
+          "nombre": { ".validate": "newData.isString() && newData.val().length <= 80" },
+          "ts": { ".validate": "newData.isNumber()" },
+          "$other": { ".validate": false }
+        },
+
+        "pregunta": {
+          "q": { ".validate": "newData.isString() && newData.val().length <= 2000" },
+          "qNum": { ".validate": "newData.isNumber()" },
+          "profName": { ".validate": "newData.isString() && newData.val().length <= 200" },
+          "qType": { ".validate": "newData.isString() && newData.val().length <= 20" },
+          "$other": { ".validate": false }
+        },
+
+        "transcript": {
+          "final": { ".validate": "newData.isString() && newData.val().length <= 20000" },
+          "interim": { ".validate": "newData.isString() && newData.val().length <= 2000" },
+          "ts": { ".validate": "newData.isNumber()" },
+          "$other": { ".validate": false }
+        },
+
+        "chat": {
+          "$msgId": {
+            ".validate": "newData.hasChildren(['text','ts'])",
+            "text": { ".validate": "newData.isString() && newData.val().length <= 1000" },
+            "role": { ".validate": "newData.isString() && newData.val().length <= 10" },
+            "nombre": { ".validate": "newData.isString() && newData.val().length <= 80" },
+            "ts": { ".validate": "newData.isNumber()" },
+            "$other": { ".validate": false }
+          }
+        },
+
+        "webrtc-offer":     { ".validate": "newData.hasChildren() || newData.val() === null" },
+        "webrtc-answer":    { ".validate": "newData.hasChildren() || newData.val() === null" },
+        "webrtc-reoffer":   { ".validate": "newData.hasChildren() || newData.val() === null" },
+        "webrtc-reanswer":  { ".validate": "newData.hasChildren() || newData.val() === null" },
+        "ice-cand": { "$id": { ".validate": "newData.hasChildren() || newData.val() === null" } },
+        "ice-iv":   { "$id": { ".validate": "newData.hasChildren() || newData.val() === null" } },
+
+        "$other": { ".validate": false }
       }
-    },
-    ".read": false,
-    ".write": false
+    }
   }
 }
