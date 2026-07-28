@@ -572,7 +572,7 @@
             <!-- Competencias / palabras clave -->
       <div class="panel">
         <div class="panel-title"><span class="tagnum">C</span> Competencias y palabras clave</div>
-        <p class="panel-desc">Habilidades que el ATS buscará en el CV. Asigne un <b>peso</b> (1 = bajo, 5 = crítico) y marque si es <b>obligatoria</b>. Puede indicar el nivel exigido (“Excel intermedio”, “SQL avanzado”): el ATS acredita la competencia cuando el nivel del CV es <b>igual o mayor</b> al solicitado.</p>
+        <p class="panel-desc">Habilidades que el ATS buscará en el CV. Asigne un <b>peso</b> (1 = bajo, 5 = crítico) y marque si es <b>obligatoria</b>. Puede indicar el nivel exigido (“Excel intermedio”, “SQL avanzado”): el ATS acredita la competencia cuando el nivel del CV es <b>igual o mayor</b> al solicitado. Una competencia listada sin nivel en el CV cuenta como básica.</p>
         
         <!-- Competencias Técnicas -->
         <div style="margin-bottom:16px;">
@@ -764,7 +764,7 @@
       <div class="sec-body">
         <p>El motor normaliza el texto del CV (minúsculas, sin acentos) y evalúa cinco categorías, cada una de 0 a 100, ponderadas según los pesos configurados:</p>
         <ul>
-          <li><b>Competencias:</b> proporción de palabras clave halladas, ponderada por el peso de cada una. Si la competencia incluye un nivel (“Excel intermedio”, “SQL avanzado”), se compara con el nivel acreditado en el CV: <b>un nivel igual o mayor al exigido acredita la competencia</b> (un CV con “Excel avanzado” cumple “Excel intermedio”). En un rango (“intermedio–avanzado”) se exige el extremo menor. Si el CV menciona la competencia sin declarar nivel, se acredita cuando lo exigido es básico o intermedio; para avanzado o experto se requiere evidencia explícita.</li>
+          <li><b>Competencias:</b> proporción de palabras clave halladas, ponderada por el peso de cada una. Si la competencia incluye un nivel (“Excel intermedio”, “SQL avanzado”), se compara con el nivel acreditado en el CV: <b>un nivel igual o mayor al exigido acredita la competencia</b> (un CV con “Excel avanzado” cumple “Excel intermedio”). En un rango (“intermedio–avanzado”) se exige el extremo menor. Si el CV menciona la competencia sin declarar nivel (“Word, Excel, PowerPoint”), se toma como <b>básico</b>: acredita “Excel básico”, pero no “Excel intermedio”.</li>
           <li><b>Experiencia:</b> años detectados (por menciones explícitas o rango de fechas) frente al mínimo requerido.</li>
           <li><b>Educación:</b> nivel académico más alto detectado frente al exigido.</li>
           <li><b>Certificaciones:</b> proporción de certificaciones deseadas presentes.</li>
@@ -937,8 +937,9 @@ document.addEventListener('click', function(e){
      - Competencia ausente del CV                             → no cumple.
      - Nivel del CV >= nivel exigido                          → CUMPLE.
      - Nivel del CV <  nivel exigido                          → no cumple.
-     - Competencia mencionada sin declarar nivel → cumple si lo exigido es
-       básico o intermedio; para avanzado/experto se pide evidencia explícita.
+     - Competencia mencionada sin declarar nivel → cuenta como BÁSICO. Un CV que
+       lista "Word, Excel, PowerPoint" acredita "Excel básico", no "Excel
+       intermedio": para un nivel mayor debe declararlo.
 
    Afecta a competencias, filtros, certificaciones y a las competencias ESCO
    de la ruta de crecimiento. Los idiomas siguen evaluándose con MCER.
@@ -963,6 +964,9 @@ document.addEventListener('click', function(e){
     { re:/\b(basico|basica|basicos|basicas|elemental|elementales|principiante|inicial|nociones|basic|beginner)\b/, n:1 }
   ];
   ESCALA.forEach(function(e){ e.reG = new RegExp(e.re.source,'g'); });
+
+  /* Competencia mencionada en el CV sin declarar nivel: se asume básico. */
+  var NIVEL_IMPLICITO = 1;
 
   /* Palabras que acompañan al nivel y no forman parte de la competencia. */
   var CONECTORES = /\b(nivel|niveles|de|del|en|con|grado|manejo|dominio|conocimiento|conocimientos)\b/g;
@@ -1037,7 +1041,7 @@ document.addEventListener('click', function(e){
     if(!exig) return matchBase(texto, termino);                     // sin nivel: motor original
     if(!matchBase(texto, exig.base)) return matchBase(texto, termino); // competencia ausente
     var det = nivelAcreditado(texto, exig.base);
-    if(det === null) return exig.req <= 2;                          // mencionada sin nivel declarado
+    if(det === null) det = NIVEL_IMPLICITO;                         // mencionada sin nivel: básico
     return det >= exig.req;                                         // el nivel mayor acredita
   };
 
@@ -1045,12 +1049,14 @@ document.addEventListener('click', function(e){
   window.evaluarNivelCompetencia = function(texto, termino){
     var exig = parseExigencia(termino);
     if(!exig) return { termino: termino, conNivel: false };
+    var det = nivelAcreditado(texto, exig.base);
     return {
       termino: termino,
       conNivel: true,
       base: exig.base,
       exigido: exig.req,
-      detectado: nivelAcreditado(texto, exig.base),
+      declarado: det,                                  // null si el CV no lo declara
+      evaluado: (det === null) ? NIVEL_IMPLICITO : det, // sin declarar se toma básico
       cumple: window.matchKW(texto, termino)
     };
   };
