@@ -572,7 +572,7 @@
             <!-- Competencias / palabras clave -->
       <div class="panel">
         <div class="panel-title"><span class="tagnum">C</span> Competencias y palabras clave</div>
-        <p class="panel-desc">Habilidades que el ATS buscará en el CV. Asigne un <b>peso</b> (1 = bajo, 5 = crítico) y marque si es <b>obligatoria</b>.</p>
+        <p class="panel-desc">Habilidades que el ATS buscará en el CV. Asigne un <b>peso</b> (1 = bajo, 5 = crítico) y marque si es <b>obligatoria</b>. Puede indicar el nivel exigido (“Excel intermedio”, “SQL avanzado”): el ATS acredita la competencia cuando el nivel del CV es <b>igual o mayor</b> al solicitado. Una competencia listada sin nivel en el CV cuenta como básica.</p>
         
         <!-- Competencias Técnicas -->
         <div style="margin-bottom:16px;">
@@ -764,7 +764,7 @@
       <div class="sec-body">
         <p>El motor normaliza el texto del CV (minúsculas, sin acentos) y evalúa cinco categorías, cada una de 0 a 100, ponderadas según los pesos configurados:</p>
         <ul>
-          <li><b>Competencias:</b> proporción de palabras clave halladas, ponderada por el peso de cada una.</li>
+          <li><b>Competencias:</b> proporción de palabras clave halladas, ponderada por el peso de cada una. Si la competencia incluye un nivel (“Excel intermedio”, “SQL avanzado”), se compara con el nivel acreditado en el CV: <b>un nivel igual o mayor al exigido acredita la competencia</b> (un CV con “Excel avanzado” cumple “Excel intermedio”). En un rango (“intermedio–avanzado”) se exige el extremo menor. Si el CV menciona la competencia sin declarar nivel (“Word, Excel, PowerPoint”), se toma como <b>básico</b>: acredita “Excel básico”, pero no “Excel intermedio”.</li>
           <li><b>Experiencia:</b> años detectados (por menciones explícitas o rango de fechas) frente al mínimo requerido.</li>
           <li><b>Educación:</b> nivel académico más alto detectado frente al exigido.</li>
           <li><b>Certificaciones:</b> proporción de certificaciones deseadas presentes.</li>
@@ -913,6 +913,152 @@ document.addEventListener('click', function(e){
         }
       }, 100);
     });
+  };
+})();
+</script>
+
+<script>
+/* ============================================================================
+   Coincidencia de competencias por NIVEL de dominio.
+
+   Problema: las competencias se escriben con su nivel ("Excel avanzado",
+   "Excel intermedio–avanzado", "SQL avanzado", "SEO básico"). El motor
+   original (matchKW) exige que la frase completa aparezca en el CV, de modo
+   que un CV con "Excel avanzado" NO acreditaba una vacante que pedía
+   "Excel intermedio", pese a superar el nivel exigido.
+
+   Este parche envuelve matchKW: separa la competencia de su nivel, detecta el
+   nivel acreditado en el CV y da la competencia por cumplida cuando el nivel
+   del CV es igual o mayor al exigido. Es el mismo criterio que el motor ya
+   aplica a educación (rank >= eduMin) e idiomas (MCER_RANK >= requerido).
+
+   Reglas:
+     - Competencia sin nivel en el término ("SQL", "Power BI") → motor original.
+     - Competencia ausente del CV                             → no cumple.
+     - Nivel del CV >= nivel exigido                          → CUMPLE.
+     - Nivel del CV <  nivel exigido                          → no cumple.
+     - Competencia mencionada sin declarar nivel → cuenta como BÁSICO. Un CV que
+       lista "Word, Excel, PowerPoint" acredita "Excel básico", no "Excel
+       intermedio": para un nivel mayor debe declararlo.
+
+   Afecta a competencias, filtros, certificaciones y a las competencias ESCO
+   de la ruta de crecimiento. Los idiomas siguen evaluándose con MCER.
+   ========================================================================== */
+(function(){
+  'use strict';
+  if(typeof window.matchKW !== 'function') return; // el motor no cargó
+
+  var matchBase = window.matchKW;
+
+  var normalizar = (typeof window.norm === 'function') ? window.norm : function(t){
+    return (t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase()
+      .replace(/[^a-z0-9.+#\s]/g,' ').replace(/\s+/g,' ').trim();
+  };
+
+  /* Escala de dominio. 2.5 intercala "intermedio alto" entre intermedio y avanzado. */
+  var ESCALA = [
+    { re:/\b(experto|experta|expertos|expertas|especialista|dominio total|master)\b/,        n:4   },
+    { re:/\b(avanzado|avanzada|avanzados|avanzadas|advanced|nivel alto|alto nivel|superior)\b/, n:3 },
+    { re:/\b(intermedio alto|intermedia alta|upper intermediate)\b/,                          n:2.5 },
+    { re:/\b(intermedio|intermedia|intermedios|intermedias|intermediate|nivel medio)\b/,      n:2   },
+    { re:/\b(basico|basica|basicos|basicas|elemental|elementales|principiante|inicial|nociones|basic|beginner)\b/, n:1 }
+  ];
+  ESCALA.forEach(function(e){ e.reG = new RegExp(e.re.source,'g'); });
+
+  /* Competencia mencionada en el CV sin declarar nivel: se asume básico. */
+  var NIVEL_IMPLICITO = 1;
+
+  /* Palabras que acompañan al nivel y no forman parte de la competencia. */
+  var CONECTORES = /\b(nivel|niveles|de|del|en|con|grado|manejo|dominio|conocimiento|conocimientos)\b/g;
+
+  function nivelesEn(txt){
+    var out = [];
+    for(var i=0;i<ESCALA.length;i++){ if(ESCALA[i].re.test(txt)) out.push(ESCALA[i].n); }
+    return out;
+  }
+
+  /* "Excel intermedio–avanzado" → { base:'excel', req:2 }.
+     En un rango se toma el extremo menor: es el mínimo aceptable. */
+  function parseExigencia(termino){
+    var t = normalizar(termino);
+    if(!t) return null;
+    var niveles = nivelesEn(t);
+    if(!niveles.length) return null;
+    var base = t;
+    for(var i=0;i<ESCALA.length;i++){ base = base.replace(ESCALA[i].reG,' '); }
+    base = base.replace(CONECTORES,' ').replace(/\s+/g,' ').trim();
+    if(base.length < 2) return null;              // el término era solo un nivel
+    return { base: base, req: Math.min.apply(null, niveles) };
+  }
+
+  /* Texto del CV con marcas "|" en los separadores, para no leer el nivel de
+     otra competencia de la misma lista ("Excel básico, Power BI avanzado"). */
+  var cacheRaw = null, cacheTxt = '';
+  function segmentar(texto){
+    if(texto === cacheRaw) return cacheTxt;
+    cacheRaw = texto;
+    cacheTxt = (texto||'')
+      .replace(/\.(?=\s|$)/g,' | ')
+      .normalize('NFD').replace(/[̀-ͯ]/g,'')
+      .toLowerCase()
+      .replace(/[\n\r;,:\/()\[\]•·|]/g,' | ')
+      .replace(/[^a-z0-9.+#\s|]/g,' ')
+      .replace(/\s+/g,' ').trim();
+    return cacheTxt;
+  }
+
+  function esLimite(c){ return !c || !/[a-z0-9]/.test(c); }
+
+  /* Mayor nivel declarado junto a alguna mención de la competencia. */
+  function nivelAcreditado(texto, base){
+    var txt = segmentar(texto);
+    if(!txt) return null;
+    var variantes = (typeof window.variantesDe === 'function')
+      ? window.variantesDe(base) : [normalizar(base)];
+    var mejor = null;
+    for(var v=0; v<variantes.length; v++){
+      var term = variantes[v];
+      if(!term || term.length < 2) continue;
+      var desde = 0, i;
+      while((i = txt.indexOf(term, desde)) !== -1){
+        desde = i + term.length;
+        if(!esLimite(txt.charAt(i-1)) || !esLimite(txt.charAt(desde))) continue; // "excel" en "excelente"
+        var ini = txt.lastIndexOf('|', i); ini = (ini === -1) ? 0 : ini + 1;
+        var fin = txt.indexOf('|', desde); fin = (fin === -1) ? txt.length : fin;
+        if(fin - ini > 200){ ini = Math.max(ini, i - 90); fin = Math.min(fin, desde + 90); }
+        var niveles = nivelesEn(txt.slice(ini, fin));
+        if(niveles.length){
+          var m = Math.max.apply(null, niveles);
+          if(mejor === null || m > mejor) mejor = m;
+        }
+      }
+    }
+    return mejor;
+  }
+
+  window.matchKW = function matchKW(texto, termino){
+    var exig = parseExigencia(termino);
+    if(!exig) return matchBase(texto, termino);                     // sin nivel: motor original
+    if(!matchBase(texto, exig.base)) return matchBase(texto, termino); // competencia ausente
+    var det = nivelAcreditado(texto, exig.base);
+    if(det === null) det = NIVEL_IMPLICITO;                         // mencionada sin nivel: básico
+    return det >= exig.req;                                         // el nivel mayor acredita
+  };
+
+  /* Auxiliar de verificación: evaluarNivelCompetencia(textoCV, 'Excel intermedio') */
+  window.evaluarNivelCompetencia = function(texto, termino){
+    var exig = parseExigencia(termino);
+    if(!exig) return { termino: termino, conNivel: false };
+    var det = nivelAcreditado(texto, exig.base);
+    return {
+      termino: termino,
+      conNivel: true,
+      base: exig.base,
+      exigido: exig.req,
+      declarado: det,                                  // null si el CV no lo declara
+      evaluado: (det === null) ? NIVEL_IMPLICITO : det, // sin declarar se toma básico
+      cumple: window.matchKW(texto, termino)
+    };
   };
 })();
 </script>
