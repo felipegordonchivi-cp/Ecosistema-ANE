@@ -6168,13 +6168,24 @@ function uploadIvBg(file){
   const url = URL.createObjectURL(file);
   img.onload = function(){
     URL.revokeObjectURL(url);
-    // Reescalar a máx. 1280px de ancho y guardar como JPEG comprimido para
-    // no llenar localStorage (límite típico ~5MB por origen).
-    const scale = Math.min(1, 1280/img.width);
+    // Reescalar y guardar como JPEG para no llenar localStorage (~5MB por
+    // origen). Antes se limitaba a 1280px con calidad 0.82: en una pantalla
+    // grande el fondo se ampliaba y se veía blando. Se sube a 1920px y a
+    // calidad 0.92, con reintento progresivo si no cabe en el almacenamiento.
     const cv = document.createElement('canvas');
-    cv.width = Math.round(img.width*scale); cv.height = Math.round(img.height*scale);
-    cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
-    const dataUrl = cv.toDataURL('image/jpeg', 0.82);
+    const cx = cv.getContext('2d');
+    let dataUrl = null;
+    const intentos = [[1920,0.92],[1600,0.9],[1280,0.85],[1280,0.7]];
+    for(const [maxW,q] of intentos){
+      const scale = Math.min(1, maxW/img.width);
+      cv.width = Math.round(img.width*scale); cv.height = Math.round(img.height*scale);
+      cx.imageSmoothingEnabled = true; cx.imageSmoothingQuality = 'high';
+      cx.drawImage(img, 0, 0, cv.width, cv.height);
+      const intento = cv.toDataURL('image/jpeg', q);
+      // ~1.4MB de dataURL es un tamaño que localStorage acepta con holgura
+      if(intento.length < 1400000){ dataUrl = intento; break; }
+      dataUrl = intento;
+    }
     try{
       localStorage.setItem('ane_iv_bg_custom', dataUrl);
     }catch(e){
@@ -6220,6 +6231,11 @@ function _ivBgOnResults(results){
   if(!ivBgCtx || !ivBgImage) return;
   const w = ivBgCanvas.width, h = ivBgCanvas.height;
   ivBgCtx.save();
+  // La máscara de segmentación es mucho más pequeña que el lienzo (256×256)
+  // y hay que ampliarla; sin interpolación de calidad los bordes de la
+  // persona salen dentados y el conjunto se ve sucio.
+  ivBgCtx.imageSmoothingEnabled = true;
+  ivBgCtx.imageSmoothingQuality = 'high';
   ivBgCtx.clearRect(0,0,w,h);
   // 1) máscara de la persona
   ivBgCtx.drawImage(results.segmentationMask, 0, 0, w, h);
@@ -6254,7 +6270,11 @@ async function applyIvBackground(){
   }
   if(!ivSegmenter){
     ivSegmenter = new SelfieSegmentation({locateFile:function(f){ return 'https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/'+f; }});
-    ivSegmenter.setOptions({modelSelection:1});
+    // modelSelection 0 = modelo general, máscara de 256×256.
+    // modelSelection 1 = modelo "landscape", de solo 144×256: más rápido pero
+    // con la mitad de detalle vertical, que es lo que hacía verse borroso el
+    // recorte de la persona al ampliarlo a 720p.
+    ivSegmenter.setOptions({modelSelection:0});
     ivSegmenter.onResults(_ivBgOnResults);
   }
 
@@ -6271,17 +6291,38 @@ async function applyIvBackground(){
   const st = ivRawVideoTrack.getSettings ? ivRawVideoTrack.getSettings() : {};
   if(!ivBgCanvas){ ivBgCanvas = document.createElement('canvas'); ivBgCtx = ivBgCanvas.getContext('2d'); }
   ivBgCanvas.width = st.width || 1280; ivBgCanvas.height = st.height || 720;
+  // Asignar width/height reinicia el estado del contexto, así que el
+  // suavizado debe fijarse DESPUÉS de las dimensiones.
+  ivBgCtx.imageSmoothingEnabled = true;
+  ivBgCtx.imageSmoothingQuality = 'high';
 
   if(!ivBgStream){
-    ivBgStream = ivBgCanvas.captureStream(24);
+    ivBgStream = ivBgCanvas.captureStream(30);
   }
   const outTrack = ivBgStream.getVideoTracks()[0];
+  // Sin esta pista de contexto el codificador trata el lienzo como contenido
+  // estático y castiga la fluidez.
+  try{ outTrack.contentHint = 'motion'; }catch(e){}
 
   // Reemplazar la pista que ve el candidato (WebRTC) y el preview local
   const pc = window._ivPC;
   if(pc){
     const sender = pc.getSenders().find(function(s){ return s.track && s.track.kind==='video'; });
-    if(sender) await sender.replaceTrack(outTrack);
+    if(sender){
+      await sender.replaceTrack(outTrack);
+      // Al sustituir la cámara por un lienzo, el codificador tiende a bajar
+      // la resolución ante cualquier estrechez de red — de ahí la imagen
+      // borrosa. Se le pide conservar resolución (sacrificando cuadros por
+      // segundo, que se nota mucho menos) y un caudal suficiente para 720p.
+      try{
+        const prm = sender.getParameters();
+        prm.degradationPreference = 'maintain-resolution';
+        if(!prm.encodings || !prm.encodings.length) prm.encodings = [{}];
+        prm.encodings[0].maxBitrate = 2500000;
+        prm.encodings[0].scaleResolutionDownBy = 1;
+        await sender.setParameters(prm);
+      }catch(e){ console.warn('[ANE] Parámetros de codificación del fondo virtual:', e); }
+    }
   }
   const prev = document.getElementById('iv-local-video');
   if(prev && prev.srcObject !== ivBgStream) prev.srcObject = ivBgStream;
