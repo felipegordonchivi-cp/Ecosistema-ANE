@@ -5877,18 +5877,17 @@ function finalizarEntrevista(){
 }
 
 function toggleIvMic(){
-  const btn = document.getElementById('iv-mic-btn');
+  // Sin pista de audio viva no hay nada que silenciar: antes el botón solo
+  // cambiaba una bandera y alternaba entre MIC ON y MIC OFF sin efecto —el
+  // micrófono "pegado"—. Ahora intenta recuperarlo de verdad, igual que el
+  // botón de cámara.
+  if(!ivMicUsable()){ reintentarMicEntrevistador(false); return; }
   ivMicMuted = !ivMicMuted;
   // Silenciar/activar en cualquier stream activo
   [ivCamStream, ivMicStream].forEach(function(s){
     if(s) s.getAudioTracks().forEach(function(t){ t.enabled = !ivMicMuted; });
   });
-  if(btn){
-    btn.className = 'iv-ctrl-btn ' + (ivMicMuted ? 'muted' : 'active');
-    btn.innerHTML = ivMicMuted
-      ? '<span style="font-size:18px">🔇</span>MIC OFF'
-      : '<span style="font-size:18px">🎙</span>MIC ON';
-  }
+  sincronizarMicUI();
 }
 
 function toggleIvCam(){
@@ -5941,8 +5940,10 @@ function reintentarCamaraEntrevistador(){
     if(btn){ btn.className='iv-ctrl-btn active'; btn.innerHTML='<span style="font-size:18px">📹</span>CAM ON'; }
     if(wantAudio){
       ivMicOn = true; ivMicMuted = false;
-      const mb = document.getElementById('iv-mic-btn');
-      if(mb){ mb.className='iv-ctrl-btn active'; mb.innerHTML='<span style="font-size:18px">🎙</span>MIC ON'; }
+      const atr = stream.getAudioTracks()[0] || null;
+      if(atr) vigilarMicTrack(atr);
+      sincronizarMicUI();
+      iniciarVigilanciaMic();
     }
     const pc  = window._ivPC;
     const sid = window._activeSalaId || document.getElementById('_sala-id-store')?.value;
@@ -5976,6 +5977,112 @@ function reintentarCamaraEntrevistador(){
       showToast('⚠️ No se pudo activar la cámara: '+errName+'. Toca CÁMARA para reintentar.', '#eab308');
     }
   }).finally(function(){ ivCamRetryBusy = false; });
+}
+
+// ── MICRÓFONO DEL ENTREVISTADOR ────────────────────────────────
+// Teams/Zoom retienen el micrófono. En Windows el navegador puede devolver
+// entonces una pista de audio MUDA (readyState 'live' pero muted:true) o
+// ninguna pista. Antes se pintaba "MIC ON" sin comprobarlo: el botón parecía
+// funcionar, el candidato no oía nada, y al cerrar Teams la pista muerta no
+// se recuperaba sola. La cámara ya tenía reintento; el micrófono no.
+function ivAudioTrack(){
+  var t = null;
+  if(ivCamStream && ivCamStream.getAudioTracks) t = ivCamStream.getAudioTracks()[0] || null;
+  if(!t && ivMicStream && ivMicStream.getAudioTracks) t = ivMicStream.getAudioTracks()[0] || null;
+  return t;
+}
+function ivMicUsable(){
+  var t = ivAudioTrack();
+  return !!(t && t.readyState === 'live' && !t.muted);
+}
+function pintarMicBtn(estado){
+  var mb = document.getElementById('iv-mic-btn');
+  if(!mb) return;
+  if(estado === 'on'){ mb.className='iv-ctrl-btn active'; mb.innerHTML='<span style="font-size:18px">🎙</span>MIC ON'; }
+  else if(estado === 'off'){ mb.className='iv-ctrl-btn muted'; mb.innerHTML='<span style="font-size:18px">🔇</span>MIC OFF'; }
+  else if(estado === 'activando'){ mb.className='iv-ctrl-btn'; mb.innerHTML='<span style="font-size:18px">⏳</span>ACTIVANDO…'; }
+  else { mb.className='iv-ctrl-btn muted'; mb.innerHTML='<span style="font-size:18px">⚠️</span>MIC EN USO'; }
+}
+function sincronizarMicUI(){
+  if(!ivMicOn){ pintarMicBtn('off'); return; }
+  if(ivMicMuted){ pintarMicBtn('off'); return; }
+  pintarMicBtn(ivMicUsable() ? 'on' : 'bloqueado');
+}
+// La pista avisa por sí misma cuando deja de fluir audio (otra app tomó el
+// dispositivo) y cuando vuelve a fluir (esa app lo soltó).
+function vigilarMicTrack(t){
+  if(!t || t._aneVigilada) return;
+  t._aneVigilada = true;
+  t.addEventListener('mute',   function(){ sincronizarMicUI(); });
+  t.addEventListener('unmute', function(){ sincronizarMicUI(); });
+  t.addEventListener('ended',  function(){ sincronizarMicUI(); });
+}
+let ivMicRetryBusy = false;
+function reintentarMicEntrevistador(silencioso){
+  if(ivMicRetryBusy) return Promise.resolve(false);
+  ivMicRetryBusy = true;
+  if(!silencioso) pintarMicBtn('activando');
+  return navigator.mediaDevices.getUserMedia({ audio:true, video:false }).then(function(s){
+    var nt = s.getAudioTracks()[0];
+    if(!nt || nt.muted) throw Object.assign(new Error('mic no disponible'), { name:'NotReadableError' });
+    // Soltar la pista muerta anterior para no dejar el dispositivo tomado.
+    var vieja = ivAudioTrack();
+    if(vieja && vieja !== nt){
+      try{ vieja.stop(); }catch(e){}
+      try{ if(ivCamStream && ivCamStream.getAudioTracks().indexOf(vieja) >= 0) ivCamStream.removeTrack(vieja); }catch(e){}
+      try{ if(ivMicStream && ivMicStream.getAudioTracks().indexOf(vieja) >= 0) ivMicStream.removeTrack(vieja); }catch(e){}
+    }
+    if(ivCamStream) { try{ ivCamStream.addTrack(nt); }catch(e){} } else { ivMicStream = s; }
+    ivMicOn = true; ivMicMuted = false;
+    vigilarMicTrack(nt);
+    // Enviar la pista nueva por la llamada en curso y renegociar, igual que
+    // hace el reintento de cámara.
+    var pc  = window._ivPC;
+    var sid = window._activeSalaId || document.getElementById('_sala-id-store')?.value;
+    if(pc){
+      var sender = pc.getSenders().find(function(x){ return x.track && x.track.kind === 'audio'; });
+      if(sender) sender.replaceTrack(nt).catch(function(){});
+      else pc.addTrack(nt, ivCamStream || s);
+      if(sid && pc.signalingState === 'stable' && pc.remoteDescription && typeof window._fbSendReoffer === 'function'){
+        pc.createOffer().then(function(o){ return pc.setLocalDescription(o); }).then(function(){
+          return window._fbSendReoffer(sid, pc.localDescription.toJSON());
+        }).catch(function(e){ console.warn('[ANE] Reoferta tras reactivar micrófono:', e); });
+      }
+    }
+    sincronizarMicUI();
+    if(!silencioso) showToast('✅ Micrófono activado — el candidato ya te escucha', '#16a34a');
+    return true;
+  }).catch(function(err){
+    var n = err && err.name || 'Error';
+    sincronizarMicUI();
+    if(!silencioso){
+      if(n === 'NotReadableError') showToast('⚠️ El micrófono sigue tomado por otra app (Teams/Zoom/Meet). Sal del audio de esa llamada y toca MIC de nuevo.', '#eab308');
+      else if(n === 'NotAllowedError') showToast('⚠️ Permiso de micrófono denegado — permítelo en la barra del navegador y toca MIC de nuevo.', '#eab308');
+      else showToast('⚠️ No se pudo activar el micrófono: '+n+'. Toca MIC para reintentar.', '#eab308');
+    }
+    return false;
+  }).finally(function(){ ivMicRetryBusy = false; });
+}
+// Al cerrar Teams el dispositivo queda libre, pero la pista muerta no se
+// recupera sola. Se reintenta en segundo plano por un tiempo acotado, y
+// también cuando el sistema informa un cambio de dispositivos.
+let ivMicVigilanciaId = null, ivMicIntentos = 0;
+function iniciarVigilanciaMic(){
+  if(ivMicVigilanciaId) return;
+  ivMicIntentos = 0;
+  ivMicVigilanciaId = setInterval(function(){
+    if(!ivMicOn || ivMicMuted){ return; }
+    if(ivMicUsable()){ ivMicIntentos = 0; sincronizarMicUI(); return; }
+    sincronizarMicUI();
+    if(ivMicIntentos >= 20){ clearInterval(ivMicVigilanciaId); ivMicVigilanciaId = null; return; }
+    ivMicIntentos++;
+    reintentarMicEntrevistador(true);
+  }, 4000);
+}
+if(navigator.mediaDevices && navigator.mediaDevices.addEventListener){
+  navigator.mediaDevices.addEventListener('devicechange', function(){
+    if(ivMicOn && !ivMicMuted && !ivMicUsable()) reintentarMicEntrevistador(true);
+  });
 }
 
 // ════════════════════════════════════════════════
@@ -6338,8 +6445,16 @@ function admitirCandidato(){
       var btn = document.getElementById('iv-cam-btn');
       if(btn){ btn.className='iv-ctrl-btn active'; btn.innerHTML='<span style="font-size:18px">📹</span>CAM ON'; }
       ivMicOn = true; ivMicMuted = false;
-      var mb = document.getElementById('iv-mic-btn');
-      if(mb){ mb.className='iv-ctrl-btn active'; mb.innerHTML='<span style="font-size:18px">🎙</span>MIC ON'; }
+      // Comprobar que el micrófono realmente entrega audio. Si Teams lo
+      // retiene, la pista llega muda (o no llega) y antes se anunciaba
+      // "MIC ON" igual, dejando al entrevistador sin saber que no se le oye.
+      var at0 = stream.getAudioTracks()[0] || null;
+      if(at0) vigilarMicTrack(at0);
+      sincronizarMicUI();
+      iniciarVigilanciaMic();
+      if(!ivMicUsable()){
+        showToast('⚠️ Tu micrófono está tomado por otra app (Teams/Zoom). El candidato no te escuchará: sal del audio de esa llamada y toca MIC.', '#eab308');
+      }
       // Iniciar WebRTC con el stream ya listo
       window._initWebRTCInterviewer(salaId, stream);
       // Fondo virtual: guardar la pista cruda y re-aplicar el fondo elegido
@@ -6356,8 +6471,10 @@ function admitirCandidato(){
       // Si no hay cámara, intentar solo audio
       navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(function(aStream){
         ivMicStream = aStream; ivMicOn = true; ivMicMuted = false;
-        var mb = document.getElementById('iv-mic-btn');
-        if(mb){ mb.className='iv-ctrl-btn active'; mb.innerHTML='<span style="font-size:18px">🎙</span>MIC ON'; }
+        var atf = aStream.getAudioTracks()[0] || null;
+        if(atf) vigilarMicTrack(atf);
+        sincronizarMicUI();
+        iniciarVigilanciaMic();
         var ph2 = document.getElementById('iv-local-ph');
         if(ph2) ph2.innerHTML = '<span style="font-size:18px">⚠️</span><span style="font-size:8px;font-weight:700;letter-spacing:.5px;color:#eab308;text-align:center;padding:0 4px">SIN CÁMARA ('+escHtml(errName)+')</span>';
         window._initWebRTCInterviewer(salaId, aStream);
