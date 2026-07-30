@@ -29,7 +29,11 @@
  * el simulador la interpreta exactamente igual que una llamada directa.
  */
 
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+// gemini-2.0-flash se apagó el 1 de junio de 2026. Se usa 3.5-flash, que
+// es estable y no tiene retiro anunciado (2.5-flash se apaga el 16 de
+// octubre de 2026). Debe coincidir con GEMINI_MODEL del simulador.
+const GEMINI_MODEL = 'gemini-3.5-flash';
+const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent';
 
 // Restringe qué orígenes pueden llamar al proxy. NO se deja abierto ('*'):
 // un proxy abierto deja que cualquiera que descubra la URL del Worker gaste
