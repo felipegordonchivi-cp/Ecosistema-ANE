@@ -3850,6 +3850,28 @@ function clearApiKey(){
   if(inp) inp.value = '';
   if(st) st.textContent = 'Clave eliminada';
 }
+// ── MODELO DE GEMINI ───────────────────────────────────────────
+// Google retira modelos con calendario: gemini-2.0-flash, que usaba este
+// simulador, se apagó el 1 de junio de 2026 y desde entonces la API
+// respondía con error. gemini-2.5-flash tiene fecha de apagado anunciada
+// (16 de octubre de 2026), así que se migra directo a 3.5-flash, que es
+// estable y no tiene retiro anunciado. Al cambiar de modelo se toca solo
+// esta constante.
+const GEMINI_MODEL = 'gemini-3.5-flash';
+function geminiUrl(apiKey){
+  return 'https://generativelanguage.googleapis.com/v1beta/models/'
+       + GEMINI_MODEL + ':generateContent?key=' + encodeURIComponent(apiKey);
+}
+// Desde Gemini 3.x el razonamiento del modelo viaja COMO PARTES dentro de
+// la respuesta, marcadas con thought:true. Leer parts[0].text a ciegas
+// podía devolver ese razonamiento en vez del informe. Se descartan las
+// partes de pensamiento y se une el texto real.
+function geminiTexto(data){
+  const parts = (data && data.candidates && data.candidates[0]
+              && data.candidates[0].content && data.candidates[0].content.parts) || [];
+  return parts.filter(function(p){ return p && p.text && p.thought !== true; })
+              .map(function(p){ return p.text; }).join('\n').trim();
+}
 function getApiKey(){ return localStorage.getItem('ane_gemini_key')||''; }
 function hasIAConfigured(){ return !!(getApiKey() || getProxyUrl()); }
 
@@ -4019,7 +4041,7 @@ Sé específico, constructivo y objetivo. Considera el contexto del mercado labo
     // el navegador — el proxy la inyecta del lado servidor (ver
     // tools/gemini-proxy-worker.js). Sin proxy, se llama directo con la
     // clave guardada en localStorage (comportamiento original).
-    const targetUrl = proxyUrl || `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+    const targetUrl = proxyUrl || geminiUrl(apiKey);
     const response = await fetch(targetUrl,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -4046,7 +4068,7 @@ Sé específico, constructivo y objetivo. Considera el contexto del mercado labo
       return null;
     }
 
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const text = geminiTexto(data);
     if(!text){
       const finishReason = data.candidates?.[0]?.finishReason || 'desconocido';
       console.warn('[ANE] Sin texto, finishReason:', finishReason, data);
@@ -4135,7 +4157,7 @@ Sé directo, específico y basate solo en lo que la respuesta realmente muestra 
     console.log('[ANE] Llamando Gemini (criterio profesional)', proxyUrl ? 'vía proxy institucional' : 'directo');
     const abortCtrl = new AbortController();
     const fetchTimeout = setTimeout(()=>abortCtrl.abort(), 20000);
-    const targetUrl = proxyUrl || `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+    const targetUrl = proxyUrl || geminiUrl(apiKey);
     const response = await fetch(targetUrl,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -4158,7 +4180,7 @@ Sé directo, específico y basate solo en lo que la respuesta realmente muestra 
       _showExpertResult('⚠️ Gemini bloqueó el contenido: '+blockReason+'. Intenta reformular la respuesta del candidato.');
       return null;
     }
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const text = geminiTexto(data);
     if(!text){
       const finishReason = data.candidates?.[0]?.finishReason || 'desconocido';
       _showExpertResult('⚠️ Gemini no generó texto (razón: '+finishReason+'). Revisá el contenido de la respuesta.');
