@@ -757,6 +757,21 @@ function escHtml(s){
         ivPC = new RTCPeerConnection(cfg);
         window._ivPC = ivPC;
         var ivIceQueue = [];
+        // Estado de la señal. 'disconnected' en WebRTC es TRANSITORIO: la
+        // conexión suele recuperarse sola en pocos segundos. Marcarlo como
+        // caída de inmediato hacía parpadear el indicador entre
+        // "Desconectado" y "Conectado". Solo se declara caída si no se
+        // recupera dentro de la ventana de gracia.
+        var ivGraceTimer = null;
+        function setIvStatus(kind){
+          var txt = document.getElementById('webrtc-status-txt');
+          var dot = document.getElementById('webrtc-status-dot');
+          if(!txt || !dot) return;
+          if(kind === 'connected'){ dot.style.background = '#22c55e'; txt.textContent = 'Conectado'; }
+          else if(kind === 'connecting'){ dot.style.background = '#eab308'; txt.textContent = 'Conectando…'; }
+          else if(kind === 'recovering'){ dot.style.background = '#eab308'; txt.textContent = 'Reconectando…'; }
+          else { dot.style.background = '#ef4444'; txt.textContent = 'Desconectado'; }
+        }
         ivPC.onicecandidate = function(e){
           if(e.candidate) db.ref('salas/'+sid+'/ice-iv').push(e.candidate.toJSON());
         };
@@ -774,17 +789,30 @@ function escHtml(s){
               if(btn) btn.style.display='block';
             });
           }
-          var dot = document.getElementById('webrtc-status-dot');
-          var txt = document.getElementById('webrtc-status-txt');
-          if(dot) dot.style.background='#22c55e';
-          if(txt) txt.textContent='Conectado';
+          // No forzar "Conectado" aquí: el estado real lo lleva
+          // onconnectionstatechange. Antes, la llegada de la pista pintaba
+          // verde aunque la conexión siguiera negociando, y el indicador
+          // se contradecía a sí mismo.
+          if(ivPC.connectionState === 'connected') setIvStatus('connected');
         };
         ivPC.onconnectionstatechange = function(){
-          var txt = document.getElementById('webrtc-status-txt');
-          var dot = document.getElementById('webrtc-status-dot');
-          if(!txt||!dot) return;
-          if(ivPC.connectionState==='connected'){ dot.style.background='#22c55e'; txt.textContent='Conectado'; }
-          if(ivPC.connectionState==='disconnected'||ivPC.connectionState==='failed'){ dot.style.background='#ef4444'; txt.textContent='Desconectado'; }
+          var st = ivPC.connectionState;
+          if(st === 'connected'){
+            if(ivGraceTimer){ clearTimeout(ivGraceTimer); ivGraceTimer = null; }
+            setIvStatus('connected');
+          } else if(st === 'connecting' || st === 'new'){
+            setIvStatus('connecting');
+          } else if(st === 'disconnected'){
+            setIvStatus('recovering');
+            if(ivGraceTimer) clearTimeout(ivGraceTimer);
+            ivGraceTimer = setTimeout(function(){
+              ivGraceTimer = null;
+              if(ivPC.connectionState !== 'connected') setIvStatus('failed');
+            }, 8000);
+          } else if(st === 'failed' || st === 'closed'){
+            if(ivGraceTimer){ clearTimeout(ivGraceTimer); ivGraceTimer = null; }
+            setIvStatus('failed');
+          }
         };
         // Si llega stream del entrevistador, añadir tracks ya (para incluirlos en el answer)
         if(ivStream) ivStream.getTracks().forEach(function(t){ ivPC.addTrack(t, ivStream); });
@@ -795,9 +823,18 @@ function escHtml(s){
           }
         }
         // Esperar offer del candidato
+        // Aceptar también OFERTAS NUEVAS, no solo la primera. Antes se
+        // ignoraba cualquier oferta posterior ("if(ivPC.remoteDescription)
+        // return"), así que un reinicio de ICE o una recarga del candidato
+        // no podían restablecer la llamada. Se compara el SDP para no
+        // reprocesar la misma oferta cuando Firebase reemite el valor.
+        var ivLastOfferSdp = null;
         db.ref('salas/'+sid+'/webrtc-offer').on('value', function(snap){
           var offer = snap.val();
-          if(!offer || ivPC.remoteDescription) return;
+          if(!offer || !offer.sdp) return;
+          if(offer.sdp === ivLastOfferSdp) return;
+          if(ivPC.signalingState !== 'stable') return;
+          ivLastOfferSdp = offer.sdp;
           ivPC.setRemoteDescription(new RTCSessionDescription(offer)).then(function(){
             flushIvIce();
             return ivPC.createAnswer();
@@ -805,7 +842,10 @@ function escHtml(s){
             return ivPC.setLocalDescription(ans);
           }).then(function(){
             db.ref('salas/'+sid+'/webrtc-answer').set(ivPC.localDescription.toJSON());
-          }).catch(function(e){ console.warn('WebRTC answer error:', e); });
+          }).catch(function(e){
+            ivLastOfferSdp = null; // permitir reintento de esta misma oferta
+            console.warn('WebRTC answer error:', e);
+          });
         });
         // ICE candidatos del candidato — queued hasta tener remoteDescription
         db.ref('salas/'+sid+'/ice-cand').on('child_added', function(snap){
@@ -851,12 +891,67 @@ function escHtml(s){
         candPC.onicecandidate = function(e){
           if(e.candidate) db.ref('salas/'+salaId+'/ice-cand').push(e.candidate.toJSON());
         };
-        candPC.onconnectionstatechange = function(){
+        // Igual que en el entrevistador: 'disconnected' es transitorio y no
+        // debe pintarse como caída hasta agotar la ventana de gracia. Y ante
+        // una caída real se reinicia ICE, que antes no ocurría: la llamada
+        // quedaba muerta hasta recargar la página.
+        var candGraceTimer = null, candRestarts = 0, candRestartTimer = null;
+        function setCandStatus(kind){
           var dot = document.getElementById('bc-dot');
           var txt = document.getElementById('bc-txt');
-          if(!dot||!txt) return;
-          if(candPC.connectionState==='connected'){ dot.style.background='#22c55e'; txt.textContent='Conectado con el entrevistador'; }
-          if(candPC.connectionState==='disconnected'||candPC.connectionState==='failed'){ dot.style.background='#ef4444'; txt.textContent='Conexión perdida'; }
+          if(!dot || !txt) return;
+          if(kind === 'connected'){ dot.style.background = '#22c55e'; txt.textContent = 'Conectado con el entrevistador'; }
+          else if(kind === 'connecting'){ dot.style.background = '#eab308'; txt.textContent = 'Conectando…'; }
+          else if(kind === 'recovering'){ dot.style.background = '#eab308'; txt.textContent = 'Reconectando…'; }
+          else { dot.style.background = '#ef4444'; txt.textContent = 'Conexión perdida'; }
+        }
+        function candIceRestart(){
+          if(candRestarts >= 6) return;      // techo para no reintentar sin fin
+          if(candPC.signalingState !== 'stable') return;
+          candRestarts++;
+          // Descartar los candidatos ICE de la sesión anterior: apuntan a
+          // puertos ya muertos y solo ensucian la nueva negociación.
+          try{
+            db.ref('salas/'+salaId+'/ice-cand').remove();
+            db.ref('salas/'+salaId+'/ice-iv').remove();
+          }catch(e){}
+          candPC.createOffer({ iceRestart: true }).then(function(o){
+            return candPC.setLocalDescription(o);
+          }).then(function(){
+            return db.ref('salas/'+salaId+'/webrtc-offer').set(candPC.localDescription.toJSON());
+          }).catch(function(e){ console.warn('WebRTC ICE restart error:', e); });
+        }
+        function scheduleCandRestart(ms){
+          if(candRestartTimer) clearTimeout(candRestartTimer);
+          candRestartTimer = setTimeout(function(){
+            candRestartTimer = null;
+            if(candPC.connectionState !== 'connected') candIceRestart();
+          }, ms);
+        }
+        candPC.onconnectionstatechange = function(){
+          var st = candPC.connectionState;
+          if(st === 'connected'){
+            if(candGraceTimer){ clearTimeout(candGraceTimer); candGraceTimer = null; }
+            if(candRestartTimer){ clearTimeout(candRestartTimer); candRestartTimer = null; }
+            candRestarts = 0;
+            setCandStatus('connected');
+          } else if(st === 'connecting' || st === 'new'){
+            setCandStatus('connecting');
+          } else if(st === 'disconnected'){
+            setCandStatus('recovering');
+            if(candGraceTimer) clearTimeout(candGraceTimer);
+            candGraceTimer = setTimeout(function(){
+              candGraceTimer = null;
+              if(candPC.connectionState !== 'connected') setCandStatus('failed');
+            }, 8000);
+            scheduleCandRestart(6000);   // dar margen a que se recupere solo
+          } else if(st === 'failed'){
+            if(candGraceTimer){ clearTimeout(candGraceTimer); candGraceTimer = null; }
+            setCandStatus('failed');
+            scheduleCandRestart(800);    // fallo firme: reintentar ya
+          } else if(st === 'closed'){
+            setCandStatus('failed');
+          }
         };
         // Recibir video+audio del entrevistador cuando renegocia
         candPC.ontrack = function(e){
@@ -881,12 +976,23 @@ function escHtml(s){
           }
         }
         // Escuchar answer del entrevistador
+        // Aceptar también la respuesta a una reoferta (reinicio de ICE).
+        // El guard anterior ("if(candPC.remoteDescription) return") descartaba
+        // toda respuesta posterior a la primera, de modo que ningún intento de
+        // reconexión podía completarse.
+        var candLastAnswerSdp = null;
         db.ref('salas/'+salaId+'/webrtc-answer').on('value', function(snap){
           var ans = snap.val();
-          if(!ans || candPC.remoteDescription) return;
+          if(!ans || !ans.sdp) return;
+          if(ans.sdp === candLastAnswerSdp) return;
+          if(candPC.signalingState !== 'have-local-offer') return;
+          candLastAnswerSdp = ans.sdp;
           candPC.setRemoteDescription(new RTCSessionDescription(ans)).then(function(){
             flushCandIce();
-          }).catch(function(e){ console.warn('WebRTC setRemote error:', e); });
+          }).catch(function(e){
+            candLastAnswerSdp = null;
+            console.warn('WebRTC setRemote error:', e);
+          });
         });
         // ICE candidatos del entrevistador — queued hasta tener remoteDescription
         db.ref('salas/'+salaId+'/ice-iv').on('child_added', function(snap){
@@ -4895,6 +5001,15 @@ function openCandidateView(){
   if(typeof window._fbRemove === 'function'){
     window._fbRemove('salas/'+salaId+'/estado');
     window._fbRemove('salas/'+salaId+'/knock');
+    // Señalización de cualquier sesión previa en esta sala: si quedara,
+    // la nueva conexión aplicaría una oferta/respuesta que ya no
+    // corresponde y nunca llegaría a establecerse.
+    window._fbRemove('salas/'+salaId+'/webrtc-offer');
+    window._fbRemove('salas/'+salaId+'/webrtc-answer');
+    window._fbRemove('salas/'+salaId+'/webrtc-reoffer');
+    window._fbRemove('salas/'+salaId+'/webrtc-reanswer');
+    window._fbRemove('salas/'+salaId+'/ice-cand');
+    window._fbRemove('salas/'+salaId+'/ice-iv');
   }
   // Escuchar knock via Firebase para esta sala (real-time + polling backup)
   if(typeof window._fbEscucharSala === 'function'){
