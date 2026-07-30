@@ -2014,6 +2014,11 @@ function escHtml(s){
 
             <button id="analyze-main-btn" onclick="analyzeSmart()" style="width:100%;margin-bottom:8px;background:linear-gradient(135deg,var(--teal),var(--tl));border:none;color:#fff;padding:13px;border-radius:10px;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 3px 12px rgba(13,115,115,.4);display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;line-height:1.3">🔍 Analizar respuesta</button>
             <p id="analyze-main-hint" style="color:#4a8a8a;font-size:10px;margin:0 0 10px;line-height:1.5"></p>
+            <!-- Atajo visible para configurar la clave. El aviso de "sin clave"
+                 remitía al botón 🔑, pero ese botón vivía dentro del desplegable
+                 "Elegir motor manualmente", cerrado por omisión: se pedía usar
+                 un control que no estaba a la vista. -->
+            <button id="btn-config-ia" onclick="toggleApiKeyUI()" style="display:none;width:100%;margin-bottom:10px;background:rgba(234,179,8,.12);border:1px solid rgba(234,179,8,.5);color:#fde68a;padding:9px;border-radius:9px;font-size:11px;font-weight:800;cursor:pointer">🔑 Configurar clave de Gemini para activar la IA</button>
 
             <details style="margin-bottom:10px">
               <summary style="cursor:pointer;color:#3a7272;font-size:11px;font-weight:700;list-style:none">⚙️ Elegir motor manualmente (IA Gemini o heurística local) ▾</summary>
@@ -3898,6 +3903,9 @@ function analyzeSmart(){
 function updateAnalysisButtons(){
   const b = document.getElementById('analyze-main-btn');
   const h = document.getElementById('analyze-main-hint');
+  // El atajo para configurar la clave solo aparece si hace falta.
+  const cfg = document.getElementById('btn-config-ia');
+  if(cfg) cfg.style.display = hasIAConfigured() ? 'none' : 'block';
   if(!b) return;
   if(hasIAConfigured()){
     b.innerHTML = '🔍 Analizar respuesta <span style="background:rgba(255,255,255,.25);border-radius:999px;padding:1px 8px;font-size:9px;font-weight:800;letter-spacing:.04em">IA GEMINI ✓</span>';

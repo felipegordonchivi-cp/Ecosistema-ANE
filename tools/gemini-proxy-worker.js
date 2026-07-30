@@ -57,9 +57,14 @@ function corsHeaders(allowOrigin){
   };
 }
 
-// Límite de tamaño del payload — una respuesta de entrevista más su prompt no
-// necesita más que esto; corta intentos de abuso/costo con cuerpos enormes.
-const MAX_BODY_BYTES = 60 * 1024;
+// Límite de tamaño del payload. El simulador adjunta el AUDIO de la respuesta
+// del candidato en base64 para que Gemini valore el tono de voz, y eso pesa
+// mucho más que el texto: en Opus, un minuto ronda los 240 KB, que en base64
+// se van a unos 320 KB. Con el tope anterior de 60 KB el proxy devolvía 413
+// en cuanto había audio, así que la vía del proxy solo funcionaba de milagro
+// (sin audio). 4 MB cubre respuestas largas —del orden de diez minutos— y
+// sigue cortando cuerpos abusivos.
+const MAX_BODY_BYTES = 4 * 1024 * 1024;
 
 export default {
   async fetch(request, env){
@@ -83,13 +88,22 @@ export default {
       });
     }
 
+    // Rechazo temprano por la cabecera, para no leer un cuerpo enorme.
+    const declarado = parseInt(request.headers.get('content-length') || '0', 10);
+    if(declarado > MAX_BODY_BYTES){
+      return new Response(JSON.stringify({error:{message:'Payload demasiado grande'}}), {
+        status:413, headers:{'Content-Type':'application/json', ...corsHeaders(allowOrigin)}
+      });
+    }
+    // Se mide en BYTES, no en caracteres: con audio en base64 y acentos, la
+    // longitud de la cadena no equivale al tamaño real del cuerpo.
     let body;
-    try { body = await request.text(); } catch(e){
+    try { body = await request.arrayBuffer(); } catch(e){
       return new Response(JSON.stringify({error:{message:'Body inválido'}}), {
         status:400, headers:{'Content-Type':'application/json', ...corsHeaders(allowOrigin)}
       });
     }
-    if(body.length > MAX_BODY_BYTES){
+    if(body.byteLength > MAX_BODY_BYTES){
       return new Response(JSON.stringify({error:{message:'Payload demasiado grande'}}), {
         status:413, headers:{'Content-Type':'application/json', ...corsHeaders(allowOrigin)}
       });
