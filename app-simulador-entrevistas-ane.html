@@ -1835,6 +1835,15 @@ function escHtml(s){
         <!-- ── 3. ACTIVACIÓN RÁPIDA DE PREGUNTAS ── -->
         <div class="iv-section" style="padding:8px 14px 10px">
           <div style="font-size:9px;color:#2a5a5a;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px">Activar pregunta</div>
+          <!-- Perfil que se está evaluando: al ver solo los botones Q1, Q2…
+               no quedaba a la vista para qué puesto es la entrevista. -->
+          <div id="iv-perfil-titulo" style="display:none;align-items:center;gap:9px;margin-bottom:9px;padding:7px 11px;background:linear-gradient(135deg,rgba(13,115,115,.2),rgba(4,22,22,.55));border:1px solid rgba(13,115,115,.45);border-radius:9px">
+            <span id="iv-perfil-icono" style="font-size:18px;line-height:1;flex-shrink:0"></span>
+            <div style="min-width:0">
+              <div id="iv-perfil-nombre" style="font-size:13px;font-weight:800;color:#c9e8e8;line-height:1.25"></div>
+              <div id="iv-perfil-sector" style="font-size:9px;color:#3a7272;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-top:1px"></div>
+            </div>
+          </div>
           <div id="quick-q-btns" style="display:flex;flex-wrap:wrap;gap:5px">
             <span style="font-size:11px;color:#1a4a4a;font-style:italic">Selecciona un perfil para ver las preguntas</span>
           </div>
@@ -3290,6 +3299,24 @@ function renderQuestions(){
 
 function renderQuickQBtns(){
   const div = document.getElementById('quick-q-btns');
+  // Encabezado con el perfil evaluado. Se actualiza aquí porque esta función
+  // ya se ejecuta en cada cambio de perfil (renderQuestions la invoca).
+  const tw = document.getElementById('iv-perfil-titulo');
+  if(tw){
+    if(currentProf){
+      tw.style.display = 'flex';
+      const ic = document.getElementById('iv-perfil-icono');
+      const nm = document.getElementById('iv-perfil-nombre');
+      const sc = document.getElementById('iv-perfil-sector');
+      if(ic) ic.textContent = currentProf.icon || '📋';
+      if(nm) nm.textContent = currentProf.name || '';
+      const sec = (typeof SECTORS !== 'undefined' && Array.isArray(SECTORS))
+        ? SECTORS.find(s => s.id === currentProf.sector) : null;
+      if(sc) sc.textContent = 'Evaluando · ' + (sec ? sec.label : (currentProf.sector || ''));
+    } else {
+      tw.style.display = 'none';
+    }
+  }
   if(!div) return;
   if(!currentProf?.qs?.length){
     div.innerHTML = '<span style="font-size:11px;color:#1a4a4a;font-style:italic">Selecciona un perfil para ver las preguntas</span>';
