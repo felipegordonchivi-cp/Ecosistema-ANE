@@ -200,15 +200,15 @@ textarea{resize:vertical}
 .iv-cockpit{width:480px;flex-shrink:0;background:#040d0d;border-left:1px solid rgba(13,115,115,.25);display:flex;flex-direction:column;overflow:hidden}
 .iv-section{border-bottom:1px solid rgba(13,115,115,.15);flex-shrink:0}
 
-/* ═══ MODO FOCO ═══
+/* ═══ MODO ENTREVISTA ═══
    La sala apilaba seis secciones en una columna de 480px, así que la
    transcripción y el botón del evaluador quedaban fuera de la vista y había
-   que hacer zoom. En modo foco se ocultan las columnas de catálogo y la sala
+   que hacer zoom. En modo entrevista se ocultan las columnas de catálogo y la sala
    ocupa todo el ancho, repartida en rejilla: video, pregunta y transcripción
    visibles a la vez, con el botón del evaluador siempre fijo. */
 @media(min-width:1100px){
-  #panel1.iv-focus > div:not(.iv-cockpit){display:none !important}
-  #panel1.iv-focus .iv-cockpit{
+  #panel1.iv-entrevista > div:not(.iv-cockpit){display:none !important}
+  #panel1.iv-entrevista .iv-cockpit{
     width:100% !important;border-left:none;
     display:grid !important;
     grid-template-columns:minmax(340px,1fr) minmax(480px,1.5fr) minmax(300px,1fr);
@@ -218,30 +218,30 @@ textarea{resize:vertical}
   /* Izquierda: video · grabación · chat — Centro: transcripción a todo lo alto
      Derecha: pregunta enviada y catálogo de preguntas, que van juntos.
      Cada columna llena su alto: no queda espacio muerto ni desplazamiento. */
-  #panel1.iv-focus .iv-cockpit > *:nth-child(1){grid-column:1;grid-row:1;border-right:1px solid rgba(13,115,115,.15)}
-  #panel1.iv-focus .iv-cockpit > *:nth-child(4){grid-column:1;grid-row:2;border-right:1px solid rgba(13,115,115,.15)}
-  #panel1.iv-focus .iv-cockpit > *:nth-child(6){grid-column:1;grid-row:3;border-right:1px solid rgba(13,115,115,.15);min-height:0}
-  #panel1.iv-focus .iv-cockpit > *:nth-child(5){
+  #panel1.iv-entrevista .iv-cockpit > *:nth-child(1){grid-column:1;grid-row:1;border-right:1px solid rgba(13,115,115,.15)}
+  #panel1.iv-entrevista .iv-cockpit > *:nth-child(4){grid-column:1;grid-row:2;border-right:1px solid rgba(13,115,115,.15)}
+  #panel1.iv-entrevista .iv-cockpit > *:nth-child(6){grid-column:1;grid-row:3;border-right:1px solid rgba(13,115,115,.15);min-height:0}
+  #panel1.iv-entrevista .iv-cockpit > *:nth-child(5){
     grid-column:2;grid-row:1 / span 3;border-right:1px solid rgba(13,115,115,.15);
     display:flex;flex-direction:column;min-height:0;overflow:hidden;
   }
-  #panel1.iv-focus .iv-cockpit > *:nth-child(2){grid-column:3;grid-row:1}
-  #panel1.iv-focus .iv-cockpit > *:nth-child(3){grid-column:3;grid-row:2 / span 2;overflow-y:auto;min-height:0}
+  #panel1.iv-entrevista .iv-cockpit > *:nth-child(2){grid-column:3;grid-row:1}
+  #panel1.iv-entrevista .iv-cockpit > *:nth-child(3){grid-column:3;grid-row:2 / span 2;overflow-y:auto;min-height:0}
   /* La transcripción ocupa el alto disponible y se lee más grande */
-  #panel1.iv-focus .iv-transcript-box{
+  #panel1.iv-entrevista .iv-transcript-box{
     flex:1 1 auto;min-height:0 !important;max-height:none !important;
     font-size:15px !important;line-height:1.75 !important;
   }
-  #panel1.iv-focus .iv-transcript-box #transcript-final,
-  #panel1.iv-focus .iv-transcript-box #transcript-interim{font-size:15px !important}
+  #panel1.iv-entrevista .iv-transcript-box #transcript-final,
+  #panel1.iv-entrevista .iv-transcript-box #transcript-interim{font-size:15px !important}
   /* El botón del evaluador nunca se desplaza fuera de la vista */
-  #panel1.iv-focus .iv-cockpit > *:nth-child(5) > button{flex:0 0 auto;font-size:13px !important;padding:12px !important}
-  #panel1.iv-focus #iv-foco-btn{background:rgba(94,234,212,.25);border-color:#5eead4;color:#c9fff5}
+  #panel1.iv-entrevista .iv-cockpit > *:nth-child(5) > button{flex:0 0 auto;font-size:13px !important;padding:12px !important}
+  #panel1.iv-entrevista #iv-modo-btn{background:rgba(94,234,212,.25);border-color:#5eead4;color:#c9fff5}
 }
-/* El modo foco necesita ancho para repartir las tres columnas; por debajo de
+/* El modo entrevista necesita ancho para repartir las tres columnas; por debajo de
    ese umbral no se aplica, así que se oculta el botón en vez de dejar uno
    que cambia de texto sin hacer nada. */
-@media(max-width:1099px){ #iv-foco-btn{display:none !important} }
+@media(max-width:1099px){ #iv-modo-btn{display:none !important} }
 
 /* ── LOADING SCREEN ───────────────────────── */
 #app-loading{position:fixed;inset:0;background:#020e0e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:99999;transition:opacity .4s}
@@ -1769,7 +1769,7 @@ function escHtml(s){
               <span id="webrtc-status-txt" style="font-size:11px;color:#7dd3d3;font-weight:700">Sin candidato</span>
             </div>
             <div style="display:flex;align-items:center;gap:9px">
-              <button id="iv-foco-btn" onclick="toggleModoFoco()" title="Ampliar la sala a toda la pantalla (Esc para salir)" style="background:rgba(13,115,115,.2);border:1px solid rgba(13,115,115,.5);color:#7dd3d3;padding:3px 10px;border-radius:7px;font-size:10px;font-weight:800;letter-spacing:.04em;cursor:pointer;white-space:nowrap">⛶ MODO FOCO</button>
+              <button id="iv-modo-btn" onclick="toggleModoEntrevista()" title="Modo entrevista: amplía la sala a toda la pantalla (Esc para volver)" style="background:rgba(13,115,115,.2);border:1px solid rgba(13,115,115,.5);color:#7dd3d3;padding:3px 10px;border-radius:7px;font-size:10px;font-weight:800;letter-spacing:.04em;cursor:pointer;white-space:nowrap">⛶ MODO ENTREVISTA</button>
               <span style="font-size:9px;color:#1a4a4a;font-weight:800;letter-spacing:2px;text-transform:uppercase">● SALA VIRTUAL</span>
             </div>
           </div>
@@ -6074,30 +6074,30 @@ function reintentarCamaraEntrevistador(){
   }).finally(function(){ ivCamRetryBusy = false; });
 }
 
-// ── MODO FOCO DE LA SALA ───────────────────────────────────────
+// ── MODO ENTREVISTA ────────────────────────────────────────────
 // Amplía la sala a todo el ancho para ver video, pregunta y transcripción
 // a la vez, sin desplazarse ni reducir el zoom del navegador.
-function toggleModoFoco(forzar){
+function toggleModoEntrevista(forzar){
   const p1 = document.getElementById('panel1');
   if(!p1) return;
-  const activo = (typeof forzar === 'boolean') ? forzar : !p1.classList.contains('iv-focus');
-  p1.classList.toggle('iv-focus', activo);
-  const btn = document.getElementById('iv-foco-btn');
-  if(btn) btn.innerHTML = activo ? '⛶ SALIR DEL FOCO' : '⛶ MODO FOCO';
-  try{ localStorage.setItem('ane_iv_foco', activo ? '1' : '0'); }catch(e){}
+  const activo = (typeof forzar === 'boolean') ? forzar : !p1.classList.contains('iv-entrevista');
+  p1.classList.toggle('iv-entrevista', activo);
+  const btn = document.getElementById('iv-modo-btn');
+  if(btn) btn.innerHTML = activo ? '⛶ VISTA NORMAL' : '⛶ MODO ENTREVISTA';
+  try{ localStorage.setItem('ane_iv_modo_entrevista', activo ? '1' : '0'); }catch(e){}
   // El video puede cambiar de tamaño: refrescar el lienzo del fondo virtual
   if(activo && typeof window.dispatchEvent === 'function') window.dispatchEvent(new Event('resize'));
 }
 document.addEventListener('keydown', function(e){
   if(e.key === 'Escape'){
     const p1 = document.getElementById('panel1');
-    if(p1 && p1.classList.contains('iv-focus')) toggleModoFoco(false);
+    if(p1 && p1.classList.contains('iv-entrevista')) toggleModoEntrevista(false);
   }
 });
 document.addEventListener('DOMContentLoaded', function(){
   let pref = null;
-  try{ pref = localStorage.getItem('ane_iv_foco'); }catch(e){}
-  if(pref === '1') toggleModoFoco(true);
+  try{ pref = localStorage.getItem('ane_iv_modo_entrevista'); }catch(e){}
+  if(pref === '1') toggleModoEntrevista(true);
 });
 
 // ── MICRÓFONO DEL ENTREVISTADOR ────────────────────────────────
