@@ -3813,6 +3813,25 @@ function saveProxyUrl(){
     if(st) st.textContent = '⚠️ Debe ser una URL https://';
     return;
   }
+  // Confusión frecuente: pegar aquí la dirección de esta misma aplicación.
+  // Guardarla haría que el análisis se enviara contra la propia página y
+  // fallara sin explicación clara, así que se rechaza antes de guardar.
+  if(val){
+    let esLaApp = false;
+    try{
+      const u = new URL(val);
+      esLaApp = (u.origin === location.origin)
+             || /\.html?$/i.test(u.pathname)
+             || /app-simulador|app-ats|app-dashboard|index\.html/i.test(u.pathname);
+    }catch(e){
+      if(st) st.textContent = '⚠️ Esa no es una dirección válida.';
+      return;
+    }
+    if(esLaApp){
+      if(st) st.textContent = '⚠️ Eso es la dirección de esta aplicación, no la de un proxy. Deja este campo vacío y usa la API Key de abajo, o pide a TI la URL del Worker (suele terminar en .workers.dev).';
+      return;
+    }
+  }
   localStorage.setItem('ane_gemini_proxy_url', val);
   if(st) st.textContent = val ? '✅ Proxy guardado — la API Key de arriba no se usa' : 'Sin proxy configurado';
   updateAnalysisButtons();
